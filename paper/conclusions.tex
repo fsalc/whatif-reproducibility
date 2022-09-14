@@ -1,0 +1,30 @@
+\section{Conclusions}
+\label{sec:conclusions}
+%We propose a novel type of predictive queries, historical what-if queries to evaluate the effect of a hypothetical change to a past database operations and transactions. In contrast to traditional what-if queries which are defined based on hypothetical changes to the current database state, historical what-if queries are based on database's history. The draw back of  traditional what-if queries is that it is usually ambiguous how a change to the database state can be achieved primitively. We believe historical what-if queries are easier to define as they are based on past operations that were executed on the database and they often lead to more actionable insights which helps user to improve their future policies and business operations.
+
+We propose historical what-if queries, a new type of what-if queries which allow users to explore the effects of hypothetical changes to the transactional history of a database. Our system Mahif efficiently answers such queries using reenactment % --- a declarative replay technique for simulating updates. We also introduce
+and  two novel optimization  techniques (program and data slicing) that exclude irrelevant data and updates from the computation.
+% We present Mahif, a middleware for answering historical what-if queries
+% that uses  reenactment --- a declarative replay technique for simulating the effect of changes in a database's history.
+% We introduce program and data slicing, which rely on the principle that not everything is relevant to answer historical what-if queries, and so we are able to filter out extraneous updates and data from reenactment.
+% We compared our approach against a naïve method which requires additional storage and re-executing the entire modified history over all data.
+Our experimental evaluation demonstrates the effectiveness of our approach and of our optimizations.
+%To the best of our knowledge, Mahif provides the first solution to answer historical what-if queries using reenactment.
+In future work, we will explore how to augment a user's \abbrHW based on information about unobserved external factors and dependencies between updates, e.g., if a \abbrHW deletes the statement creating a customer from history, then the statements creating the orders of this customer should be removed too. Furthermore, we will explore novel application of our symbolic evaluation technique such as proving equivalence of histories.
+
+% In this paper, we focus on simple update statements without any subqueries where their clauses compose of linear functions. In future work, we will extend our techniques to overcome these limitations. In addition, we plan to integrate our approach with recent incremental maintenance techniques, and develop optimizations that will further optimize our approach for use in this case.
+
+%Traditional what-if queries determine how a hypothetical change to data affects a query result. However, it is often completely unclear how such a change could be achieved in the first place.
+%We present our vision for historical what-if queries, a novel type of predictive queries that evaluate the effect of a hypothetical change to a database's history. % This is in contrast to traditional what-if queries are based on hypothetical changes to the current database state.
+%Historical what-if queries overcome the aforementioned drawback of traditional what-if queries by focusing on ``what could I have done differently'' instead of ``what if the state of the world would be different''. % historical what-if queries often lead to more actionable insights.
+
+%We present an implementation of historical what-if queries that exploits our declarative replay technique called reenactment and uses optimizations based on static analysis of potential provenance dependencies to improve performance. Our preliminary experiments demonstrate that this approach is feasible.
+% We present our vision for, a novel approach that apply reenactment for predictive analytics or whatif queries. Reenactment is an elegant mechanism which can be applied to answer historic what-If queries by simulating the effect of changes of historical statements and transactions. We present an overview for the predictive analytic algorithm which detects historical statements that must be replay to answer a what-if query and then uses reenactment for those statements.
+% As a future work, we need to increase the efficiency of our algorithm and investigate suitable optimization methods for our approach.
+% We will investigate set of rules to determine dependent updates more precisely.
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "historical_whatif"
+%%% End:

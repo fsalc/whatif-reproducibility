@@ -1,0 +1,880 @@
+\section{Slicing with Symbolic Execution}
+\label{sec:sym-exe}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\BG{ Make clear the relationship to C-tables and virtual C-tables (Pip, Oliver’s Lenses)}
+% \BG{Redundant: To this end we adapt concepts from incomplete databases akin to  symbolic execution~\cite{K76} in programming language to reason about the behavior of updates for any possible database.
+% % to determine whether an update may depend on a modification. % Instead of using a concrete input database,
+% We start from a symbolic instance that consists of a single tuple of variables, i.e., we treat the input as an unconstrained c-table~\cite{IL84a}. The effects of an update on a symbolic instance are encoded as constraints over the variables of the instance. To determine whether an update $u$ should be included in a slice for a historical what-if query, we test satisfiability of such constraints using a constraint solver.
+% In the previous section, we demonstrated that it is sufficient to reenact dependent update statements to answer a historical what-if query. However, to check whether a statement is dependent we would need to evaluate the history up to and including this statement. Obviously, this would defy the purpose of program slicing (to exclude updates from reenactment). In this section we develop a method to compute a superset of the set of dependent update statements for a historical what-if query without having to access the database instance.}
+
+We adapt concepts from incomplete databases~\cite{IL84a} to reason about the behavior of updates over a set of possible databases represented by a compressed database. This is akin to \textit{symbolic execution}~\cite{cadar13,K76} which is used in software testing to determine inputs that would lead to a particular execution path in the program.
+% to determine whether an update may depend on a modification. % Instead of using a concrete input database,
+We use \textit{Virtual C-tables}~\cite{pip10,lenses15} (\textit{VC-tables}) as a compact representation of the set of possible worlds represented by a compressed database (to be discussed in \Cref{sec:compr-input-datab}) and demonstrate how to evaluate updates with possible worlds semantics over such representations. That is, the result of a history over a VC-table instance encodes all possible results of the history over every possible world represented by the VC-table. Using a constraint solver, we can then prove existential or universal statements over these possible results. Specifically, we will check that a candidate slice and the full histories produce the same result for a \abbrHW $\hwhatif$.
+% \revdel{We use this idea to determine whether there exists a database instance \revm{represented by the compressed database} for which a particular statement $\up$ may affect the result of the historical what-if query. We call such updates \textit{dependent updates}, because their result depends on one of the modifications $\modi \in \deltaHist$ for some possible input database. Independent updates statements can be safely excluded from reenactment, i.e., the set of dependent statements for the historical what-if query $\hwhatif$ is a \revm{(possibly non-minimal)} slice  for $\hwhatif$.}
+
+% we start from a symbolic instance that consists of a single tuple of variables, i.e., we treat the input as an unconstrained c-table~\cite{IL84a,incom88}. The effects of an update on a symbolic instance are encoded as constraints over the variables of the instance. To determine whether an update $u$ should be included in a slice for a historical what-if query, we test satisfiability of such constraints using a constraint solver.
+
+
+% We adapt incomplete database techniques~\cite{incom88} to check for each update  whether there exists a database instance for which the update is dependent. This is akin to \textit{symbolic execution}~\cite{cadar13,K76} which is used in software testing to determine inputs that would lead to a particular execution path in the program.
+
+%using symbolic execution whether they exists a database instance for which an update would be dependent, i.e., we start from an incomplete database
+% In this section, we present how to detect dependent updates in the history by using symbolic execution. We need to find dependent updates in the history without executing them on the database and without any knowledge about data in the database. By modeling the database, our approach works for all databases. Possible world represent a regular database whereas Virtual C-Tables symbolized possible world which is useful for our symbolic execution approach.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Possible Worlds}
+%\label{sec:poss-wor}
+%Possible worlds ($\world$)} is a collection of deterministic databases which have finite collections of relation instances. Possible worlds present all probable database states. \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Incomplete Databases and Virtual C-Tables}
+\label{sec:vc-tb}
+An incomplete database $\worlds = \{ \world_1, \ldots, \world_n \}$ is a set of deterministic databases called possible worlds. Each $\world_i$ represents one possible state of the database. Queries (and updates) over an incomplete database $\worlds$ are evaluated using possible world semantics where the result of the query (statement) is the set of possible worlds derived by applying the query (statement) to every possible world from $\worlds$: % for a query $\query$ and incomplete database $\worlds$ we have
+%
+$$\query(\worlds) = \{ \query(\world) \mid \world \in \worlds \}$$
+%
+For our purpose, it will be sufficient to use an incomplete database consisting of possible worlds containing a single tuple, because we restrict program slicing to tuple independent statements which process every input tuple independent of every other input tuple.
+% the types of updates we consider in this work operate on each input tuple independent of the other input tuples.
+This incomplete database contains one world for any such singleton relation.
+We then evaluate updates from the original and modified history and their slices over this incomplete database and search for worlds where the delta for the full histories is different from the delta for the slice.
+\iftechreport{However, the number of possible tuples per relation (and, thus, also the number of possible worlds) is exponential in the number of attributes of the relation. For instance, consider a relation with $n$ attributes and a domain with $m$ values. Then there are $m^n$ possible tuples for this relation that we can construct using the values of the domain.}
+For efficiency we need a compact representation of an incomplete database. We employ Virtual C-tables~\cite{pip10,lenses15} which extend C-tables~\cite{IL84a} to support scalar operations over values.
+
+A VC-table $\vcrel$ is a relation with tuples whose values are symbolic expressions over a countable set of variables $\varDom$ and where each tuple $\vct$ (we use boldface to indicate tuples with symbolic values) is associated with a condition $\lcond(\vct)$ (the so-called \textit{local condition}). The grammar shown in \Cref{fig:expr-grammar} defines the syntax of valid expressions. A VC-database $\vcdb$ is a set of VC-tables paired with a condition $\gcond$, called a global condition. Let $\dataDomain$ denote a universal domain of values.
+A VC-db $\vcdb$ encodes an incomplete database which consists of all possible worlds that can be generated by assigning a value to each variable in $\varDom$, evaluating the symbolic expressions for each tuple in $\vcdb$ and including tuples in the possible world whose local condition $\lcond(\vct)$ evaluates to true. Only assignments for which the global condition $\gcond$ evaluates to true are part of the incomplete database represented by $\vcdb$.
+We use $\worldsOf{\vcdb}$ to denote the set of worlds encoded by the VC-database $\vcdb$ (and apply the same notation for VC-tables). For ease of presentation, we will limit the discussion to databases with a single relation and for convenience associate a global condition with this single relation (instead of with a VC-database). However, our method is not subject to this restriction.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{defi}[$\worldsOf{\vcdb}$]\label{def:vcdb-worlds}
+  Let $\vcdb$ be a VC-db and let $\allVarAssigns$ be the set of all assignments $\varDom \to \dataDomain$.
+  \begin{align*}
+\worldsOf{\vcdb} &= \{ \db \mid \exists \varAssign \in \allVarAssigns: \varAssign(\vcdb) = \db \land \varAssign(\gcond)\}
+  \end{align*}
+Abusing notation, we apply $\varAssign$ to VC-dbs, tuples, and symbolic expressions $\expr$ using the semantics defined below.
+  \begin{align*}
+\varAssign(\vcdb) &= \{ \varAssign(\vct) \mid \vct \in \vcdb \land \varAssign(\lcond(\vct)) \}
+  \end{align*}
+  \begin{align*}
+        \varAssign(\expr_1 \diamond \expr_2) &= \varAssign(\expr_1) \diamond \varAssign(\expr_2) \,\,\,\text{\textbf{for}}\,\, \diamond \in \{+,-,\cdot,\div,=,\neq,<,\leq,>,\geq,\land,\lor\}\\
+        \varAssign(\diamond \expr_1) &= \diamond \varAssign(\expr_1)
+    \,\,\,\text{\textbf{for}}\,\, \diamond \in \{\neg, \isnull\}
+  \end{align*}\\[-9mm]
+  \begin{align*}
+    \varAssign( (\expr_1, \cdots, \expr_n)) &= (\varAssign(\expr_1), \cdots, \varAssign(\expr_n))     &\varAssign(\T) &= \T  \\
+        \varAssign(\sqlCase{e_1}{e_2}{e_3}) &=
+                                          \begin{cases}
+                                            \varAssign(e_2) &\mathbf{if}\,\,\varAssign(e_1)\\
+                                            \varAssign(e_3) &\mathbf{otherwise}\\
+                                          \end{cases}
+    &\varAssign(\F) &= \F\\
+  \end{align*}
+ %  \begin{align*}
+ %    \varAssign(\sqlCase{e_1}{e_2}{e_3}) &=
+ %                                          \begin{cases}
+ %                                            \varAssign(e_2) &\mathbf{if}\,\,\varAssign(e_1)\\
+ %                                            \varAssign(e_3) &\mathbf{otherwise}\\
+ %                                          \end{cases}\\
+ %    &\varAssign(\expr_1 - \expr_2) &= \varAssign(\expr_1) - \varAssign(\expr_2)\\
+ %    \varAssign(\expr_1 \cdot \expr_2) &= \varAssign(\expr_1) \cdot \varAssign(\expr_2)
+ %    &\varAssign(\expr_1 \div \expr_2) &= \varAssign(\expr_1) \div \varAssign(\expr_2)\\
+ %    \varAssign((\expr_1, \ldots, \expr_n) &= (\varAssign(\expr_1), \ldots,  \varAssign(\expr_n))
+ %    &\varAssign(x) &= \varAssign(x) \\
+ %  \end{align*}
+ %  \[ \varAssign(e) = \begin{cases}
+ %    	\varAssign(\expr_1) + \varAssign(\expr_2)              & \mathbf{if}\,\, \expr = \expr_1 + \expr_2            \\
+ %    	\varAssign(\expr_1) - \varAssign(\expr_2)              &\mathbf{if}\,\,  \expr = \expr_1 - \expr_2            \\
+ %    	\varAssign(\expr_1) \times \varAssign(\expr_2)         &\mathbf{if}\,\,  \expr = \expr_1 \times \expr_2       \\
+ %    	\varAssign(\expr_1) \div \varAssign(\expr_2)           &\mathbf{if}\,\,  \expr = \expr_1 \div \expr_2         \\
+ %    	% \{ \varAssign(\expr_1), \cdots, \varAssign(\expr_n) \} &\mathbf{if}\,\,  \expr = \{\expr_1, \cdots, \expr_n\} \\
+ %    	(\varAssign(\expr_1), \cdots, \varAssign(\expr_n))     &\mathbf{if}\,\,  \expr = (\expr_1, \cdots, \expr_n)   \\
+ %    	\varAssign(x)                                   &\mathbf{if}\,\,  \expr = x \in \varDom
+ %    	\end{cases}
+ %    	\]
+
+
+ % \[ \varAssign(e) = \begin{cases}
+ %    	\varAssign(\expr_1) + \varAssign(\expr_2)              & \mathbf{if}\,\, \expr = \expr_1 + \expr_2            \\
+ %    	\varAssign(\expr_1) - \varAssign(\expr_2)              &\mathbf{if}\,\,  \expr = \expr_1 - \expr_2            \\
+ %    	\varAssign(\expr_1) \times \varAssign(\expr_2)         &\mathbf{if}\,\,  \expr = \expr_1 \times \expr_2       \\
+ %    	\varAssign(\expr_1) \div \varAssign(\expr_2)           &\mathbf{if}\,\,  \expr = \expr_1 \div \expr_2         \\
+ %    	% \{ \varAssign(\expr_1), \cdots, \varAssign(\expr_n) \} &\mathbf{if}\,\,  \expr = \{\expr_1, \cdots, \expr_n\} \\
+ %    	(\varAssign(\expr_1), \cdots, \varAssign(\expr_n))     &\mathbf{if}\,\,  \expr = (\expr_1, \cdots, \expr_n)   \\
+ %    	\varAssign(x)                                   &\mathbf{if}\,\,  \expr = x \in \varDom
+ %    	\end{cases}
+ %    	\]
+\end{defi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% \begin{defi}[Assignment to Variables Over Symbolic Expression]
+% 	\label{defi:symbolic-assignment}
+% 	$\varAssign$ applies itself to the variables of a symbolic expression in the following manner:
+% 	   \end{defi}
+% Possible worlds ($\world$) is a collection of deterministic databases which have finite collections of relation instances. Possible worlds present all probable database states. As we do not want to work with different database states, we use Virtual C-Tables (VC-Tables) as an extension of conditional tables. A conditional table (C-table)~\cite{incomp88,pip10} presenting a relation instance in which its tuples are annotated with a condition. Conditions are boolean expressions over comparisons of variables and constants. We use VC-Tables~\cite{lenses15} to present symbolic tuples with expression $\expr$ over variable $\var \in \varDom$ and constant values $\cons$ which encode the changes of each arity of a relational table after execution of each update operations in the history. These symbolic tuples are also annotated with boolean conditions. VC-Tables can be used to represent the non-deterministic skeleton of a relational database in a symbolic form. A possible world is generated by variable assignment $\pset$ representing by the VC-Table. We evaluate the symbolic expressions $\expr$ of each tuple $t \in$ VC-Table to generate $\world$ in the possible worlds ($\worlds$) where $\pset(\cond_R(t)) = true$. It means the condition $\cond_R$ produced from $\pset$ must be $true$ to be a possible world $\world \in \worlds$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% A VC-Table with schema of table $R$ ($\schema{R}$) is a subset of $\expr^{n}$ (a set of tuple $t$ with values that are valid expressions) and additional annotation with a function $\cond_R$ that assigns to each tuple $t \in R$ a condition $\cond_R(t)$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{exam}
+\label{ex:pw-example}
+Consider relation \texttt{Order} from \Cref{ex:running-example}. In this example, we just consider the three attributes that are used by updates in the history (\texttt{Country}, \texttt{Price}, \texttt{ShippingFee}).
+A VC-table over this schema is shown on the top left in \Cref{fig:running-vctb}. This VC-table contains a single tuple with three variables $x_{Country}$, $x_{Price}$, and $x_{ShippingFee}$ and a local condition $\T$ (shown on the right of the tuple). Consider the variable assignment $x_{Country} = UK$, $x_{Price} = 10$, and $x_{ShippingFee} = 0$. Applying this assignment, we get the  possible world  $\{(UK, 10, 0)\}$.
+% \Cref{fig:running-vctb} shows the initial VC-Table includes symbolic expressions over variables $\sum=\lbrace x_{Country},x_{Price},$ $x_{ShippingFee}\rbrace$ with an additional column for a conditional function $\cond$ for each tuple.
+%After symbolic execution of the first update where $\cond:= x_{Price} >=40$, the possible world can be generated by evaluating $(x_{ID} \leftarrow 12, x_{Customer} \leftarrow 'Alex' ,x_{Country} \leftarrow 'UK',x_{Price} \leftarrow 40,x_{ShippingFee} \leftarrow 5)(x_{Price}>=40)$. As $40>=40 := true$. The possible world $\world'$ after executing the first update statement can be $\world'=\lbrace 12,'Alex','UK',40,0\rbrace$.
+\end{exam}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifnottechreport{We will show in \Cref{sec:compr-input-datab} how to encode information about the data distribution of the database of a \abbrHW as part of the global condition of an VC-database.} %
+\iftechreport{Note that we can encode information about the data distribution of the database of a \abbrHW as part of the global condition of a VC-database. For instance, we can compress the Order relation from \Cref{fig:running-example-instance} into a conjunction of range constraints. The set of tuples fulfilling this condition is a superset of the Order relation.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align*}
+  x_{Country} \in \{UK,US\} \land x_{Price} \geq 20 \land x_{Price} \leq 60 \\
+  \land x_{Shipping Fee} \geq 3 \land x_{ShippingFee} \leq 5
+\end{align*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+}
+%
+% \revm{As we will discuss further in \Cref{sec:sym-exe}, there is a trade-off between the precision of slicing and cost, e.g., we could represent the input table as a disjunction of multiple constraints resulting in a more accurate encoding of the input data at the cost of a larger global condition.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Updates on VC-Tables}
+\label{sec:up-vc-tb}
+%Here we only consider deterministic updates, thus, if the input of an update is the same in both histories then so is its output. Intuitively, the input of an update $u$ can only differ if it contains one or more tuples affected by an update modified by the historical what-if query.
+%\BGDel{Given a history $\history$, a single modification $m = u \gets u'$, and database instance $\db$, we say an update $u \in \history$ \textit{depends} on  $m$ according to $\db$ if there exists a tuple affected by $u$ that is also affected by either $u$ or $u'$. Dependency can be extended to a set of modifications $\deltaHist$ in the obvious way.
+%The notion ``affected by'' can be made more precise using our MV-semiring provenance model that records which updates did affect a tuple $t$ or one of the tuples in $t$'s provenance. However, for reasons of space we do not present the full formalization here.
+%  Intuitively, only updates that depend on a modification have to be reenacted to compute the delta between $\history(\db)$ and $\history[\deltaHist](\db)$.}{that should be covered in Section 7}
+%\BGDel{Instead of using a concrete input database, We start from a VC-Table that consists of a single tuple of variables.}{not here}
+Prior work on updating incomplete databases (e.g., \cite{fagin-86-upld,winslett-86-upldcnv,AG85}) does not support VC-tables. For our purpose, we need to be able to evaluate statements over VC-tables with possible world semantics. That is, the possible worlds of  the result of applying a statement  to a VC-table are derived by computing the statement over every possible world of the input.
+%
+For an insert $\ainsert$ we just add the concrete tuple $\tup$ with a local condition $\lcond(t) = \T$ to the input VC-table $\vcrel$.
+%
+For a delete $\delete{\cond}$, for some assignment $\varAssign$, the concrete tuple $\varAssign(\vct)$ derived from a  symbolic tuple $\vct \in \vcrel$ is deleted by the statement if the tuple's local condition evaluates to true $\varAssign(\lcond(\vct)) \models \T$ and the tuple does not fulfill condition $\cond$ ($\varAssign(\vct) \not\models \cond$). We can achieve this behavior by setting the local condition of every tuple $\vct$ to $\lcond(\vct) \land \neg \cond(\vct)$. The symbolic expression $\cond(\vct)$ is computed by substituting any reference to attribute $A$ in  $\cond$ with the symbolic value $\vct.A$.
+%
+An update $\aupdate$ can affect a tuple $\vct$ in a VC-table in one of two ways in each possible world ($\varAssign$): (i) either the update's condition evaluates to false and the values of $\varAssign(\vct)$ are not modified or (ii) the update's condition evaluates to true on $\varAssign(\vct)$ and $\pset$ is applied to the values of $\varAssign(\vct)$. We have to provision for both cases.
+
+\iftechreport{
+One way to encode this is to return two tuples for every input tuple $\vct$: one tuple with updated local condition that ensures that $\vct$ is only included if $\cond$ evaluates to false on $\vct$ and another tuple $\pset(\vct)$ with a location condition that ensures that $\pset(\vct)$ is only included if $\cond$ evaluates to true. Note that there may exist multiple input tuples $\vct$, $\vct'$, $\vct''$, \ldots which are all projected onto the same output, i.e., there exists $\vct_{out}$ such that $\vct_{out} = \pset(\vct) = \pset(\vct') = \ldots$. Tuple $\vcOf{t_{out}}$ exists in the result of the update as long as $\cond$ holds for at least one of these inputs. That is the local condition of $\vcOf{t_{out}}$ is a disjunction of conditions $\lcond(\vct) \wedge \cond(\vct)$ for any input $\vct$ where $\pset(\vct) = \vcOf{t_{out}}$. Note that we can simplify the resulting instance by evaluating constant subexpressions in symbolic expressions and by removing any tuple $\vct$ for which $\lcond(\vct) \equiv \F$.
+Observe that in the worst-case evaluating a sequence of $n$ updates over a VC-table can lead to an instances that is $2^{n-1}$ times larger than the input since we generate two output tuples for each input tuples in the worst case (if no two inputs are projected onto the same symbolic output).
+}
+\ifnottechreport{
+One option is to encode each case as a separate output tuple, but this would result in an exponential blow-up of the number of tuples since each update in a history would double the number of tuples (because it produces two output tuples for each input tuple).}
+We can avoid this exponential blow-up by introducing tuples with fresh variables to represent the updated versions of tuples and by assigning values to these new variables using the global condition.
+We show these semantics for statements below. To ensure that there are no name clashes between variables, we generate fresh variables $\{x_{\vct,A_i}\}$ to represent the value of attribute $A_i$ of the tuple produced by applying the statement to tuple $\vct$ from the input VC-table. % as values for the updated version of a tuple $\vct$.
+% We formally define updates below.
+We use $\lcond(\vcrel,\vct)$ to denote the local condition of tuple $\vct$ in relation $\vcrel$ and for convenience  define $\lcond(\vcrel,\vct) = \F$ for any $\vct \not\in \vcrel$. \BG{repeated: Furthermore, $\cond(\vct)$ for update $\update{\pset}{\cond}$ and tuple $\vct$ denotes the result of substituting references to attributes in $\cond$ with their value in $\vct$.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{defi}[Updates over VC-tables]
+  Let $\vcrel$ be a VC-table and $\schema{\vcrel} = (A_1, \ldots, A_n)$. Update statements over VC-tables are defined as shown below. % Note that for any update statement $\up$ we define $\gcond(\up(\vcrel)) = \gcond(\vcrel)$.
+Let  $\pset = (e_1, \ldots, e_n)$. Given a tuple $\vct$, we use  $\vctn$ to denote $(x_{\vct,A_1}, \ldots, x_{\vct,A_n})$.
+  \begin{align*}
+    \update{\pset}{\cond}(\vcrel)   &= \{ \vctn \mid \vct \in \vcrel \}
+    &\lcond(\update{\pset}{\cond}(\vcrel), \vctn )  &= \lcond(\vcrel,\vct)
+  \end{align*}
+  \begin{align*}
+    &\gcond(\update{\pset}{\cond}(\vcrel)) = \gcond(\vcrel) \land \bigwedge_{\vct \in \vcrel} \bigwedge_{i=1}^{n} x_{\vct,A_i} = \sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i}
+    \end{align*}
+  % \begin{align*}
+  %   % \update{\pset}{\cond}(\vcrel)           & = \{ \pset(\vct) \mid \vct \in \vcrel \} \union \{ \vct \mid \vct \in \vcrel \}                                                    \\
+  %   % \lcond(\update{\pset}{\cond}(\vcrel), \vct) & = (\lcond(\vcrel,\vct) \land \neg \cond(\vct)) \lor \bigvee_{\vct': \pset(\vct') = \vct} \lcond(\vcrel, \vct') \wedge \cond(\vct')
+  %   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % \end{align*}
+  \begin{align*}
+    \delete{\cond}(\vcrel)                & = \{ \vct \mid \vct \in \vcrel \}                                                                                                                                 &
+    \lcond(\delete{\cond}(\vcrel), \vct) &= \lcond(\vcrel, \vct) \land \neg \cond(\vct)
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \end{align*}
+  \begin{align*}
+    \ins{t}(\vcrel)                        & = \vcrel \union \{ t \}                                                                                                                                &
+\lcond(\ins{t}(\vcrel),t)  &= \T
+    & \lcond(\ins{t}(\vcrel),\vct) &= \lcond(\vcrel,\vct) \tag{for $\vct \neq t$}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % u(\rel)                                & = \{ \pset(t) \mid t \in \vcrel \} \cup \{ t \mid t \in \vcrel \}                                                                  \\
+    % \lcond(u(\rel), t)                     & = (\lcond(\vcrel,t) \wedge \neg \cond(u)[t]) \vee \bigvee_{t': \pset(t') = t} \lcond(\vcrel, t') \wedge \cond(u)[t']               \\
+    % d(\rel)                                & = \{ t \mid t \in \vcrel \}                                                                                                       \\
+    % \lcond(d(\rel), t)                     & = \lcond(\vcrel,t) \wedge \neg\cond(d)[t]                                                                                         \\\\
+    % i(\rel)                                & = \{ t \mid t \in \vcrel \} \cup \{ t \mid t \in Ins(\rel) \}                                                                     \\
+	% \lcond(i(\rel), t)                     & = \lcond(\vcrel,t) \vee t \in Ins(\rel)
+  \end{align*}\\[-9mm]
+  \begin{align*}
+        \gcond(\ins{t}(\vcrel)) = \gcond(\adelete(\vcrel)) = \gcond(\vcrel)
+  \end{align*}
+\end{defi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{defi}[Alternative Update Semantics]\label{def:alternative-update-s}
+
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \end{defi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% A global condition $\gcond(R)$ is a logical expression over the variables $\varDom$ which has to evaluate to true for an assignment to yield a possible world.
+
+% To more encode an update result compactly we introduce new variables for every result tuple $t$ of an update and then add global constraints that ensure that these new variables store the values of the tuple after an update.
+% Specifically, for an update $u$, tuple $t$ from the update's input, and attribute $A$, we add a fresh variable $x_{A,id}$ and add a conjunct $x_{A,id} = \sqlCase{\cond(t)}{\pset(t.A)}{t.A}$ to the global condition $\gcond$.
+Using these semantics, the result of a sequence of $n$ statements over a relation with $m$ attributes has the same number of tuples as the input and the number of conjuncts in the global condition is bound by $n \cdot m$. Furthermore,
+each conjunct is of size linear in the size of the expressions of the statements ($\cond$ or $\pset$).
+\iftechreport{Note that we can reduce the number of variables in an updated VC-table, by reusing variables for attributes that are not affected by an update.} For our use case we execute a sequence of statements over an instance with a single tuple. Thus, it will be convenient to use a different naming schema for variables. We use $x_{A,i}$ to denote the value of attribute $A$ of the version of this single input tuple after the $i^{th}$ update.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t]
+  \centering
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{subfigure}[b]{0.25\linewidth}
+    \footnotesize
+    \begin{tabular}{|c|c|c|l}
+        \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
+            $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee}$ & $\T$ \\ \cline{1-3}
+    \end{tabular}
+    \[\gcond = \T\]
+      \caption{Initial VC-database $\vcdbini$.}\label{fig:initial-vc-table}
+    \end{subfigure}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %  \begin{minipage}{0.45\linewidth}
+  %  \footnotesize
+  %   \centering { \bf VC-Table after first update}\\
+  %   \begin{tabular}{|c|c|c|l}
+  %      \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
+  %          $x_{Country}$ & $x_{Price}$ & $0$ & $x_{Price} \geq 40 $ \\ \cline{1-3}
+  %    $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee}$ & $\neg(x_{Price} \geq 40) $ \\ \cline{1-3}
+  %   \end{tabular}\\[4mm]
+  % \end{minipage}
+    \begin{subfigure}[b]{0.7\linewidth}
+     \centering
+    \footnotesize
+    % \centering { \bf VC-Table after second update}\\
+    % \begin{tabular}{|c|c|c|l}
+    %    \thead{Country} & \thead{Price} & \thead{ShippingFee} & \\ \cline{1-3}
+    %        $x_{Country}$ & $x_{Price}$ & $5$ & $x_{Price} \geq 40 \wedge (x_{Country}=UK \wedge x_{Price} \leq 100)$ \\ \cline{1-3}
+    %  $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee}+5$ & $\neg(x_{Price} \geq 40) \wedge (x_{Country}=UK \wedge x_{Price} \leq 100)$ \\ \cline{1-3}
+    %  $x_{Country}$ & $x_{Price}$ & $0$ & $x_{Price} \geq 40 \wedge \neg(x_{Country}=UK \wedge x_{Price} \leq 100)$\\ \cline{1-3}
+    %  $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee}$ & $\neg(x_{Price} \geq 40) \wedge \neg(x_{Country}=UK \wedge x_{Price} \leq 100)$ \\ \cline{1-3}
+    % \end{tabular}
+    % \centering { \bf Compact VC-Table with global condition after second update}\\
+        \begin{tabular}{|c|c|c|l}
+        \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
+            $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee,2}$ & $\T$ \\ \cline{1-3}
+        \end{tabular}
+        \begin{align*}
+          \gcond &\defas \gcond_1 \land \gcond_2 % (x_{Country,1} = x_{Country})\\
+                 % &\wedge (x_{Price,1} = x_{Price})\\
+                 \hspace{2cm}\gcond_1 \defas (x_{ShippingFee,1} = \sqlCase{x_{Price} \geq 50}{0}{x_{ShippingFee}})\\
+                 % & \wedge (x_{Country,2} = x_{Country,1})\\
+                 % & \wedge (x_{Price,2} = x_{Price,1})\\
+                 & \gcond_2 \defas (x_{ShippingFee,2} = \sqlCase{(x_{Country} = UK \wedge x_{Price} \leq 100)}{x_{ShippingFee,1} + 5}{x_{ShippingFee,1}})
+        \end{align*}\\[-3mm]
+      \caption{VC-table after evaluating $\history = (u_1, u_2)$.}
+   \end{subfigure}\\[-3mm]
+  \caption{Running example for evaluating updates over VC-Tables.}
+  \label{fig:running-vctb}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% The effect of an update on a symbolic instance are encoded as constraints over the variables of the instance. The VC-Table after update execution shows how the effect of the update on symbolic variables are encoded. If $\world$ can be produced by a VC-Table ($vtb$) and $\up$ is an update operation then $\worlds' =\lbrace \up(\world)\vert \world \in  \worlds \rbrace$ is also producible by another VC-Table ($vtb'$). In other word, $\worlds' = \worlds(\up(R))$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{exam}\label{ex:up-vctb}
+  %
+Continuing with \Cref{ex:pw-example}, consider the first two updates from \Cref{fig:Transitive-Transactions-Example} (we abbreviate attribute names as in previous examples): $u_1 = \update{F \gets 0}{P \geq 50}$  % with $\cond \defas Price >=40$ and $\pset \defas (ShippingFee \gets 0)$
+and $\up_2 = \update{F \gets F + 5}{C = UK \land P \leq 100}$. % $\cond \defas country = UK \land price \leq 100$ and $\pset \defas (ShippingFee \gets ShippingFee + 5$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{align*}
+% \up_2 = \update{ShippingFee \gets ShippingFee + 5}{country = UK \land price \leq 100}
+% \end{align*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+After execution of $u_1$ and $u_2$ over $\vcdbini$ shown in \Cref{fig:initial-vc-table}, we get an instance with a single tuple. Since both updates only modify attribute \texttt{ShippingFee}, all other attributes can reuse the same variable as in the input.  % (the values of these attributes are not affected in any possible world).
+The value of attribute \texttt{ShippingFee} is a new variable $x_{ShippingFee,2}$ which is constrained by the global condition that ensures that it is equal to the previous value of this attribute ($x_{ShippinFee,1}$) if the condition of $u_2$ does not hold and otherwise is the result of applying  $\pset_{\up_2}$ to $x_{ShippingFee,1}$. Furthermore, $x_{ShippingFee,1}$ is related to the value of attribute \texttt{ShippingFee} in the input in the same way using a conditional expression based on $u_1$'s condition and update expression (setting the shipping fee to $0$ if the price is at least $50$).
+% , we get an instance with two tuples. First is the result of ap plying the update to $t$ (i.e., shipping fee is updated to $0$). The local condition of this tuple is generated by substituting the value of attribute shipping fee from the input tuple $x_{ShippingFee}$ for the reference to this attribute in $\cond$. The second tuple is a copy of the input tuple and represents the case when the input does not fulfill the condition of the update. Thus, the local condition of this tuple enforces that the condition $\cond$ fails for the input tuple which is the case when $\neg (x_{Price} \geq 40)$.
+% After the applying the second update $u_2$ we get the relation shown in the middle of \Cref{fig:running-vctb}. Each of the four tuples is generated from one of the two tuples from result of $u_1$ and either represents the case when $u_2$'s condition holds on this tuple or does not hold on this tuple.
+% % where , the possible world can be generated by evaluating $(x_{Country} \leftarrow UK,x_{Price} \leftarrow 40,x_{ShippingFee} \leftarrow 5)(x_{Price}>=40)$. Since $40>=40$ evaluates to $true$. The possible world $\world'$ after executing the first update statement can be $\world'=\lbrace UK,40,0\rbrace$.
+% %After symbolic execution of the first update where $\cond:= x_{Price} >=40$, the possible world can be generated by evaluating $(x_{ID} \leftarrow 12, x_{Customer} \leftarrow 'Alex' ,x_{Country} \leftarrow 'UK',x_{Price} \leftarrow 40,x_{ShippingFee} \leftarrow 5)(x_{Price}>=40)$. As $40>=40 := true$. The possible world $\world'$ after executing the first update statement can be $\world'=\lbrace 12,'Alex','UK',40,0\rbrace$.
+% An example for how to use a global condition to encode the result compactly is shown on the bottom of \Cref{fig:running-vctb}. Here we further optimized this idea by only introducing new variables for attributes that potentially get affected by an update.
+\end{exam}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We now prove that our definition of  update semantics for VC-tables complies with possible world semantics. % That is, for
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{theo}\label{theo:vc-updates-are-possible-worlds-semantics}
+  Let $\vcdb$ be a VC-database and $\up$ a statement. We have:\\[-5mm]
+  \begin{align*}
+    \worldsOf{\up(\vcdb)} = \up(\worldsOf{\vcdb})
+  \end{align*}
+\end{theo}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ifnottechreport{
+  \begin{proofsketch}
+    Using the definitions of $\worldsOf{\vcdb}$ and $\varAssign(\vcdb)$, we demonstrate equivalence over updates, inserts, and deletes. Note that $\varAssign$ factors through expressions (conditions $\cond$ and $\pset$ for updates) which we exploit to prove that any assignment $\varAssign$ that corresponds to a possible world of the input  can be extended into an assignment $\varAssign'$ over the update's result such that: (i) $\varAssign'$ fulfills the global condition for the updated database and (ii) $\varAssign'$ assigns through the global condition to each variable appearing in tuples in this database the values from the tuple(s) produced by evaluating the update over the possible world $\varAssign(\vcdb)$. The full proof is shown in \cite{techreport}.
+  \end{proofsketch}
+}
+\iftechreport{
+\begin{proof}\BG{Still needs to be checked}
+  WLOG consider an assignment $\varAssign$ to the variables in $\Sigma$  and let $\db_{\varAssign} = \varAssign(\vcdb)$ denote the possible world corresponding to this assignment. Furthermore, observe that in both the VC-database as well as in $\db_{\varAssign}$, applying a statement $\up$ to the input database does only modify the relation $\rel$ ($\vcrel$) affected by $\up$. Thus, it is sufficient for us to reason only about this relation. We will show that $\varAssign(\up(\vcrel)) = \up(\rel_{\varAssign})$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{Insert $\up = \ins{\tup}$:}
+Note that $\gcond(\up(\vcrel)) = \gcond(\vcrel)$ and $\varAssign(\gcond(\vcrel)) = \T$ because $\rel_{\varAssign}$ is a possible world of $\vcrel$. Thus, we have $\varAssign(\gcond(\up(\vcrel))) = \T$ and $\varAssign(\up(\vcrel))$ is a possible world of $\up(\vcrel)$.
+We have $\up(\vcrel) = \vcrel \union \{ \tup \}$. Note that $\varAssign(\vcrel)$ is defined as applying $\varAssign$ to each tuple $\vct \in \vcrel$. Furthermore, by definition $\lcond(\up(\vcrel),\tup) = \T$.
+Thus, $\varAssign(\vcrel \union \{ \tup \}) = \varAssign(\vcrel) \union \{ \tup \} = \rel_{\varAssign} \cup \{ \tup \} = \up(\varAssign(\vcrel))$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{Delete $\up = \adelete$:}
+%
+For the same reason as for inserts, $\varAssign(\up(\vcrel))$ is a possible world of $\up(\vcrel)$.
+Substituting the definition of deletes, we get $\adelete(\rel_{\varAssign}) = \{ \tup \mid \tup \in \rel_{\varAssign} \land \neg \cond(\tup) \}$. For the VC-table, we get $\adelete(\vcrel) = \{ \vct \mid \vct \in \vcrel \}$ and $\lcond(\adelete(\vcrel), \vct) = \lcond(\vcrel, \vct) \land \neg \cond(\vct)$. WLOG consider a tuple $\tup \in \rel_{\varAssign}$ and a tuple $\vct \in \vcrel$ such that $\varAssign(\vct) = \tup$ and $\varAssign(\lcond(\vcrel, \vct))$. At least one such tuple $\vct$ has to exist, because otherwise $\tup$ would not exist in $\rel_{\varAssign}$. We have to show that $\varAssign(\lcond(\adelete(\vcrel), \vct))$ holds. % \Leftrightarrow \cond(\tup)$.
+Note that based on the definition of the application of an assignment to an expression, we can push $\varAssign$ through expressions, e.g., $\varAssign(e_1 \land e_2) = \varAssign(e_1) \land \varAssign(e_2)$. Thus,
+%
+\begin{align*}
+  &\varAssign(\lcond(\adelete(\vcrel), \vct))
+  = \varAssign(\lcond(\vcrel, \vct) \land \neg \cond(\vct))
+  = \varAssign(\lcond(\vcrel, \vct)) \land \varAssign(\neg \cond(\vct))\\
+  = &\T \land \neg \cond(\varAssign(\vct))
+  = \neg \cond(\varAssign(\vct))
+  = \neg \cond(\tup) = \T
+\end{align*}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{Update $\up = \aupdate$:}
+%
+Note that any tuple $\vct$ in $\up(\vcrel)$ is not in $\vcrel$ and all variables $\vct$ do not occur in any tuple, local condition, or global condition in $\vcrel$. Since these variables do not occur in $\vcrel$, any assignment $\varAssign$ such that $\varAssign(\vcrel) = \rel_{\varAssign}$ can be extended to an assignment $\varAssign'$ over $\up(\vcrel)$ by assigning values to these fresh variables. Furthermore, recall that these fresh variables are only constrained in the global condition of $\gcond(\up(\vcrel))$. We will first show that for each $\varAssign$ such that $\varAssign(\gcond(\vcrel))$ holds, there exists one and only one extension $\varAssign'$ of $\varAssign$ such that $\gcond(\varAssign'(\up(\vcrel)))$ holds. Intuitively this means that for every world in the input there exists exactly one corresponding world in the output $\up(\vcrel)$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{Unique extension of $\varAssign$:}
+Note that for each tuple $\vct \in rel$, $\up(\vcrel)$ contains a tuple $\vctn = (x_{\vct,A_1}, \ldots, x_{\vct,A_n})$ where each $x_{\vct,A_i}$ is a fresh variable and $\lcond(\up(\vcrel),\vctn) = \lcond(\up(\vcrel),\vct)$. Recall that
+
+\begin{align}
+  \label{}
+\gcond(\update{\pset}{\cond}(\vcrel)) = \gcond(\vcrel) \land \bigwedge_{\vct \in \vcrel} \bigwedge_{i=1}^{n} x_{\vct,A_i} = \sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i}
+\end{align}
+
+Consider an assignment $\varAssign$ for $\vcrel$ such that $\varAssign(\gcond(\vcrel))$ holds. Since $\gcond(\update{\pset}{\cond}(\vcrel))$ is a conjunction of $\varAssign(\gcond(\vcrel))$ with constraints for each tuple $\vct \in \vcrel$, to prove our claim, it suffices to show that for any such $\vct$ and attribute $A_i$, there exist a unique assignment of $x_{\vct,A_i}$ that satisfies $x_{\vct,A_i} = \sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i}$ given $\varAssign$. As explained above we can push $\varAssign$ through expressions. Thus,
+
+\[
+  \sqlCase{\cond(\vct)}{e_i(\vct)}{\varAssign(\vct.A_i)} = \varAssign(\sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i})
+\]
+
+Note that $\varAssign(\sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i})$ is a concrete value. It follows that we can only make the equality true by setting $x_{\vct,A_i} = \varAssign(\sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i})$. Since there is a unique assignment for each $\vct.A_i$ for all $\vct \in \vcrel$ and attribute $A_i$ such that the corresponding conjunct in $\gcond(\up(\vcrel))$ evaluates to true, there exists one and only one extension $\varAssign'$ of $\varAssign$ that satisfies $\gcond(\up(\vcrel))$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{$\varAssign'$ correctly models update semantics:}
+Consider a possible world $\db_{\varAssign}$ of $\vcrel$ and let $\varAssign'$ be as established above. Consider a tuple $\vct$ and let $\tup = \varAssign(\vct)$ and $\tup_{up} = \up(\varAssign(\tup))$. Note that $\lcond(\vcrel,\vct) = \lcond(\up(\vcrel,\up(\vct)))$. Thus, $\varAssign(\lcond(\vcrel,\vct)) = \varAssign(\lcond(\up(\vcrel,\up(\vct))))$, i.e., $\vct$ exists iff $\up(\vct)$ exists.
+We have to consider two cases. Either (i) $\cond(\tup)$ and $\tup_{up} = \pset(\tup)$ or (ii) $\cond(\tup)$ evaluates to false and $\tup_{up} = \tup$.
+
+\proofpar{(i) $\cond(\tup)$ holds:}
+WLOG consider attribute $A_i$. In this case $\up(\vct).A_i = \varAssign(\sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i})$ evaluates to $e_i(\varAssign(\vct)) = e_i(\tup)$ which according to the definition of updates is equal to $\tup_{up}.A_i$. Thus, $\tup_{up} = \varAssign'(\up(\vct))$.
+
+\proofpar{(ii) $\cond(\tup)$ does not hold:}
+WLOG consider attribute $A_i$. In this case $\up(\vct).A_i = \varAssign(\sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i})$ evaluates to $\varAssign(\vct.A_i) = \tup.A_i$ which according to the definition of updates is equal to $\tup_{up}.A_i$. Thus, $\tup_{up} = \varAssign'(\up(\vct))$.
+
+Since we have shown that for every tuple $\tup_{up}$ we have $\tup_{up} \in \up(\varAssign(\vcrel))$ iff $\tup_{up} \in \varAssign'(\up(\vcrel))$ and $\vcrel_{\varAssign'}$ is the unique world from $\worldsOf{\up(\vcrel)}$ corresponding to $\vcrel_{\varAssign}$, we have shown that $\worldsOf{\up(\vcrel)} = \up(\worldsOf{\vcrel})$.
+
+% Note that to simplify notation we have used $x_i$ instead of $x_{\vct,A_i}$.
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% we can set these variables to any value. To prove the claim, we are only interested in assignments that set these variables such that $\varAssign(\gcond(\up(\vcrel)))$ evaluates to true, i.e., $\varAssign(\gcond(\up(\vcrel)))$ is in $\worldsOf{\up(\vcrel)}$. Thus, from now on we can assume that $\varAssign(\gcond(\up(\vcrel)))$ holds.
+
+% Since $\gcond(\up(\vcrel))$.
+
+% Since we started with the assumption that $\varAssign(\gcond(\up($
+
+% Based on the semantics of variable assignment over a VC-tables, it holds that $\{ \varAssign(\vct) \mid \vct \in \vcrel \land \varAssign(\lcond(\vcrel, \vct))\} = \vcrel_{\varAssign}$. That is, there has to exist a non-empty set of tuples $\{ \vct \mid \vct \in \vcrel \land \varAssign(\lcond(\vcrel,\vct)) \land \varAssign(\vct)  = \tup \}$ for every $\tup \in \rel_{\varAssign}$. We will now show that $\up(\rel_{\varAssign}) = \varAssign(\up(\vcrel))$.
+
+
+
+% We have to distinguish two cases: either (1) $\cond(\tup)$ evaluates to true then $\pset(\tup)$ is $\up(\rel_{\varAssign})$ or (2) $\cond(\tup)$ evaluates to false, then $\tup$ is in $\rel_{\varAssign}$.
+
+% $u(D)$ creates two cases for every tuple $s \in D$.
+
+% \proofpar{Case 1: $\cond(s)$ is true}, this is sufficient for $\pset(s)$ to be included. $\pset(s)$ is included because the second part of the disjunction in $\lcond(u(\db), \pset(s))$ is true. Given $\pset(s)$ is $t$, $s$ should be substituted for $t'$ as it is trivially the assignment that makes $Set(t') = t$ hold. It is supposed by the case that $\cond(u)[s]$ is already true, and $s$ exists in $\db$.
+
+% \proofpar{Case 2: $\cond(s)$ is false}, this is sufficient for $s$ to be included. The first part of the disjunction $\lcond(u(\db), s)$ is true because $\lcond(\db, s)$ is true and $\neg\cond(u)[s]$ is already supposed to be true in the case.
+
+% With $\cond(s)$ being sufficient to include $Set(s)$ and $\neg\cond(s)$ sufficient to include $s$, $u(\db)$ is effectively $\{ \pset(s) \mid s \in \db \wedge \cond(s) \} \cup \{ s \mid s \in D \wedge \neg\cond(s) \}$. According to the semantics of variable assignment (in \Cref{def:vcdb-worlds}), $\varAssign(u(\db) = \{ \pset(\varAssign(s)) \mid s \in \db \wedge \cond(\varAssign(s)) \} \cup \{ \varAssign(s) \mid s \in \db \wedge \neg\cond(s) \}$. Having established that every $\varAssign(s)$ maps to some $t$ in $\db_{\varAssign}$, it can be seen that $\varAssign(u(\db)) = \{ \pset(t) \mid t \in \db_{\varAssign} \wedge \cond(t) \} \cup \{ t \mid t \in \db_{\varAssign} \wedge \neg\cond(t) \} = u(\db_{\varAssign})$.
+\end{proof}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+}
+
+Note that by induction, \Cref{theo:vc-updates-are-possible-worlds-semantics} implies that evaluating a history $\history$ over a  VC-database also has possible world semantics.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Computing Slices with Symbolic Execution}\label{sec:symbolic-exe}
+
+To compute a slice for a historical what-if query $\hwhatif = (\history, \deltaHist, \db)$  % $\depOver(\history, \deltaHist)$  for a modification $\deltaHist$ and history $\history$
+where $\history$ consists of tuple independent statements only,
+we create a VC-database $\vcdbini$ with a single tuple with fresh variables for each relation in the database's schema.
+Even though they are tuple independent, we do not consider inserts of the form $\ainsert$ here, because, as we will show in \Cref{sec:optim-reen-hist}, we can split a reenactment query for a history with such inserts into a union of two queries --- one that is the reenactment query for the history restricted to updates and deletes and a second one that only operates on tuples inserted by inserts $\ainsert$ from the history. Since the second query only operates on an instance of size at most $\card{\history}$, its cost is too low to warrant spending time on slicing it.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Compressing the Input Database}
+\label{sec:compr-input-datab}
+
+Optionally, we compress the input database $\db$ into a set of range constraints that restrict the variables of the single tuple in $\vcdbini$. For that, we decide on a number of groups and for each table select an attribute to group on. We then compute the minimum and maximum values of each non-group-by attribute $A$ for each group and use them to constrain the values of $A$ in this group. For each group we then generate a conjunction of these range constraints for each attribute. The  disjunction of the constraints generated for the groups, which we denote as $\adbconstr$, is then added to the global condition. Note that every tuple from a table of the database $\db$ corresponds to an assignment of the variables from $\vcdbini$ to the constants of the tuple that fulfills the condition. For attributes with unordered data types, we just omit the range condition for this attribute.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{exam}[Compressing Databases]\label{ex:compressing-databases}
+Let us compress the instance from \Cref{fig:running-example-instance}  into two tuples by grouping on \texttt{Country}. We get the following constraint that we add to the global condition to constrain the worlds of $\vcdbini$. Here, we omit the constraint for the name attribute and abbreviate attribute names as in previous examples.
+%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    \adbconstr  \defas &(x_{C} = UK \land x_{ID} \in \{11,12\} \land
+    % x_{Customer} \geq Alex \land x_{Customer} \leq Susan \land
+    x_{P} \in [20,50] \land
+    x_{F} = 5)\\
+    \lor &(x_{C} = US \land x_{ID} \in \{13,14\}
+          % x_{Customer} \geq Jack \land x_{Customer} \leq Mark \land
+           \land
+          x_{P} \in [30,60] \land
+          x_{F} \in [3,4])
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For instance, the first two tuples (group \texttt{UK}) get compressed into one conjunction of range constraints. Since the smallest (greatest) price in this group is $20$ ($50$), the range constraint for $x_{P}$ is $x_{P}  \in [20,50]$.
+\end{exam}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t]
+  \centering
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{1\linewidth}
+    \begin{minipage}{0.3 \textwidth}
+      \begin{tabular}{|c|c|c|l}
+        \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
+        $x_{C}$ & $x_{P}$ & $x_{F,2'}$ & $\T$ \\ \cline{1-3}
+      \end{tabular}
+    \end{minipage}
+    \begin{minipage}{0.69 \textwidth}
+      \begin{align*}
+        \gcond' &= \gcond_{1'} \land \gcond_{2'} \land \adbconstr
+                 \hspace{2cm}\gcond_{1'} = (x_{F,1'} = \sqlCase{x_{P} \geq 60}{0}{x_{F}})\\
+               & \gcond_{2'} = (x_{F,2'} = \sqlCase{x_{C} = UK \wedge x_{P} \leq 100}{x_{F,1'} + 5}{x_{F,1'}})
+      \end{align*}
+    \end{minipage}\\[-2mm]
+    \caption{VC-database $\ahmod(\vcdbini)$}\label{fig:vc-database-ahmod-vcdbin}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{subfigure}{0.35\linewidth}
+    \begin{tabular}{|c|c|c|l}
+      \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
+      $x_{C}$ & $x_{P}$ & $x_{F,1''}$ & $\T$ \\ \cline{1-3}
+    \end{tabular}
+    \begin{align*}
+      \gcond'' &= \adbconstr \land x_{F,1''} = \sqlCase{x_{P} \geq 50}{0}{x_{F}}
+    \end{align*}\\[-10mm]
+    \caption{VC-database $\hislice{\{1\}}(\vcdbini)$}\label{fig:vc-database-hislice-histo}
+\end{subfigure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\hspace{2cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{subfigure}{0.35\linewidth}
+    \begin{tabular}{|c|c|c|l}
+      \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
+      $x_{C}$ & $x_{P}$ & $x_{F,2'}$ & $\T$ \\ \cline{1-3}
+    \end{tabular}
+    \begin{align*}
+      \gcond''' &= \adbconstr \land
+                x_{F,1'''} = \sqlCase{x_{P} \geq 60}{0}{x_{F}}
+    \end{align*}\\[-10mm]
+    %%%%%%%%%%
+    \caption{VC-database $\hisliceOf{\ahmod}{\{1\}}$}\label{fig:vc-database-hisliceof-ahm}
+  \end{subfigure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-4mm}
+  \caption{VC-database instances for our slicing example. Attributes names are abbreviated as: (C)ounty, (P)rice, Shipping(F)ee.}\label{fig:vc-database-instances-for}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Computing Slices}
+\label{sec:test-depend-slic}
+
+To determine whether a given set of indices $\idxs$ is a slice for $\hwhatif$, we have to test whether:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  \label{eq:slice-original-cond}
+\iDiff{\history(\db)}{\history[\deltaHist](\db)} = \iDiff{\hslice{\history}{\idxs}(\db)}{\hslice{\history[\deltaHist]}{\idxs}(\db)}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Recall that we restrict program slicing to tuple independent statements (\Cref{def:tuple-independence}). That is, the result produced by such a statement for an input tuple only depends on the values of this tuple and is independent of what other tuples exist in the input. Thus, if both deltas return the same result for every input tuple, then the two deltas are guaranteed to be equal.
+% \BG{Argue why this is not a big loss.}
+Thus,  $\idxs$ is a slice if for all input tuples from $\db$, both deltas return the same result (see \Cref{eq:tuple-level-slice-test} below). Note that this is only a sufficient, but not necessary condition. To see why this is the case, consider two input tuples $t_1$ and $t_2$ and assume that the delta of the results of the full histories returns $s_1$ for $t_1$ and $s_2$ for $t_2$, but the delta of the results of the sliced histories returns $s_2$ for $t_1$ and $s_1$ for $t_2$. The final result is the same, even though the results for the individual input tuples is different.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  \label{eq:tuple-level-slice-test}
+  \begin{split}
+    \forall t \in \db:\,\, &\iDiff{\history(\{t\})}{\history[\deltaHist](\{t\})}\\ = &\iDiff{\hslice{\history}{\idxs}(\{t\})}{\hslice{\history[\deltaHist]}{\idxs}(\{t\})}
+  \end{split}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+For each $t \in \db$, by construction of $\vcdbini$ (the VC-database we use as input for program slicing), there exists a world  $\db_{t} \in \worldsOf{\vcdbini}$ such that $\db_{t} = \{t\}$. Note that since $\vcdbini$ is generated by compressing the input database into a set of range constraints, some worlds may not correspond to a tuple from $\db$. However, our argument only requires that for each $t \in \db$ there exists a world in $\vcdbini$ which implies that if the condition from \Cref{eq:single-inst-slice-test} evaluates to true for every such $\db_{t}$, then \Cref{eq:tuple-level-slice-test} holds. Thus, the formula shown below is a sufficient condition for $\idxs$ to be a slice.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  \label{eq:single-inst-slice-test}
+  \begin{split}
+    \forall \db_{t} \in \worldsOf{\vcdbini}:\,\, &\,\,\,\iDiff{\history(\db_{t})}{\history[\deltaHist](\db_{t})}\\ = &\,\,\,\iDiff{\hslice{\history}{\idxs}(\db_{t})}{\hslice{\history[\deltaHist]}{\idxs}(\db_{t})}
+  \end{split}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+For an input tuple $t$, based on the definition of symmetric difference, $\iDiff{\history(\db_{t})}{\history[\deltaHist](\db_{t})}$ is equal to $\iDiff{\hslice{\history}{\idxs}(\db_{t})}{\hslice{\history[\deltaHist]}{\idxs}(\db_{t})}$ if either (i) $\history(\db_{t}) = \history[\deltaHist](\db_{t})$ and $\hslice{\history}{\idxs}(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t})$ which means that both deltas return the empty set for $\db_{t}$ or (ii) both deltas return the same set of tuples over $\db_{t}$ which is the case when $\history(\db_{t}) \neq \history[\deltaHist](\db_{t})$ and one of the conditions shown below holds.
+\begin{itemize}
+\item (a) $\history(\db_{t}) = \hslice{\history}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) =  \hslice{\history[\deltaHist]}{\idxs}(\db_{t})$
+\item (b)
+$\history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) = \hslice{\history}{\idxs}(\db_{t})$
+\end{itemize}
+%
+ Thus, \Cref{eq:single-inst-slice-test} is equivalent to:
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  \label{eq:slice-test-cases}
+  \begin{split}
+    &\forall \db_{t} \in \worldsOf{\vcdbini}:\\
+    &\left(\history(\db_{t}) = \history[\deltaHist](\db_{t}) \land \hslice{\history}{\idxs}(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t})\right)   \\
+    \lor &(\history(\db_{t}) \neq \history[\deltaHist](\db_{t}) \land\\
+    &\hspace{1cm}(
+           \history(\db_{t}) = \hslice{\history}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) =  \hslice{\history[\deltaHist]}{\idxs}(\db_{t})  \\
+  &\hspace{0.7cm}\lor \history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) = \hslice{\history}{\idxs}(\db_{t})))
+  \end{split}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \iftechreport{
+%   This equation can be further simplified by observing that
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   \begin{align*}
+%     &(\history(\db_{t}) = \hslice{\history}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) =  \hslice{\history[\deltaHist]}{\idxs}(\db_{t}))\\
+%     \lor &(\history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) = \hslice{\history}{\idxs}(\db_{t})
+%   \end{align*}
+%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   and
+%   \[
+%     \history(\db_{t}) = \history[\deltaHist](\db_{t})
+%   \]
+%   together imply $\hslice{\history}{\idxs}(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}))$. Thus, we can drop the condition $\history(\db_{t}) \neq \history[\deltaHist](\db_{t})$ and get:
+% %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{align}
+%   \label{eq:slice-test-cases-simple}
+%   &\forall \db_{t} \in \worldsOf{\vcdbini}: \notag\\
+%   &(\history(\db_{t}) = \history[\deltaHist](\db_{t}) \land \hslice{\history}{\idxs}(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}))  \notag \\
+%     \lor &(\history(\db_{t}) = \hslice{\history}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) =  \hslice{\history[\deltaHist]}{\idxs}(\db_{t})) \notag \\
+%   \lor &(\history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) = \hslice{\history}{\idxs}(\db_{t}))
+%            )
+% \end{align}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% }
+%
+
+Based on the semantics of updates over VC-tables, the result of a history over a single tuple instance $\vcdbini$ is an instance with a single tuple whose local condition governs the existence of the tuple in any particular world $\db_{t}$. For a history $\history$ let us denote this tuple as $\singtupH{\history}$. Consider the valuation $\varAssign_{t}$ generating $\db_{t}$. Then for two histories $\history$ and $\history'$, the condition $\history(\db_{t}) = \history'(\db_{t})$ is equivalent to the equation shown below as long as we appropriately rename variables such that the two VC-databases do not share any variables except for the variables from $\vcdbini$. % The top part of this encodes the case where both histories return a tuple (the local conditions of both tuples are true under assignment $\varAssign_t$ and returned tuples are equal. The bottom part of the equation is the case where both histories do not return any result (both local conditions are false).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  \label{eq:db-equals-symbolic}
+  \begin{split}
+      &(\varAssign_{t}(\singtupH{\history}) = \varAssign_{t}(\singtupH{\history'}) \land  \lcond(\varAssign_{t}(\singtupH{\history})) \land \lcond(\varAssign_{t}(\singtupH{\history'})))\\
+  \vee &(\neg \lcond(\varAssign_{t}(\singtupH{\history})) \land \neg \lcond(\varAssign_{t}(\singtupH{\history'})))
+  \end{split}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+Intuitively, this condition means that for the two histories to return the same result over $\db_{t}$, either (i) they both return the same result tuple (equal values and the local condition of the result tuple evaluates to true for both histories) or (ii) they both return the empty set (the local condition evaluates to false for both histories).
+
+If we substitute this equation into \Cref{eq:slice-test-cases}, then we get a universally quantified first order sentence (a formula without free variables) over the variables from the VC-database $\vcdbini$. We will use $\aslicetest$ to denote the resulting formula (recall that $\adbconstr$ denotes the constraints encoding the compressed database). We can now use a constraint solver to determine whether $\aslicetest$ is true by checking that its negation is unsatisfiable. We use an MILP-solver for this purpose. The translation rules for transforming a logical condition into an MILP program are mostly well-known rules applied in linear programming and many have been used in related work (e.g.,~\cite{MeliouS12}). We refer the interested reader to \cite{techreport} for the details.
+  % and discuss in \Cref{sec:sym-lin} how to translate formulas for slice testing into MILP-programs.
+  We are now ready to state the main result of this section.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{theo}[Slicing Condition]\label{theo:slicing-condition-co}
+Let $\hwhatif = (\history, \db, \deltaHist)$ be a historical what-if query where $\history$ is a history with $n$ statements (updates and deletes). If $\aslicetest$ is true, then $\idxs$ is a slice for $\hwhatif$.
+\end{theo}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ifnottechreport{
+  \begin{proofsketch}
+We first prove that \Cref{eq:tuple-level-slice-test}  implies \Cref{eq:slice-original-cond} for histories consisting of updates and deletes which are both tuple independent. This follows from the definition of tuple independence (\Cref{def:tuple-independence}). \Cref{eq:tuple-level-slice-test} is implied by \Cref{eq:single-inst-slice-test}, because the  worlds of $\vcdbini$ encode a superset of $\db$ by construction and \Cref{theo:vc-updates-are-possible-worlds-semantics} (updates have possible world semantics). The equivalence of \Cref{eq:slice-test-cases} and \Cref{eq:single-inst-slice-test} follows from the definition of database deltas. Finally, the equivalence of $\history(\db_{t}) = \history'(\db_{t})$ and \Cref{eq:db-equals-symbolic} follows from \Cref{theo:vc-updates-are-possible-worlds-semantics}.
+  \end{proofsketch}
+}
+\iftechreport{
+\input{ps-proof.tex}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{exam}[Testing Slice Candidates]\label{ex:testing-slice-candidates}
+Consider our running example database (\Cref{fig:running-example-instance}) and the history $\history = \{u_1,u_2\}$ from \Cref{ex:up-vctb} and let ${u_1}' = \update{ShippingFee \gets 0}{Price \geq 60}$. Let $\vcdbini$ be as shown in \Cref{fig:running-vctb}, but with $\gcond = \gcond_1\land \gcond_2 \land \adbconstr$ where $\adbconstr$ is the database constraint from \Cref{ex:compressing-databases}. Furthermore, consider a \abbrHW $\hwhatif = (\history, \deltaHist)$ for $\deltaHist = ( u_1 \gets u_1' )$ (higher price requirements for waiving shipping fees). To test whether $\idxs = \{1\}$ is a slice, we first have to construct $\slicetest{\hwhatif}{\idxs}{\adbconstr}$ for which we have to evaluate $\history$, $\ahmod$, $\hislice{\{1\}}$, and $\hisliceOf{\ahmod}{\{1\}}$ over $\vcdbini$. The results are shown in \Cref{fig:vc-database-instances-for}. We use $\gcond$ to denote the global condition of $\history(\vcdbini)$, $\gcond'$ for $\ahmod(\vcdbini)$, $\gcond''$ for $\hislice{\{1\}}(\vcdbini)$, and $\gcond'''$ for $\hisliceOf{\ahmod}{\{1\}}(\vcdbini)$.
+  Since the local condition of the result tuple is true in the result of both histories and their slices, we do not have to test whether the local condition is true or false as done in \Cref{eq:db-equals-symbolic} and can instead directly test equality of two history's result tuples to test whether the histories return the same result. Furthermore, observe that all four histories only modify attribute \texttt{ShippingFee}. Thus, it is sufficient to compare tuples on attribute \texttt{ShippingFee} to determine whether the result tuples are the same. Applying these simplifications, $\slicetest{\hwhatif}{\idxs}{\adbconstr}$ is equal to:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    \forall x_{I}, x_{P}, x_{F}:\,\,\, &\adbconstr \land \gcond \land \gcond' \land \gcond'' \land \gcond''' \land\\
+                                 &\hspace{2mm}(
+                                   (x_{F,2} = x_{F,2'} \land x_{F,1''} = x_{F,1'''})\\
+                                 &\lor (x_{F,2} \neq x_{F,2'} \land ((x_{F,2} = x_{F,1''} \land x_{F,2'} = x_{F,1'''})\\
+                                 &\hspace{2.1cm}\vee (x_{F,2} = x_{F,1'''} \land x_{F,2'} = x_{F,1''})))
+      )
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This formula is not true for all possible input tuples. For instance, if the shipping fee is $x_{F} = 55$ and country is $x_{C} = UK$, then the final shipping fee for $\history$ ($x_{F,2}$) is \$5 and for $\ahmod$ is \$50. Thus, $\history(\varAssign(\vcdbini)) \neq \ahmod(\varAssign(\vcdbini))$. Since the slice candidate $\idxs = \{1\}$ does not apply the second update, we get \$0 (for $\hislice{\idxs}$) and \$45 (for $\hisliceOf{\ahmod}{\idxs}$). Thus, the slice candidate may produce a  result for this database that is different to the one returned by $\hwhatif$ which means that $\idxs$ is not a valid slice.
+\end{exam}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Our Slicing Algorithm}
+\label{sec:finding-slice}
+%
+Given a set of indexes $\idxs$, we now have a sound method for testing whether $\idxs$ is a slice for a historical what-if query $\hwhatif$. A brute force approach for computing a slice would be to test all possible subsets of indexes to determine the smallest possible slice. Note that even this method is not guaranteed to return a minimal slice, because the test we have devised is not complete. The disadvantage of the brute force approach is that there is an exponential number of candidates (all subsets of the histories). We propose instead a greedy algorithm that considers a linear number of candidates. The algorithm starts with a trivial slice $\idxs_{0} = [1,n]$ where $n$ is the number of updates in the history (recall from \Cref{sec:filter} that we can pad histories such that both $\history$ and $\ahmod$ have $n$ statements). It then iterates for $n$ steps. In each iteration, we remove index $i$ from the current slice $\idxs_{i}$ and test whether $\idxs_{i} - \{i\}$ is still a slice. If yes, then we set $\idxs_{i+1} = \idxs_{i} - \{i\}$. Otherwise, $\idxs_{i+1} = \idxs_{i}$. The final result produced by this algorithm is $\idxs_{n}$ which is guaranteed to be a valid slice.
+\BG{Add pseudocode for the algorithm}
+\BG{Adapt example}
+
+
+In~\cite{techreport}, we present an additional optimized version of the slicing condition $\aslicetest$  that only works for single modifications.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsubsection{\revm{Evaluating the Update History}}\label{sec:eval-update-hist}
+
+
+% \BG{Only deal with single relations} We then independently evaluate $\history$ and $\ahmod$ over this instance and store the intermediate result after each update. We use  $\vcdbver{\history,i}$ ($\vcdbver{\history[\deltaHist], i}$) to denote the result of evaluating the first $i$ updates from $\history$ ($\history[\deltaHist]$) over $\vcdbini$. Note that in this section we will only consider histories consisting of update and delete statements. We will demonstrate in \Cref{sec:optim-reen-hist} how to handle insert statements and motivate why there is no need to consider insert statements during program slicing.
+
+
+
+% Based on the VC-databases created by this step we then determine a static slice. We introduce a condition called \textit{dependency} that can be checked over the VC-database and determines whether an update's result depends on the modification $\deltaHist$. As we will demonstrate, the set of dependent updates from $\history$ ($\history(\deltaHist)$) is a static slice for the historical what-if query $\hwhatif$.
+
+% Observe that a statement can be excluded from reenactment if none of the tuples affected by the statement will be in the difference between $\history$ and $\history[\deltaHist]$. Note that any tuple in the difference has to be affected by at least one of the statements modified by a modification $\modi \in \deltaHist$, because a tuple that is not affected by any statement from $\deltaHist$ will be the same in $\history$ and $\history[\deltaHist]$ and, thus, cannot be in the result of $\hwhatif$.
+
+% Conversely, an update has to be included in a static slice if there exists at least one database $\db$ that contains a tuple which is affected by the statement and which is in the result of $\hwhatif$ over $\db$.
+
+% % Then to test for an update $u_i$ whether it should be included in $\depOver(\history, \deltaHist)$ we need to check whether there exists a database $\db$ where $u_i$ is in $\depUp(\history, \deltaHist, \db)$.
+% % which implies that there exists a tuple in $t \in \db$
+% %Recall that $u_i \in \depUp(\history, \deltaHist, \db)$
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{defi}
+% Let $\history$ be a history and $\history[\deltaHist]$ be a modified history, $t$ be a tuple in the relation, and $u_{old}$ be an unmodified update and $u_{new}$ the corresponding modified update for any modification $m \in \deltaHist$. Let $t_i$ be the tuple at $\history_i(t)$ ($\ahmod_i(t)$). Let $\pos(u)$ be the position of update $u$ in $\history$. We define the following condition for exclusion from a non-minimal slice of the history:
+% \begin{align*}
+% \exclusion{H}{\deltaHist}{u_i} =\ &\forall m \in \deltaHist \neg\exists \varAssign \exists t \in \db_{\history[\deltaHist], \pos(u_m)}\\
+% &(\cond_{u_{orig}}(\varAssign(t_{\pos({u_{m}})})) \land \cond_{u_{i}}(\varAssign(t_{i-1})))\\
+% &\lor (\cond_{u_{new}}(\varAssign(t_{\pos({u_{m}})})) \land \cond_{u_{i}}(\varAssign(t_{i-1})))
+% \end{align*}
+% \end{defi}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% We use VC-Tables for symbolic execution of update operations and determining dependency of updates on  modifications by the historical what-if queries. Independent updates can be excluded from reenactment as their output is the same in $\history$ and $\history[\deltaHist]$.
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %symbolic execution of an update \FC{Beginning of sentence?}
+% %An update $u$ over a VC-table results in two tuples in the resulting VC-table for every tuple. One tuple is the result of $u$ updating the original tuple, while the other tuple is the unmodified version. For the modified tuple, $u$ applies $\pset_u$ over the tuple conjuncts $\cond_u$ with the previous $\cond_R(t)$, therefore $\cond=\cond_u \wedge \cond_R(t)$. For the unmodified tuple, it retains the variables and values as before, and conjuncts $\neg\cond_u$ with the previous $\cond_R(t)$, i.e. $\cond=\neg\cond_u \wedge \cond_R(t)$.
+
+
+% We can determine dependent updates in the history by generating VC-tables for each $u$ and $ u'$ whereas $m = u \gets u'$ and $m \in \deltaHist$. Then, we apply symbolic execution on these VC-tables for the remaining updates in the history. For each examined update ($u_i$), if we can generate a possible word for a tuple that is modified either by both $u_i$ and $u$ or $u_i$ and $u'$, $u_i$ is a dependent update. Since, a possible world shows there is a possibility that a tuple was modified by the historical what-if query and the examined update which must be considered in the answer of the the historical what-if query.
+
+
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{exam}
+% In order to detect dependent update in \Cref{fig:running-vctb}, we examine generating a possible world for a tuple in the VC-Table that is modified by both the first ($u_1$) and the second update ($u_2$) in the history in \Cref{fig:Transitive-Transactions-Example}.
+%  After symbolic execution of the second update where $\cond:= x_{Country}=UK \wedge x_{Price} <=100$, there are four tuples in the VC-Table. The first tuple which has the conditional function
+%  $x_{Price} >=40 \wedge (x_{Country}=UK \wedge x_{Price} <=100)$ representing it is modified by both updates. The possible world can be generated by evaluating $(x_{Country} \leftarrow UK,x_{Price} \leftarrow 40,x_{ShippingFee} \leftarrow 5)(x_{Price}>=40 \wedge (x_{Country}=UK \wedge x_{Price} <=100))$. As $40>=40 \wedge (UK=UK \wedge 40 <=100):= true$. The possible world $\world''$ after executing the first and second update statements can be $\world''=\lbrace UK,40,5\rbrace$. So, the second update is dependent on the first update as it is possible that  a tuple is modified by both updates.
+% \end{exam}
+% \FC{Update example to use global conditions?}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{theo}
+% %We can detect dependent updates by using symbolic execution for updates in the history and checking for a possible world that can be generated for a tuple in the VC-Table that is modified by both $\deltaHist$ and the examined update in the history.
+% Consider a historical what-if query $\hwhatif = \ahwhatif$ with a single modification $\deltaHist = \{ m\}$ for $m = \up_1 \gets \up_1'$ over history $\history= u_1,\ldots,u_{n}$.
+% %The possible worlds for $vtb$ is $\worlds$ and $vtb'$ is $\worlds'$.
+% %$\pset(\cond_R(t)) = true$. It means the condition $\cond_R$ produced from $\pset$ must be $true$ to be a possible world $\world \in \worlds$.
+% The set $\idxs = \{ i \mid \neg \exclusion{\history}{\deltaHist}{u_i} \}$ is a slice for $\hwhatif$.
+% % $u_i$ may be safely excluded from any slice over $H(\worlds)$
+% % if the following condition holds:\\
+% % \resizebox{1\linewidth}{!}{
+% % \begin{minipage}{1.0\linewidth}
+% % \begin{align*}
+% %   \exclusion{H}{\deltaHist}{u_i}
+% % \end{align*}
+% % \end{minipage}
+% % }
+% %$\,$\\[-8mm]
+% \end{theo}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \ifnottechreport{
+%   \begin{proofsketch}
+%     We prove this theorem by contradiction, showing that it is not possible for $\zeta$ to be true over a dependent update. For the full proof see \cite{techreport}.
+%   \end{proofsketch}
+% }
+% \iftechreport{
+%   \begin{proof}
+
+% \newcommand{\iex}{\idxs_{excl}}
+% \newcommand{\iin}{\idxs_{in}}
+% \newcommand{\iexi}[1]{\idxs_{excl,#1}}
+% \newcommand{\iini}[1]{\idxs_{in,#1}}
+% \newcommand{\dslicei}[1]{\Delta_{#1}}
+
+%     % We prove it by contradiction. A historical what-if query with a single modification $m = \xid.u \gets u'$, suppose there is a tuple $t \in \db$ and it does not satisfy the condition $\theta(u) \vee \theta(u')$ but it is in the result of the historical what-if query $\qResultDiff{\query}{\ract{\history}}{\ract{\history[\deltaHist]}}$. In this case, it can not be modified by either $u$ or $u'$ since it does not meet the condition of any of these updates. So, $t$ would be same in the result of $\ract{\history}$ and $\ract{\history[\deltaHist]}$ and it can not be in the result of $\qResultDiff{\query}{\ract{\history}}{\ract{\history[\deltaHist]}}$ so we can exclude this tuple and filter the input to $\ract{\history}$ and $\ract{\history[\deltaHist]}$ and
+%   Consider a history $\history = (u_1, \ldots, u_n)$, set of modifications $\deltaHist = \{m\}$ for $m = u_1 \gets u_1'$, and historical what-if query $\hwhatif = (\history, \db, \deltaHist)$. Let $\idxs_{in} = \{ \upPos(u_i) \mid \neg \exclusion{\history}{\deltaHist}{u_i} \}$ and $\iex = \{  \upPos(u_i) \mid \exclusion{\history}{\deltaHist}{u_i} \}$. We have to prove that $\idxs_{in}$ is a slice for $\hwhatif$. In the following let $\iexi{i}$ denote the first $i$ positions from $\iex$ and $\iini{i} = [1,n] - \iexi{i}$, i.e., from the histories all updates from $\iexi{i}$. We prove the theorem by induction over $i$. In the following we use $\Delta$ to denote $\iDiff{\history(\db)}{\ahmod(\db)}$ and $\dslicei{i}$ to denote $\iDiff{\hslice{\history}{\iini{i}}(\db)}{\hslice{\ahmod}{\iini{i}}(\db)}$.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \proofpar{Base case:}
+% Consider $\iexi{1} = {j}$ for some $j \in [1,n]$. To prove that $\iini{1}$ is a slice, we have to show that $\Delta = \dslicei{1}$. For sake of contradiction assume that $\Delta \neq \dslicei{1}$. Then there has to exist a tuple $\tup$ such that (i) $\tup \in \Delta \land \tup \not\in \dslicei{1}$ or (ii) $\tup \not\in \Delta \land \tup \in \dslicei{1}$.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \proofpar{$\tup \in \Delta \land \tup \not\in \dslicei{1}$:}
+% If $\tup \in \Delta$ then either $\tup \in \history(\db) \land \tup \not\in \ahmod(\db)$ or $\tup \not\in \history(\db) \land \tup \in \ahmod(\db)$. Since these two cases are symmetric, WLOG assume that $\tup \in \history(\db) \land \tup \not\in \ahmod(\db)$. It follows that $\exists \tup_{1} \in \db$ such that $\history(\tup_1) = \tup$ and $\neg \exists \tup_{1}' \in \db$ such that $\ahmod(\tup_{1}') = \tup$. Specifically, $\ahmod(\tup_{1}') \neq \tup$. Now let $\tup_i = \hslice{\history}{i}(\tup_1)$ and $\tup_i'= \hslice{\ahmod}{i}(\tup_1)$. Since $j \in \iex$, condition $\exclusion{\history}{\deltaHist}{u_j}$ has to hold which implies $\neg \theta_j(\tup_j)$ and $\neg \theta_j(\tup_{j}')$.
+
+% Now let us use $s_i$ to denote $\hslice{\history}{\iini{1} \cap [1,i]}(\tup_1)$ and $s_i'$ to denote $\hslice{\ahmod}{\iini{1} \cap [1,i]}(\tup_1)$.
+% Since $\hslice{\history}{j-1} = \hslice{\history}{\iini{1} \cap [1,j-1]}$ and $\hslice{\history}{j-1} = \hslice{\history}{\iini{1} \cap [1,j-1]}$, we have $t_{j-1} = s_{j-1}$ and $t_{j-1}' = s_{j-1}'$. Now since $\neg \theta_j(\tup_j)$ and $\neg \theta_j(\tup_{j}')$, $t_j = s_{j-1}$ and $t_j' = s_{j-1}'$. Furthermore, note that $\hslice{\history}{j+1,n} = \hslice{\history}{\iini{1} \cap [j+1,n]}$ and $\hslice{\ahmod}{j+1,n} = \hslice{\ahmod}{\iini{1} \cap [j+1,n]}$. Thus, it follows that $t = \tup_n = s_{n-1}$ (the sliced histories have one less update) and $\tup' = s_{n-1}'$ which contradicts $\tup \not\in \dslicei{1}$.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \proofpar{$\tup \not\in \Delta \land \tup \in \dslicei{1}$:}
+% Since $\hslice{\history}{\iini{1}}$ (and $\hslice{\ahmod}{\iini{1}}$) are histories, from \Cref{theo:data-slicing} follows that if $s \in \dslicei{1}$ then $s_1 \models \theta_1 \vee \theta_1'$ ($s_i$, $t_i$, $s_i'$ and $t_i'$ are as defined above). Because we know that $\exclusion{\history}{\deltaHist}{u_j}$ we also know that $\neg \theta_j(s_{j-1})$ and $\neg \theta_j(s_{j-1}')$. Applying the same argument as for the opposite direction proven above, this implies that $s \in \Delta$ which contradicts $s \not \in \Delta$.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \proofpar{Induction Step:}
+% Assume that $\iini{i}$ is a slice for $\hwhatif$, i.e., $\Delta = \dslicei{i}$. We have to show that $\iini{i+1}$ is also a slice, i.e., $\Delta = \dslicei{i+1}$. Note that $\dslicei{i+1}$ differs from $\dslicei{i}$ only in that it excludes an additional update at a position $j$, i.e., $\iini{i+1} = \iini{i} - \{ j \}$ and $\forall l \in \iexi{i}: j > l$. Let $k = \max(\iexi{i})$. The remainder of the argument proceeds analog to the base case. For sake of contradiction assume that there exists a tuple $\tup$ with $\tup \in \Delta \land \tup \not\in \dslicei{i+1}$. Let use again employ the notation $s_i$, $s_i'$, $t_i$ and $t_i'$ as above. Then by applying the argument from the base case iteratively, we can show that $t_{j-1} = s_{j-1}$ and $t_{j-1}'= s_{j-1}'$. Together with $\exclusion{\history}{\deltaHist}{u_j}$ this implies $t_j = s_{j-1}$ and $t_{j}' = s_{j-1}'$ (again using the same argument already applied in the base case) and in turn implies $\tup \in \dslicei{i+1}$. The proof for $\tup \not\in \Delta \land \tup \in \dslicei{i+1}$ is also analog to the base case and, thus, we omit it here.
+
+% % Using the argument applied in the base case for any tuple $\tup \in \Delta$ we can show that
+
+
+%     % We prove this theorem by contradiction over a two update history, and extend it to histories of any length through the use of induction.\par
+%     % Suppose $u_1$ is an update in $\history = \{u_0, u_1\}$, where $\exclusion{H}{\deltaHist}{u_1}$ is true. $m = u_0 \gets u_0'$ is a modification where $m \in \deltaHist$. For the sake of contradiction, we say that $u_1$ is not to safe to exclude over any slice of $\history(\worlds)$ or $\history[\deltaHist](\worlds)$, i.e. $u_1 \in \depOver(\history, \deltaHist)$. Given $\exclusion{H}{\deltaHist}{u_1}$ is true, it holds that there is no tuple $t$ updated by both $u_0$ and $u_1$, or $u_0'$ and $u_1$, as there is no assignment $\varAssign$ that makes the conditions of $u_0 (u_0')$ and $u_1$ possible over any tuple. If no tuples updated by $u_0$ or $u_0'$ are also updated by $u_1$, it holds that the input tuples to $u_1$ are the same as there are no other modifications. It is supposed that $u_1 \in \depOver(H, \deltaHist)$, whose condition for determining dependency of $u_1$ implies that there is a possible world where there is a tuple that is modified by either $u_0$ and $u_1$ or $u_0'$ and $u_1$ where the resulting tuple is absent from the other set. However, $\exclusion{H}{\deltaHist}{u_1}$ necessarily means there are no tuples modified by both updates, so $u_1 \in \depOver(\history, \deltaHist)$ is impossible. That is, $u_1$ is necessarily absent from $\depOver(\history, \deltaHist)$ if $\exclusion{H}{\deltaHist}{u_1}$ is true.
+%     \FC{Induction Step}
+%     $\,$\\[-3.5mm]
+%   \end{proof}
+% }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{What-if Algorithm}
+%\label{sec:impl-appr}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%original Algo
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{algorithm}[t]
+%  \caption{Answering Historical What-if Query}
+%  \label{alg:whatif-algo}
+%  \begin{algorithmic}[1]
+%    \Procedure{WhatIf}{$\history$, $\db$, $\query$, $\deltaHist$}
+%    \State $dep \gets \Call{ComputeDependencies}{\history,\db, \deltaHist}$
+%    \State $\ract{\history} \gets \Call{GenReenactmentQuery}{\history,dep}$
+%    \State $\ract{\history}^{*} \gets \Call{ApplyDataSlicing}{\deltaHist,\ract{\history}}$
+%    \State $\ract{\history[\deltaHist]} \gets \Call{GenReenactmentQuery}{\history[\deltaHist],dep}$
+%    \State $\ract{\history[\deltaHist]}^{*} \gets \Call{ApplyDataSlicing}{\deltaHist,\ract{\history[\deltaHist]}}$
+%    \State \Return $\Call{SymmetricDiff}{\query,\ract{\history}^{*},\ract{\history[\deltaHist]}^{*}}$
+%    \EndProcedure
+%  \end{algorithmic}
+%\end{algorithm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%modified Algo
+
+% shows the Function $ComputeDependencies$ identifies all update statements in $\history$ that are depend on the modification $\modi = \xid.u_i \gets u$ and $dep$ includes all dependent update that should be considered for reenactment. After generating reenactment query $\ract{\history}$ for all dependent update and the original update statement $u_i$ by the Function $Reenact$, the $DataSlicing$ Function changes $\ract{\history}$ to $\ract{\history}^{*}$ that filters the input data based on the input data for $u_i$. The same process is defined for the modified update statement $u$. In the last line, the $\query$ over both $\ract{\history}^{*}$ and $\ract{\history[\modi]}^{*}$ is evaluated and their symmetric difference is computed and it returns the generated SQL query as the result.\\
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Our algorithm to the historical what-if query is based on MV-semirings model and using reenactment. It includes three main steps:\textbf{1)} retrieving information about related updates \textbf{2)} filtering update operations of transactions based on dependency rules \textbf{3)} translating detected dependent updates and applying reenactment \textbf{4)} filtering input data of reenactment queries \textbf{5)} compute the final answer by determining the symmetric difference of query $\query$ over the reenactment queries. To implement our algorithm, we use time travel and audit logs, two features that are supported by most of DBMS (e.g., Oracle, DB2, SQLServer). Time travel gives an access to the past database snapshots and audit logs contains information about history of SQL statements such as when they were executed, and as part of which transaction. We explain each step of the algorithm in following subsections.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Retrieving Information}
+% \label{def:retrieve-info}
+% In the first step, we should retrieve information about the what-if query and other update statement that might be depend on the what-if query by querying audit logs. In particular, we need to know what was the original SQL statement and all other update statement that were executed by the same transaction, when each statement was executed, which statements were executed after the what-if query by other transactions, and what concurrency control protocol were used for execution of these transactions.
+% %We must retrieve information based on the applied concurrency control protocol and execution time of each  statement of other transaction.
+% %The following rules are defined for transactions that were executed under SI.
+% %Assume the what-if statement must be executed as a part of the transaction $\xid$ and $\xid_i \sqsubseteq \xid_0, \ldots, \xid_n$ are belongs to the history $\history$,
+% In overall, following SQL statements and their related information are required to be retrieved.
+% \begin{itemize}
+% \item $u_1, \ldots, u_n$ where $\xid = (u_1, \ldots, u_n, c)$ and $\modi = T.u_i \gets u$
+% \item $\forall u_j \in H$ where $1 \leq i < j \leq n \wedge u_i \hSorder u_j$
+% %Retrieve $u_0, \ldots, u_m$ of the transaction $\xid_i$ where $End(\xid) < Start(\xid_i)$ and these transactions executed under SI. This means all update statement of the transaction $\xid_i$ must be retried
+% %as the start time of Transaction $\xid_i$ is greater than the end time or the commit time of the Transaction $\xid$
+% %because $\xid_i$ sees a  snapshot of the database containing all changes of the transaction $\xid$.
+% \end{itemize}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Dependency Rules}
+% \label{def:basic-rules}
+% We can check basic rules to approximate the dependency of update statement of transactions based on the \Cref{def:dependency1} without replaying concurrent transactions. Lets $R$ be a set of tables that are modified by $u$ or $u_i$ where $\modi = T.u_i \gets u$ and $u_j$ is a retrieved update statement from the previous step.
+% %it is possible Transaction $\xid_i$ depends on $\xid$.
+% %\item \textbf{Checking Tables:} $(Write(\xid) \cap Write(\xid_i)\neq \emptyset) \vee (Write(\xid) \cap Read(\xid_i)\neq \emptyset)$  whereas $Write$ are set of tables that are modified or written by a transaction and $Read$ are set of tables that a transaction reads from them. This rule is beneficial for update and delete statements. However, for insert statements transitivity should be checked.
+% \begin{itemize}
+% \item \textbf{Checking Tables:} $(R \cap Write(u_j)\neq \emptyset) \vee (R \cap Read(u_j)\neq \emptyset)$  whereas $Write$ are set of tables that are modified or written by $u_j$ and $Read$ are set of tables that a $u_j$ reads from them. This rule is beneficial for update and delete statements. However, for insert statements transitivity should be checked.
+% \item \textbf{Analyzing Effect of Updates:} Our algorithm must analyze effect of the what-if query and its respective original update statement on $u_i$
+% %other update statements
+% by evaluating their value assigns and condition sets. The following example shows how analyzing effect of an update can help to detect dependent updates.
+% % Let $\theta_1$ be a condition set of an update statement before change and $\theta_1'$ be a condition set of an update statement after change (condition set of a whatif query). Suppose we want to check the dependency of this update with another update statement which has a condition set $\theta_2$. the dependency is true if : $(\theta_1 \wedge \theta_2)\vee(\theta_1'\wedge \theta_2)$ is true.
+% \end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THIS IS OUTDATED I THINK
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{algorithm}[t]
+%   \caption{Compute Dependencies}
+%   \label{alg:depend-algo}
+%   \begin{algorithmic}[1]
+%     \Procedure{ComputeDependencies}{$\history$, $\db$, $u$}
+% %    \State $depList \gets NULL$
+%     \State $\symIns{0} \gets \Call{InitSymbolicIns}{\history,\db}$
+%     \State $\symIns{1} \gets \symExe{0}{0}$  \Comment{$\history[0]= u$}
+%     \State $\symIns{1} \gets \symCond{0}{1}$
+%     \State $depList \gets u$
+%     \For{$i \gets 1, \history.length-1$}
+%     \If{$\symCond{i}{i}$}
+%     \State $depList \gets \history[i]$
+%     \EndIf
+%     \State $\symIns{i+1} \gets \symExe{i}{i}$
+%     \EndFor
+%     \State \textbf{return} $depList$
+%     \EndProcedure
+%   \end{algorithmic}
+% \end{algorithm}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \Cref{alg:depend-algo} shows how we implement detecting dependent updates. It first initialize the symbolic instance (VC-table).
+% % which is presented in detail in \Cref{alg:init-algo}.
+% The next state for this symbolic instance is generates based on symbolic execution of update statements in the $\history$. Note that $\history$ contains $u$ and update statements which were executed after $u$ and $\history[0]$ equals to $u$.
+% $\symIns{i+1} \gets \symExe{i}{i}$ implement symbolic execution of the update statement which is discussed in the \Cref{sec:sym-lin}. $\symCond{i}{i}$ checks whether the condition of the update statement $\history[i]$ is mutual satisfiable with the condition of the first update $\history[0]$ that was applied in $\symIns{1} \gets \symCond{0}{1}$. In the following section.  We propose a method which uses a constraint programming formulation expressing symbolic execution of update statements as a mixed integer linear program (MILP).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{algorithm}[t]
+%  \caption{Create Symbolic Instance}
+%  \label{alg:init-algo}
+%  \begin{algorithmic}[1]
+%    \Procedure{InitSymbolicIns}{ $\db$, $u$}
+%    \State $tbName \gets \Call{getTableName}{u}$
+%    \State $i \gets 0$
+%    \ForAll{$\attr{j} \in \Call{getSchema}{\db,tbName}$}
+%    \State $X[i] \gets x_{\attr{j}}$
+%    \State $i \gets i+1$
+%    \EndFor
+%    \State \textbf{return} $X$
+%    \EndProcedure
+%  \end{algorithmic}
+%\end{algorithm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\Cref{alg:init-algo} generates variables for each attribute of the table that was affected by the update statement $u$.  It first calls \texttt{getTableName} function which return the name of the tables that was affected by the update statement. Then \texttt{getSchema} returns schema information of that table. Finally, for all attributes $\attr{j}$ of the table a new variable $x_{\attr{j}}$ is generated and the set of variables will be return as a symbolic instance.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "historical_whatif"
+%%% End:

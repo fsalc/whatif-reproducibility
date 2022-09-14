@@ -1,0 +1,7 @@
+Percentage of Dependent Updates,Method,Runtime
+1,R+PS,66.418699
+1,R+PS+DS,66.418699
+10,R+PS,66.418699
+10,R+PS+DS,66.418699
+100,R+PS,66.418699
+100,R+PS+DS,66.418699

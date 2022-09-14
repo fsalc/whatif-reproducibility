@@ -1,0 +1,293 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% REMOVE anonymous for CR
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[sigconf]{acmart}
+
+\settopmatter{printacmref=true}
+
+%\usepackage{todonotes}
+\usepackage[disable]{todonotes}
+
+%\usepackage[numbers]{natbib}
+
+\input{preamble}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% techreport
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newbool{Techreport}
+\newrobustcmd{\ifnottechreport}[1]{\ifbool{Techreport}{}{#1}}
+\newrobustcmd{\iftechreport}[1]{\ifbool{Techreport}{#1}{}}
+
+\newcommand{\tred}[1]{\textcolor{red}{#1}}
+
+\newcommand{\cfbox}[2]{%
+    \colorlet{currentcolor}{.}%
+    {\color{#1}%
+    \fbox{\color{currentcolor}#2}}%
+}
+
+\boolfalse{Techreport}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cref settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\crefname{Example}{ex.}{ex.}
+\Crefname{Example}{Ex.}{Ex.}
+\Crefname{figure}{Fig.}{Fig.}
+\Crefname{section}{Sec.}{Sec.}
+\Crefname{Definition}{Def.}{Def.}
+\Crefname{Theorem}{Thm.}{Thm.}
+\Crefname{Lemma}{Lem.}{Lem.}
+\Crefname{theo}{Thm.}{Thm.}
+\Crefname{exam}{Ex.}{Ex.}
+\Crefname{defi}{Def.}{Def.}
+\Crefname{equation}{Eq.}{Eq.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% revision
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\definecolor{revgreen}{rgb}{0,0.5,0}
+% \newrobustcmd{\reva}[1]{\textcolor{blue}{{#1}}}
+% \newrobustcmd{\revb}[1]{\textcolor{revgreen}{{#1}}}
+% \newrobustcmd{\revc}[1]{\textcolor{magenta}{{#1}}}
+% \newrobustcmd{\revm}[1]{\textcolor{red}{{#1}}}
+\newrobustcmd{\revdel}[1]{\todo{DELETED}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GRAPHICS PATH
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\graphicspath{{imgs/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% COPYRIGHT INFO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{etoolbox}
+%\ifnum\value{extendedversionf}=0
+
+\copyrightyear{2022}
+\acmYear{2022}
+\setcopyright{rightsretained} % Alternatively, acmcopyright or acmlicensed
+
+%% These commands are specific for your SIGMOD submission.
+\acmConference[SIGMOD '22]{Proceedings of the 2022 International Conference on Management of Data}{June 12--17, 2022}{Philadelphia, PA, USA.}
+\acmBooktitle{Proceedings of the 2022 International Conference on Management of Data (SIGMOD '22), June 12--17, 2022, Philadelphia, PA, USA}
+\acmDOI{10.1145/3514221.3526138}
+\acmISBN{978-1-4503-9249-5/22/06.}
+
+% Overwrite copyright field outside from cls file.
+% \usepackage{etoolbox}
+\makeatletter
+\patchcmd{\maketitle}{\@copyrightpermission}{
+   \begin{minipage}{0.4\columnwidth}
+     \href{https://creativecommons.org/licenses/by-nc-sa/4.0/}{\includegraphics[width=0.95\textwidth]{cc-by-nc-sa4acm.png}}
+   \end{minipage}\hfill
+   \begin{minipage}{0.6\columnwidth}
+     \href{https://creativecommons.org/licenses/by-nc-sa/4.0/}{This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike International 4.0 License.}
+   \end{minipage}
+
+   \vspace{5pt}
+}{}{}
+
+\makeatother
+
+
+
+
+% preprint      Remove this option only once the paper is in final form.
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\fancyhead{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TITLE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Reenactment for Predictive Analytics or Whatif Queries}
+\title{Answering Historical What-if Queries with Provenance, Reenactment, and Symbolic Execution}
+\title{SAHIF: A System for Answering Historical What-if Queries}
+\title{MAHIF: A Middleware for Answering Historical What-if Queries}
+\title{Efficient Answering of Historical What-if Queries}
+
+% \author{Felix Campbell, Bahareh Sadat Arab, Boris Glavic}
+% \affiliation{\institution{Illinois Institute of Technology}}
+% \email{{fcampbell, barab}@hawk.iit.edu, bglavic@iit.edu}
+
+
+\author{Felix S. Campbell}
+\affiliation{%
+  \institution{Illinois Institute of Technology}
+  \country{USA}
+  \city{Chicago}
+}
+\email{fcampbell@hawk.iit.edu}
+
+\author{Bahareh Sadat Arab}
+\affiliation{%
+  \institution{Intuit}
+  \country{USA}
+  \city{San Diego}
+}
+\email{barab@hawk.iit.edu}
+
+
+\author{Boris Glavic}
+\affiliation{%
+  \institution{Illinois Institute of Technology}
+  \country{USA}
+  \city{Chicago}
+}
+\email{bglavic@iit.edu}
+
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{Campbell, et al.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CONCEPTS AND KEYWORDS (EDIT THIS)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{CCSXML}
+%   <ccs2012>
+%   <concept>
+%   <concept_id>10002951.10002952.10002953.10010820.10003623</concept_id>
+%   <concept_desc>Information systems~Data provenance</concept_desc>
+%   <concept_significance>500</concept_significance>
+%   </concept>
+%   </ccs2012>
+% \end{CCSXML}
+
+\ccsdesc[500]{Information systems~Data provenance}
+
+\keywords{what-if queries, updates, provenance, program slicing}
+
+% listings definitions
+\input{lstdefs}
+\lstset{style=psqlcolor}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \special{papersize=8.5in,11in}
+% \setlength{\pdfpageheight}{\paperheight}
+% \setlength{\pdfpagewidth}{\paperwidth}
+
+%\toappear{%
+% \noindent Permission to make digital or hard copies of all or part of this work for   personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page.  \par
+%\vspace{2pt}
+%\noindent \textsl{TaPP 2017}, \quad June 22-23, 2017, Seattle, Washington. \par
+%\noindent Copyright remains with the owner/author(s).}
+
+
+%\conferenceinfo{CONF 'yy}{Month d--d, 20yy, City, ST, Country}
+%\copyrightyear{20yy}
+%\copyrightdata{978-1-nnnn-nnnn-n/yy/mm}
+%\doi{nnnnnnn.nnnnnnn}
+
+%\toappear{%
+%\noindent Permission to make digital or hard copies of all or part of this
+%work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page.  \par
+%\vspace{2pt}
+% \noindent \textsl{TaPP 2016}, \quad June 8--9, 2016, Washington, DC. \par
+% \noindent Copyright remains with the owner/author(s).}
+
+% Uncomment one of the following two, if you are not going for the
+% traditional copyright transfer agreement.
+
+%\exclusivelicense                % ACM gets exclusive license to publish,
+                                  % you retain copyright
+
+%\permissiontopublish             % ACM gets nonexclusive license to publish
+                                  % (paid open-access papers,
+                                  % short abstracts)
+
+
+
+
+%\titlebanner{banner above paper title}        % These are ignored unless
+%\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ABSTRACT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{abstract.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\maketitle
+
+%%% do not modify the following VLDB block %%
+%%% VLDB block start %%%
+% \pagestyle{\vldbpagestyle}
+% \begingroup\small\noindent\raggedright\textbf{PVLDB Reference Format:}\\
+% \vldbauthors. \vldbtitle. PVLDB, \vldbvolume(\vldbissue): \vldbpages, \vldbyear.\\
+% \href{https://doi.org/\vldbdoi}{doi:\vldbdoi}
+% \endgroup
+% \begingroup
+% \renewcommand\thefootnote{}\footnote{\noindent
+% This work is licensed under the Creative Commons BY-NC-ND 4.0 International License. Visit \url{https://creativecommons.org/licenses/by-nc-nd/4.0/} to view a copy of this license. For any use beyond those covered by this license, obtain permission by emailing \href{mailto:info@vldb.org}{info@vldb.org}. Copyright is held by the owner/author(s). Publication rights licensed to the VLDB Endowment. \\
+% \raggedright Proceedings of the VLDB Endowment, Vol. \vldbvolume, No. \vldbissue\ %
+% ISSN 2150-8097. \\
+% \href{https://doi.org/\vldbdoi}{doi:\vldbdoi} \\
+% }\addtocounter{footnote}{-1}\endgroup
+%%% VLDB block end %%%
+
+%%% do not modify the following VLDB block %%
+%%% VLDB block start %%%
+% \ifdefempty{\vldbavailabilityurl}{}{
+% \vspace{.3cm}
+% \begingroup\small\noindent\raggedright\textbf{PVLDB Artifact Availability:}\\
+% The source code, data, and/or other artifacts have been made available at \url{\vldbavailabilityurl}.
+% \endgroup
+% }
+%%% VLDB block end %%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{introduction.tex}
+\input{background.tex}
+\input{approach.tex}
+\input{dependency.tex}
+\input{implementation.tex}
+\input{insertopt.tex}
+\input{linearize.tex}
+\input{relatedwork.tex}
+\input{experiments.tex}
+\input{conclusions.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \acks
+
+% This research is partially supported by a gift from the Oracle Corporation.
+
+%\begin{acks}
+% This work was supported by the [...] Research Fund of [...] (Number [...]). Additional funding was provided by [...] and [...]. We also thank [...] for contributing [...].
+%\end{acks}
+
+\nocite{MG10,RS14,P00,SK17,FH21,zhou-19-autvqequssm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We recommend abbrvnat bibliography style.
+%alpha-initials-big
+\bibliographystyle{ACM-Reference-Format} % The bibliography should be embedded for final submission.
+\bibliography{trans}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \clearpage
+%\appendix
+
+%\input{appendix.tex}
+
+\end{document}

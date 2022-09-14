@@ -1,0 +1,12 @@
+what if (update stock set s_ytd = s_ytd + 2 where s_i_id <= 10;)
+replace (1)
+in (update stock set s_ytd = s_ytd + 6 where s_i_id <= 10;
+update stock set s_ytd = s_ytd + 4 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 6 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 3 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 10 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 10 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 2 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 10 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 4 where s_i_id >= 99990;
+update stock set s_ytd = s_ytd + 2 where s_i_id <= 10;);

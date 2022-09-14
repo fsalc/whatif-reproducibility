@@ -1,0 +1,76 @@
+  \begin{proof}
+    WLOG consider a database $\db$ containing tuples $\{s_1, \ldots, s_m\}$ and let $\{t_1, \ldots, t_n\}$ be the instance of the relation $R$ to which a statement is applied to. Note that for any set comprehension $\{ e \mid e \in S \land \psi \}$ where $S = \{e_1, \ldots, e_n\}$ is a set and $\psi$ is a condition over $e$, the following equivalence holds if $\psi$ does not reference $S$:
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align}
+      \label{eq:factor-comprehensions}
+      \{ e \mid e \in S \land \psi \} = \bigcup_{e \in S} \{ e \mid \psi \}
+    \end{align}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    For deletes, updates, and insert of constant tuples ($\ainsert$), their result only depends on $\rel$ and no other relation in $\db$. Thus, they return $\emptyset$ for any single tuple instance $\{ s_i\}$ unless tuple $s_i$ belongs to $R$ and we trivially have for any statement $\up$ where $\up$ is either an update $\aupdate$, delete $\adelete$, or insert of a constant tuple $\ainsert$:
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align}
+      \label{eq:rel-update-same-as-database-update}
+      \bigcup_{t \in R}  \up(\{t\}) = \bigcup_{t \in \db} \up(\{t\})
+    \end{align}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \proofpar{Updates}:
+    Consider an update $\aupdate$.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align*}
+      \aupdate(R) &= \{ \pset(t) \mid t \in R \wedge \cond(t) \} \cup \{ t \mid t \in R \wedge \neg \cond(t) \}\\
+                  &= \bigcup_{t \in R} \{ \pset(t) \mid \cond(t) \} \cup
+                    \bigcup_{t \in R} \{ t \mid \neg \cond(t) \} \Cref{eq:factor-comprehensions}\\
+                  &= \bigcup_{t \in R} \{ \pset(t) \mid \cond(t) \} \cup \{ t \mid \neg \cond(t) \}\\
+                  &= \bigcup_{t \in R}  \aupdate(\{t\}) \tag{\Cref{eq:update-sem}}\\
+                  &= \bigcup_{t \in \db}  \aupdate(\{t\}) \tag{\Cref{eq:rel-update-same-as-database-update}}
+    \end{align*}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \proofpar{Deletes}
+    Consider a delete $\adelete$.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align*}
+      \adelete(R) &= \{ t \mid t \in R \wedge \neg \cond(t) \} \\
+                  &= \bigcup_{t \in R} \{ t \mid \cond(t) \} \tag{\Cref{eq:factor-comprehensions}}\\
+                  &= \bigcup_{t \in R}  \adelete(\{t\}) \tag{\Cref{eq:delete-sem}}\\
+                  &= \bigcup_{t \in \db}  \adelete(\{t\}) \tag{\Cref{eq:rel-update-same-as-database-update}}
+    \end{align*}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \proofpar{Inserts}
+    Consider an insert $\ainsert(R)$.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align*}
+      \ainsert(R) &= \rel \union \{ t\}\\
+                  &= \bigcup_{s \in R} \{ s \} \union \{ t\}\\
+                  &= \bigcup_{s \in R} (\{ s \} \union \{ t\})\\
+                  &= \bigcup_{s \in R} \ainsert(\{s\}) \tag{\Cref{eq:const-insert-sem}}\\
+                  &= \bigcup_{s \in \db}  \ainsert(\{s\}) \tag{\Cref{eq:rel-update-same-as-database-update}}
+    \end{align*}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \proofpar{Inserts with queries}
+    Inserts $\aqinsert(R)$ are not tuple independent. As a counterexample, consider $\up = \ins{\projection_{B,B}(R \join_{B=C} S)}(R)$ over $\rel(A,B)$ and $S(C)$ and database instance $R = \{(1,2)\}$ and $S = \{(2)\}$:
+    \[
+      \up(\db) = \{ (1,2), (2,2) \}
+    \]
+    while
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align*}
+      \bigcup_{t \in \db} \up(\{t\}) &= \up(R=\{(1,2)\},S=\emptyset) \cup \up(R=\emptyset,S=\{(2)\}) = \{(1,2)\} \cup \emptyset\\
+                                       &= \{(1,2)\}
+    \end{align*}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \end{proof}
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "techreport"
+%%% End:

@@ -1,0 +1,13 @@
+include ./plot.mk
+PDFFIGS=dependent.pdf aggregation.pdf agg10.pdf optimization.pdf conditions.pdf attributes.pdf performance.pdf attCla.pdf totalCostNaive10.pdf totalCostMahif10.pdf totalCost.pdf totalCost10.pdf totalCost25.pdf totalC.pdf totalC10.pdf totalC25.pdf ds.pdf DBsize.pdf DBsize10.pdf DBsize25.pdf completion.pdf completion2.pdf
+EPSFIGS=$(PDFFIGS:.pdf=.eps)
+PSFIGS=$(PDFFIGS:.pdf=.ps)
+
+# create ps figures
+all: $(EPSFIGS) $(PDFFIGS)
+
+# rm ps figures
+clean:
+	rm -f $(EPSFIGS) $(PDFFIGS) $(PSFIGS)
+
+.PHONY: all clean

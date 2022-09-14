@@ -1,0 +1,23 @@
+what if (update f set trip_total = trip_total + 92 where pickup_community_area <= 7;)
+replace (1)
+in (update f set trip_total = trip_total + 4 where pickup_community_area <= 7;
+update f set extras = extras + 46 where pickup_community_area > 14;
+update f set tolls = tolls + 61 where pickup_community_area > 32;
+update f set tolls = tolls + 71 where pickup_community_area > 38;
+update f set trip_total = trip_total + 43 where pickup_community_area > 17;
+update f set extras = extras + 85 where pickup_community_area > 12;
+update f set extras = extras + 97 where pickup_community_area > 26;
+update f set fare = fare + 51 where pickup_community_area > 19;
+update f set trip_total = trip_total + 8 where pickup_community_area > 49;
+insert into f values ('inserted', to_timestamp('1970-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 1, 7, 77, 96, 38);
+insert into f values ('inserted', to_timestamp('1970-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 1, 72, 84, 11, 77);
+update f set tolls = tolls + 18 where pickup_community_area > 58;
+update f set tolls = tolls + 56 where pickup_community_area > 17;
+update f set tolls = tolls + 37 where pickup_community_area > 77;
+update f set extras = extras + 81 where pickup_community_area > 10;
+update f set trip_total = trip_total + 94 where pickup_community_area > 47;
+update f set tolls = tolls + 38 where pickup_community_area > 44;
+update f set extras = extras + 10 where pickup_community_area > 76;
+update f set tolls = tolls + 97 where pickup_community_area > 10;
+update f set extras = extras + 41 where pickup_community_area > 15;
+update f set trip_total = trip_total + 33 where pickup_community_area > 35;);

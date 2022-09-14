@@ -1,0 +1,520 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages to use
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{epsfig}
+
+\usepackage{amsmath}
+
+\usepackage{graphicx}
+\usepackage{balance}
+\usepackage{bm}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{colortbl}
+\usepackage{verbatim}
+\usepackage{textcomp}
+\usepackage{afterpage}
+\usepackage{subcaption}
+
+%\usepackage{amssymb}
+\usepackage{amscd}
+\usepackage{amsthm}
+% \let\proof\relax
+% \let\endproof\relax
+\usepackage{mathtools}
+
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{tikz}
+
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{xspace}
+
+\usetikzlibrary{shapes,backgrounds,arrows}
+%\usepackage[textfont=bf,labelfont=bf,subrefformat=parens,position=top]{subfig}
+\usepackage{listings}
+\usepackage{caption}
+
+% \usepackage[colorlinks=true,
+%             urlcolor=blue,
+%             citecolor=blue,
+%             linkcolor=blue
+%             ]{hyperref}
+\usepackage{supertabular}
+\usepackage{paralist}
+\usepackage{cleveref}
+
+\usepackage{enumitem}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Structure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\partitle}[1]{\smallskip\noindent\textbf{#1}.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareRobustCommand{\BG}[1]{{\todo[color=red!40,inline]{\textbf{Boris says:}{#1}}}}
+\DeclareRobustCommand{\FC}[1]{{\todo[color=red!40,inline]{\textbf{Felix says:}{#1}}}}
+\DeclareRobustCommand{\BGDel}[2]{{\todo[inline,color=red!40]{\textbf{Boris deleted:}{#1}\textbf{because {#2}}}}}
+\DeclareRobustCommand{\FCDel}[2]{{\todo[inline,color=red!40]{\textbf{Felix deleted:}{#1}\textbf{because {#2}}}}}
+\DeclareRobustCommand{\BA}[1]{{\todo[inline,color=red!50]{\textbf{Bahareh says:}{#1}}}}
+\DeclareRobustCommand{\DG}[1]{{\todo[inline,color=green!60]{\textbf{Dieter says:}{#1}}}}
+\DeclareRobustCommand{\VR}[1]{{\todo[inline,color=blue!60]{\textbf{Venky says:}{#1}}}}
+\DeclareRobustCommand{\sectionoverview}[1]{{\todo[inline,color=green!40]{\textbf{Section TODO and Overview}{#1}}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Figures
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareRobustCommand\fignumref[1]{\raisebox{.5pt}{\textcircled{\raisebox{-.75pt} {\small #1}}}}
+\DeclareRobustCommand\rectangled[1]{%
+      \tikz[baseline=(R.base)]\node[draw,rectangle,inner sep=0.5pt](R) {\small #1};\!
+    }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Algorithms
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\algtab}{\thickspace\thickspace\thickspace\thickspace\thickspace\thickspace}
+\renewcommand*\Call[2]{\textproc{\textcolor{darkdarkpurple}{#1}}(#2)}
+\newcommand{\card}[1]{\left|{#1}\right|}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Theorems, Definitions, Examples
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{theo}{Theorem}
+\newtheorem{lem}[theo]{Lemma}
+\newtheorem{propo}[theo]{Proposition}
+\newtheorem{coll}[theo]{Corollary}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+%\newenvironment{proofsketch}{\paragraph{Proofsketch:}}{\hfill}
+\newenvironment{theoremproof}[2][\bf Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {#1}\hskip \labelsep {#2}] \em}{\end{trivlist}}
+\newcommand{\proofpar}[1]{\smallskip\noindent\underline{{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Colors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{black}{rgb}{0,0,0}
+\definecolor{grey}{rgb}{0.8,0.8,0.8}
+\definecolor{red}{rgb}{1,0,0}
+\definecolor{green}{rgb}{0,1,0}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\definecolor{darkpurple}{rgb}{0.5,0,0.5}
+\definecolor{darkdarkpurple}{rgb}{0.3,0,0.3}
+\definecolor{blue}{rgb}{0,0,1}
+\definecolor{shadegreen}{rgb}{0.95,1,0.95}
+\definecolor{shadeblue}{rgb}{0.95,0.95,1}
+\definecolor{shadered}{rgb}{1,0.85,0.85}
+\definecolor{shadegrey}{rgb}{0.85,0.85,0.85}
+\definecolor{oddRowGrey}{rgb}{0.80,0.80,0.80}
+\definecolor{evenRowGrey}{rgb}{0.85,0.85,0.85}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Math utils
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\concat}{\triangleright}
+\newcommand{\defas}{:=}
+\newcommand{\mathtext}[1]{\thickspace\text{#1}\thickspace}
+\newcommand{\mathtab}{\thickspace\thickspace\thickspace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Relational Algebra
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\projection}{\Pi}
+\newcommand{\selection}{\sigma}
+\newcommand{\aggregation}{\gamma}
+\newcommand{\union}{\cup}
+\newcommand{\intersection}{\cap}
+\newcommand{\difference}{-}
+\newcommand{\rename}{\rho}
+
+\def\ojoin{\setbox0=\hbox{$\bowtie$}%
+  \rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\leftouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+\def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
+\def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
+
+\newcommand{\join}{\bowtie}
+\newcommand{\crossprod}{\times}
+\newcommand{\duprem}{\delta}
+\newcommand{\win}{\omega}
+\newcommand{\asingleton}[2]{\{#1 \to {#2}\}}
+%\newcommand{\asingleton}[2]{\{#1\}}
+
+\newcommand{\denserank}{\#}
+\newcommand{\rownum}{\filledmedtriangledown}
+\newcommand{\firstf}{\textsc{first}}
+
+\newcommand{\schema}[1]{\textsc{Sch}(#1)}
+\newcommand{\rschema}[1]{\schema{#1}}
+\newcommand{\schemaV}[2]{\textsc{Sch}^{#1}(#2)}
+\newcommand{\nullList}[1]{\textsc{Null}(#1)}
+
+\newcommand{\T}{\mathbf{true}}
+\newcommand{\F}{\mathbf{false}}
+\newcommand{\isnull}{\,\mathbf{isnull}}
+
+\newcommand{\sqlCase}[3]{\mathbf{if}\thickspace #1 \thickspace
+  \mathbf{then} \thickspace #2 \thickspace \mathbf{else} \thickspace #3}
+
+\newcommand{\RAPlus}{{\cal RA}^+}
+\newcommand{\RAPlusAnn}{{\cal RA}^{+/\genAnnotOp}}
+\newcommand{\RAPlusK}[1]{\RAPlus_{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Query Containment and Equivalence
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\qContain}{{\sqsubseteq}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Rewrite Rules
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\nulleq}{=_{\epsilon}}
+\newcommand{\PName}{{\cal P}}
+\newcommand{\annAttrs}{{\cal P}}
+\newcommand{\upAttr}{{\cal U}}
+\newcommand{\tidAttr}{{Id}}
+\newcommand{\versionAttr}{V}
+\newcommand{\xidAttr}{Xid}
+\newcommand{\relRewr}{{\textsc{Rew}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transactions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\xid}{T}
+\newcommand{\xidDomain}{\mathbb{T}}
+\newcommand{\version}{\nu}
+\newcommand{\versionDomain}{\mathbb{V}}
+\newcommand{\tid}{{id}}
+\newcommand{\tidOf}{\tid}
+\newcommand{\tidDomain}{\mathbb{I}}
+\newcommand{\start}[1]{Start({#1})}
+\newcommand{\finish}[1]{End(#1)}
+\newcommand{\hdb}{\db_{\history}}
+\newcommand{\curDB}[2]{#1_{#2}^{Cur}}
+
+\newcommand{\maxQSize}{\textsc{Max}}
+\newcommand{\numUpInHist}{\#U}
+
+\newcommand{\lastUp}{\textsc{Last}}
+
+\newcommand{\ccMechanism}{CC}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Update operations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\update}[2]{\mathcal{U}_{#1,#2}}
+\newcommand{\aupdate}{\update{\pset}{\cond}}
+\newcommand{\delete}[1]{\mathcal{D}_{#1}}
+\newcommand{\adelete}{\delete{\cond}}
+\newcommand{\ins}[1]{\mathcal{I}_{#1}}
+\newcommand{\ainsert}{\ins{t}}
+\newcommand{\aqinsert}{\ins{\query}}
+\newcommand{\up}{u}
+\newcommand{\upPos}{pos}
+\newcommand{\notup}{\bottom}
+\newcommand{\pos}{\mathsf{Pos}}
+
+\newcommand{\relUpdate}[5]{{\cal U}[#1,#2,#3,#4](#5)}
+\newcommand{\aRelUpdate}{{\cal U}}
+\newcommand{\relInsert}[4]{{\cal I}[#1,#2,#3](#4)}
+\newcommand{\aRelInsert}{{\cal I}}
+\newcommand{\relDelete}[4]{{\cal D}[#1,#2,#3](#4)}
+\newcommand{\aRelDelete}{{\cal D}}
+\newcommand{\commitOp}[3]{{\cal C}[#1,#2](#3)}
+\newcommand{\aDoCommit}{\textsc{com}}
+\newcommand{\doCommit}[3]{\aDoCommit[#1,#2](k)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Versions and Provenance
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\db}{D}
+\newcommand{\tup}{t}
+\newcommand{\rel}{R}
+\newcommand{\relSchema}{\mathbf{\rel}}
+\newcommand{\dbSchema}{\mathbf{\db}}
+\newcommand{\dataDomain}{\mathbb{D}}
+\newcommand{\relsOf}[1]{\textsc{rels}(#1)}
+
+% \newcommand{\upMarker}[4]{{}_{#1}^{#2}\tau_{#3}^{#4}}
+%\newcommand{\upMarker}[4]{\tau_{[#2,#3,#1]}}
+\newcommand{\upMarker}[4]{#1_{#2,#3}^{#4}}
+\newcommand{\cMarker}[3]{C_{#1,#2}^{#3}}
+\newcommand{\genUpMarker}{{\cal A}}
+%\newcommand{\upMarker}[4]{#1_{#2}^{#3}}
+%\newcommand{\upMarker}[4]{\tau_{#1,#2,#3}^{#4}}
+\newcommand{\upMarkers}{\mathbb{A}}
+\newcommand{\upMark}{{\cal A}}
+\newcommand{\insMark}{I}
+\newcommand{\delMark}{D}
+\newcommand{\updMark}{U}
+\newcommand{\withEnd}{\textsc{endV}}
+
+\newcommand{\relFV}[2]{{#1}[#2]}
+\newcommand{\relV}[3]{{#1}[#2,#3]}
+\newcommand{\relCV}[2]{{#1}[#2]}
+\newcommand{\relSSI}[3]{{#1}_{#2}[#3]}
+\newcommand{\relVRange}[3]{{#1}[#2,#3]}
+\newcommand{\dbV}[2]{{\db}[#1,#2]}
+\newcommand{\dbver}[1]{\db_{#1}}
+
+\newcommand{\snapshot}[2]{{#1}_{#2}}
+% \newcommand{\timeSlice}[3]{#1_{[#2,#3]}}
+
+\newcommand{\genAnnotOp}{\alpha}
+\newcommand{\annotOp}[4]{\genAnnotOp_{{#1},{#2},{#3}}}
+
+\newcommand{\vFilt}[1]{{\gamma}_{#1}}
+\newcommand{\nullV}{\emptyset}
+\newcommand{\hUnv}{h_U}
+\newcommand{\unversion}{\textsc{Unv}}
+
+\newcommand{\validAt}{\textsc{validAt}}
+\newcommand{\hasUp}{\textsc{updated}}
+
+\newcommand{\partP}[1]{\db[#1]}
+\newcommand{\provTFilt}[1]{filt(#1)}
+\newcommand{\provAFilt}{h_{f}}
+
+\newcommand{\relEnc}[1]{\textsc{Rel}(#1)}
+\newcommand{\relEncI}[2]{\textsc{Rel}^{#1}(#2)}
+\newcommand{\upEnc}[2]{\textsc{EncU}^{#1}(#2)}
+\newcommand{\rEnc}[1]{\textsc{EncR}(#1)}
+\newcommand{\idGen}{ID_{\cal P}}
+\newcommand{\idGenUse}[1]{ID_{#1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Semirings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\boolSR}{\mathbb{B}}
+\newcommand{\boolSRV}{\mathbb{B}^{\version}}
+\newcommand{\bagSR}{\mathbb{N}}
+\newcommand{\bagSRV}{\mathbb{N}^{\version}}
+
+\newcommand{\ppSR}{\mathbb{N}[X]}
+\newcommand{\ppSRV}{\mathbb{N}[X]^{\version}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Reenactment queries
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\ractSymbol}{\mathcal{R}}
+\newcommand{\ract}[1]{\ractSymbol_{#1}}
+\newcommand{\subract}[2]{\ractSymbol^{#1}_{#2}}
+\newcommand{\subractR}[1]{\ractSymbol^{#1}}
+\newcommand{\reduce}{\rightsquigarrow}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Semirings and Multiversion Semiring
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\semK}{{\cal K}}
+\newcommand{\mvK}{{{\cal K}^{\version}}}
+\newcommand{\mvOf}[1]{{#1}^{\version}}
+\newcommand{\mvDom}{K^{\version}}
+\newcommand{\NX}{\mathbb{N}[X]}
+\newcommand{\NXv}{\mathbb{N}[X]^{\version}}
+\newcommand{\semN}{\mathbb{N}}
+\newcommand{\congr}[1]{[{#1}]_\sim}
+\newcommand{\congrEq}{\equiv_\sim}
+\newcommand{\numInSum}[1]{n(#1)}
+\newcommand{\nthOfK}[2]{#1[#2]}
+\newcommand{\mul}{\cdot}
+
+\newcommand{\liftH}[1]{{#1}^{\version}}
+\newcommand{\SReval}{Eval_{\varAssign}}
+\newcommand{\aSReval}[1]{Eval_{#1}}
+\newcommand{\SRVeval}{{Eval_{\varAssign}}^\version}
+\newcommand{\aSRVeval}[1]{{\SReval{#1}}^\version}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% What-if
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\query}{Q}
+\newcommand{\whatif}{\mathcal{W}}
+\newcommand{\deltaDB}{\Delta \db}
+\newcommand{\deltaResult}{\Delta \query}
+
+\newcommand{\hwhatif}{\mathcal{H}}
+\newcommand{\ahwhatif}{(\history,\db,\deltaHist)}
+\newcommand{\history}{H}
+\newcommand{\histpre}[1]{\history_{#1}}
+\newcommand{\hpreOf}[2]{{#1}_{#2}}
+\newcommand{\histslice}[2]{\history_{#1,#2}}
+\newcommand{\hsliceOf}[3]{{#1}_{#2,#3}}
+\newcommand{\idxs}{\mathcal{I}}
+\newcommand{\idx}{i}
+\newcommand{\hislice}[1]{\history_{#1}}
+\newcommand{\hisliceOf}[2]{{#1}_{#2}}
+\newcommand{\hOrder}{\leq_{\history}}
+
+% MODIFICATIONS
+\newcommand{\modi}{m}
+\newcommand{\mdel}[1]{\ensuremath{\mathbf{del}(#1)}\xspace}
+\newcommand{\minsert}[2]{\ensuremath{\mathbf{ins}_{#2}(#1)}\xspace}
+
+\newcommand{\hSorder}{<_{\history}}
+\newcommand{\deltaHist}{\mathcal{M}}
+\newcommand{\hmod}[2]{#1[#2]}
+\newcommand{\ahmod}{\hmod{\history}{\deltaHist}}
+\newcommand{\hdeltaResult}{\Delta \hwhatif}
+\newcommand{\qResultDiff}[3]{\Delta(#1,#2,#3)}
+\newcommand{\diffsym}{\Delta}
+\newcommand{\iDiff}[2]{\diffsym(#1,#2)}
+\newcommand{\hTsubst}[2]{\history[{#1} \gets {#2}]}
+\newcommand{\applyM}[2]{#1[#2]}
+\newcommand{\hSubst}[3]{\history[{#1}.{#2} \gets {#3}]}
+\newcommand{\commit}{c}
+\newcommand{\symExe}[2]{\history[#1](S[#2])}
+\newcommand{\symCond}[2]{\cond(\history[#1](S[#2]))}
+\newcommand{\symIns}[1]{S[#1]}
+\newcommand{\pset}{\textit{Set}}
+\newcommand{\psetOf}[1]{\pset_{#1}}
+\newcommand{\attr}[1]{A_{#1}}
+\newcommand{\setAttr}[3]{\pset_{\history[#1]}(\symIns{#2}.\attr{#3})}
+\newcommand{\bVar}[2]{x_{\history[#1],\symIns{#2}}}
+\newcommand{\cond}{\theta}
+\newcommand{\condOf}[1]{\theta_{#1}}
+\newcommand{\expr}{e}
+\newcommand{\subst}[3]{{#1}[#2 \gets #3]}
+\newcommand{\cons}{c}
+\newcommand{\condbf}{\boldsymbol{\phi}}
+\newcommand{\exprbf}{\bf{e}}
+\newcommand{\consbf}{\bf{c}}
+\newcommand{\varbf}{\bf{v}}
+\newcommand{\depUp}{\mathsf{Dep}}
+\newcommand{\depOver}{\depUp^{\ast}}
+\newcommand{\hslice}[2]{{#1}_{#2}}
+\newcommand{\aSlice}{\hslice{\history}{\idxs}}
+\newcommand{\removeUp}[2]{\mathsf{Del}({#1}, {#2})}
+
+\newcommand{\exclusion}[3]{\zeta\left({#1}, {#2}, {#3}\right)}
+\newcommand{\slicetest}[3]{\zeta({#1},{#2},{#3})}
+\newcommand{\aslicetest}{\slicetest{\hwhatif}{\idxs}{\adbconstr}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\qDSh}{\query_{\history}^{DS}}
+\newcommand{\qDSm}{\query_{\history[\deltaHist]}^{DS}}
+\newcommand{\condDS}[2]{\cond_{#1}^{DS}(#2)}
+\newcommand{\condDSh}[1]{\condDS{\history}{#1}}
+\newcommand{\condDSm}[1]{\condDS{\history[\deltaHist]}{#1}}
+\newcommand{\acondDS}{\condDS{\history}{\up}}
+\newcommand{\pushCond}[2]{{#1}\downarrow^{#2}}
+\newcommand{\qpushCond}[2]{(#1)\downarrow^{#2}}
+
+\newcommand{\mcondDS}[3]{\cond_{#1}^{DS}[#3](#2)}
+\newcommand{\mcondDSh}[2]{\mcondDS{\history}{#1}{#2}}
+\newcommand{\mcondDSm}[2]{\condDS{\history[\deltaHist]}{#1}{#2}}
+\newcommand{\amcondDS}{\condDS{\history}{\up}{\rel}}
+\newcommand{\mpushCond}[3]{{#1}[#3]\downarrow^{#2}}
+\newcommand{\mqpushCond}[3]{(#1)[#3]\downarrow^{#2}}
+
+
+
+
+%%%%%%%%%%%%%%
+%%% Incomplete DBS %%%
+%%%%%%%%%%%%%%
+\newcommand{\world}{\db}
+\newcommand{\worlds}{\mathcal{D}}
+
+
+%%%%%%%%%%%%%%
+%%% VC DBs %%%
+%%%%%%%%%%%%%%
+\newcommand{\varDom}{\Sigma}
+\newcommand{\varAssign}{\lambda}
+\newcommand{\allVarAssigns}{\Lambda}
+\newcommand{\vcdb}{\mathbf{D}}
+\newcommand{\vcrel}{\mathbf{R}}
+\newcommand{\vct}{\mathbf{t}}
+\newcommand{\singtupH}[1]{\vct_{#1}}
+\newcommand{\vcOf}[1]{\mathbf{#1}}
+\newcommand{\vctn}{\vcOf{t_{new}}}
+\newcommand{\vcdbini}{\vcOf{\db_0}}
+\newcommand{\vcdbver}[1]{\vcOf{\db_{#1}}}
+\newcommand{\lcond}{\phi}
+\newcommand{\gcond}{\Phi}
+\newcommand{\dbconstr}[1]{\gcond_{#1}}
+\newcommand{\adbconstr}{\dbconstr{\db}}
+\newcommand{\worldsOf}[1]{Mod({#1})}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MILP translation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareRobustCommand{\compRule}[2]{\frac{{#1}{#2}}}
+\newcommand{\upBound}{M}
+\newcommand{\var}{v}
+\newcommand{\bvar}{b}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\thead}[1]{{\cellcolor{black}{\textcolor{white}{\textbf{#1}}}}}
+\newcommand{\lthead}[1]{{\cellcolor{evenRowGrey}{\textbf{#1}}}}
+\newcommand{\evenRow}{\rowcolor{evenRowGrey}}
+\newcommand{\oddRow}{\rowcolor{oddRowGrey}}
+\newcommand{\hlrow}{\rowcolor{shadered}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Examples
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\orderid}[1]{oid_{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Subfloat that works with verbatim
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \makeatletter
+     \newbox\sf@box
+     \newenvironment{SubFloat}[2][]%
+       {\def\sf@one{#1}%
+        \def\sf@two{#2}%
+        \setbox\sf@box\hbox
+          \bgroup}%
+       {  \egroup
+        \ifx\@empty\sf@two\@empty\relax
+          \def\sf@two{\@empty}
+        \fi
+        \ifx\@empty\sf@one\@empty\relax
+          \subfloat[\sf@two]{\box\sf@box}%
+        \else
+          \subfloat[\sf@one][\sf@two]{\box\sf@box}%
+        \fi}
+     \makeatother
+
+\newcommand{\eat}[1]{}
+\hyphenation{prov-e-nance}
+
+\newenvironment{proofsketch}% environment name
+{% begin code
+\noindent \textsc{Proof Sketch.}%
+}%
+{\qedsymbol}% end code
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% abbreviations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\abbrHW}{HWQ\xspace}
+\newcommand{\abbrHWs}{HWQs\xspace}
+\newcommand{\termHW}{historical what-if query\xspace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% main document for emacs auctex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "historical_whatif"
+%%% End:

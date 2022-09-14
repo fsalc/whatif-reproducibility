@@ -1,0 +1,239 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\iftechreport{
+\begin{figure}[t]
+  \centering
+  \begin{minipage}{0.4\linewidth}
+  \begin{gather*}
+    \label{eq:1}
+    %%%%%%%%%%%%%%%%%%%%%
+    % v1 < v2
+    \frac{\expr \defas \expr_1 < \expr_2}{
+      \begin{aligned}
+        \var_1 - \var_2 + \bvar \times \upBound &\geq 0\\
+        \var_2 - \var_1 + (1- \bvar) \times \upBound &> 0
+      \end{aligned}
+% \splitfrac{\var_1 - \var_2 + \var \times \upBound \geq 0}
+% {\var_2 - \var_1 + (1- \var) \times \upBound > 0}
+    }\\
+    %%%%%%%%%%%%%%%%%%%%
+    % v1 = v2
+%     &\frac{\expr := \expr_1 = \expr_2}{
+%       \begin{aligned}
+% \var_1 - \var_2 + \bvar \times \upBound &> 0\\
+% \var_2 -\var_1 + (1- \bvar) \times \upBound &\geq 0\\
+% \var_2 - \var_1 + \bvar \times \upBound &> 0\\
+% \var_1 -\var_2 + (1- \bvar) \times \upBound &\geq 0
+%       \end{aligned}
+%     }\\
+    %%%%%%%%%%%%%%%%%%%%
+    % v1 <= v2
+    \frac{ \expr \defas \expr_1 \leq \expr_2}{
+      \begin{aligned}
+        \var_1 - \var_2 + \bvar \times \upBound &> 0\\
+        \var_2 - \var_1 + (1- \bvar) \times \upBound &\geq 0
+      \end{aligned}
+    }\\
+    %%%%%%%%%%%%%%%%%%%%
+    % v1 AND v2
+    \frac{\expr := \expr_1 \wedge \expr_2}{
+      \begin{aligned}
+        \bvar_1 +\bvar_2 -2\bvar -1 &\leq 0 \\
+        \bvar_1 +\bvar_2 -2\bvar &\geq 0
+      \end{aligned}
+    }\\
+    %%%%%%%%%%%%%%%%%%%%
+    % v1 OR v2
+    \frac{\expr := \expr_1 \vee \expr_2}{
+      \begin{aligned}
+        \bvar_1 +\bvar_2 -2\bvar &\leq 0 \\
+        \bvar_1 +\bvar_2 -\bvar &\geq 0
+      \end{aligned}
+    }\\
+    %%%%%%%%%%%%%%%%%%%%
+    % v1 + v2
+     \frac{\expr \defas \expr_1 + \expr_2}{\var_1 + \var_2 - \var = 0}
+    %%%%%%%%%%%%%%%%%%%%
+    % if v1 then v2 else v3
+    %                                                              &  & \frac{\expr \defas \sqlCase{\expr_c}{\expr_1}{\expr_2}}{
+    %   \begin{aligned}
+    %     \var_{if} + \var_{else} - \var                           & = 0\\
+    %     %%%%%%%%%%%%%%%%%%%%
+    %     \var_{if} - \var_1                                       & \leq 0  \\
+    %     \var_{if} - \var_1 + \upBound - \upBound \cdot \bvar_{c} & \geq 0\\
+    %     \var_{if} - \upBound  \cdot \bvar_{c}                    & \leq 0 \\
+    %     \var_{if} + \bvar_{c}  \cdot \upBound                    & \geq 0\\
+    %     %%%%%%%%%%%%%%%%%%%%
+    %     \var_{else} - \var_2                                     & \leq 0 \\
+    %     \var_{else} - \upBound + \upBound \cdot \bvar_{c}        & \leq 0\\
+    %     \var_{else} - \var_2 + \upBound \cdot \bvar_{c}          & \geq 0\\
+    %     \var_{else} + \upBound - \upBound \cdot \bvar_{c}        & \geq 0
+    %   \end{aligned}
+    %   }
+    %%%%%%%%%%%%%%%%%%%%
+    % can't do multiplication and division except for by constant or with a very limited domain
+  \end{gather*}
+  \end{minipage}
+  \begin{minipage}{0.49\linewidth}
+    \[
+      \frac{\expr \defas \sqlCase{\expr_c}{\expr_1}{\expr_2}}{
+      \begin{aligned}
+        \var_{if} + \var_{else} - \var                             & = 0    \\
+        %%%%%%%%%%%%%%%%%%%%
+        \var_{if} - \var_1                                         & \leq 0 \\
+        \var_{if} - \var_1 + \upBound - \upBound \cdot \bvar_{c}   & \geq 0 \\
+        \var_{if} - \upBound  \cdot \bvar_{c}                      & \leq 0 \\
+        \var_{if} + \bvar_{c}  \cdot \upBound                      & \geq 0 \\
+        %%%%%%%%%%%%%%%%%%%%
+        \var_{else} - \var_2                                       & \leq 0 \\
+        \var_{else} - \upBound + \upBound \cdot \bvar_{c}          & \leq 0 \\
+        \var_{else} - \var_2 + \upBound \cdot \bvar_{c}            & \geq 0 \\
+        \var_{else} + \upBound - \upBound \cdot \bvar_{c}          & \geq 0
+      \end{aligned}
+    }
+  \]
+  %
+  \begin{gather*}
+    %%%%%%%%%%%%%%%%%%%%
+    % x
+    \frac{\expr \defas x}{\var_{x}}
+    %%%%%%%%%%%%%%%%%%%%
+    % not v1
+     \frac{\expr \defas \neg \expr_1 }{
+      \bvar + \bvar_1 =1
+    }
+  \end{gather*}
+  %%%%%%%%%%%%%%%%%%%%
+  \end{minipage}
+
+  \caption{Compilation rules for translating constraints into an MILP (the remaining comparison operators are omitted since they can be expressed using boolean operations).}
+  \label{fig:milp-compilation}
+\end{figure}
+
+In these rules we use $\var$, $var_1$, \ldots to denote integer variables and $\bvar$, $\bvar_1$, \ldots to denote boolean variables. Furthermore, $\upBound$ denotes an integer constant that is larger than all integer values used as attribute values.
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\iftechreport{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{MILP Compilation}
+\label{sec:sym-lin}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To evaluate the conditions $\aslicetest$ for program slicing, we first translate these conditions into existential form and then translate them into a MILP (mixed integer linear programming) program~\cite{schrijver1998theory}. The resulting program can then be solved using a standard MILP solver, e.g., we use CPLEX~\cite{cplex2009v12} to test the satisfiability of these conditions. % generated by our dependency checking solution presented in the previous section.
+% However, these conditions are typically not linear.
+We now introduce a compilation scheme that translates such logical expressions into linear constraints. This compilation scheme consists of a set of rules that are shown in \cite{techreport}.  These rules are applied recursively to a constraint. Each rule generates a set of linear constraints. The MILP generated by these rules for a boolean expression $\expr$ consists of the union of all linear constraints produced by the rules for the subexpressions of $e$. For each subexpression $\expr'$ of $\expr$, the compilation produces a variable $\var'$ ($\bvar'$ if $\expr'$ is boolean) for which any solution to the MILP sets $\var'$ ($\bvar'$) to the value that $\expr'$ evaluates to. An additional constraint $\bvar = 1$ is added to ensure that only solutions that satisfy $\expr$ are produced. %Note that we only use the MILP solver for satisfiable testing (cplex has an option for that).
+% Thus, for any solution to the MILP we have that $\var$ stores the value of expression $\expr$ for the values chosen for variables in the expression.
+% The objective function is set to $sum(v)$ such that the constraint solver to return a solution which satisfies the condition $\expr$ if such a solution exists.
+The translation rules applied here are mostly well-known rules applied in linear programming and many have been used in related work (e.g.,~\cite{MeliouS12}).
+}
+% our solver-based approach for applying program slicing and detecting dependent updates in the history. In particular, we use mixed-integer linear programming (MILP) in which some of the variables are constrained to be integers, whereas the rest of them are allowed to be non-integer. Our approach generates a MILP problem by linearizing and parameterizing update statements in the history over the VC-Table. Each attribute in the VC-Table is an undetermined variable and we just determine the minimum and maximum values for them. We convert each update statements as a linear equation over the VC-Table variables which simulate the symbolic execution. Then, we break down each equation into a set of of linear constraints. Finally, the undetermined variables are used to construct an objective function. By generating and solving this MILP problem based on the \Cref{alg:depend-algo}, we can find a possible world and detect dependent updates. In the rest of this section, we first present how to encode update conditions as linear constraints. Then, we show converting update statements as linear constraints which simulate symbolic executions.
+% % In addition, the constant values in the queries are parameterized into a set of undetermined variables, while the database state is encoded as constraints on the initial and final tuple values. Finally, the undetermined variables are used to construct an objective function that prefers value assignments that minimize both the amount that the queries change and the number of non-complaint tuples that are affected. The rest of this section will first describe the process of linearizing a single query and translating it into a set of constraints. We then extend the process to the entire query log and finally define the objective function. Subsequent sections introduce optimizations that both improve the speed and quality of the results, as well as harness the trade-off between the two.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Encoding Conditions as Linear Constraints}
+% \label{subsec:cond-lin}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We now show conditions can be encoded as linear constraints using mostly standard techniques from the literature.\\
+% \textit{1)} $\expr := \expr_1 < \expr_2$\\
+% $\var_1 - \var_2 + \var \times \upBound \geq 0$\\
+% $\var_2 - \var_1 + (1- \var) \times \upBound > 0$\\
+% $\var$ is a boolean which can be 1(True) or 0(False). If $\var_1 < \var_2$ the second statement is true. For the first statement,  $\var_1 - \var_2$ would be less than zero so $\var$ must be 1 in order to the first statement would be true. If $\var_1 > \var_2$ then the first statement is true and for the second statement, $\var_2 - \var_1$ would be less than zero so $\var$ must be 0 or False to make the second statement always true.\\
+
+% \textit{2)} $\expr := \expr_1 \leq \expr_2$\\
+% $\var_1 - \var_2 + \var \times \upBound > 0$\\
+% $\var_2 -\var_1 + (1- \var) \times \upBound \geq 0$\\
+% The reasoning is similar to the previous encoding.\\
+
+% \textit{3)} $\var := \var_1 = \var_2$\\
+% $\var_1 - \var_2 + \var \times \upBound > 0$\\
+% $\var_2 -\var_1 + (1- \var) \times \upBound \geq 0$\\
+% $\var_2 - \var_1 + \var \times \upBound > 0$\\
+% $\var_1 -\var_2 + (1- \var) \times \upBound \geq 0$\\
+% Since $\var_1 = \var_2$ can be implemented as $\var_1 \leq \var_2 \wedge \var_2 \leq \var_1$, it can be linearized based on the condition type \textit{2}.
+% \\
+
+% \textit{4)} $\var := \neg \var_1 $\\
+% $\var+ \var_1 =1 $\\
+% $\var$ and $\var_1$ are boolean variables. In this case the sum of $\var + \var_1$ must be 1 so just one of these variables can be True and the other one must be False which means one of them is the negation of the other variable.\\
+
+% \textit{5)} $\var := \var_1 \wedge \var_2$\\
+% $\var_1 +\var_2 -2\var -1 \leq 0 $\\
+% $\var_1 +\var_2 -2\var \geq 0 $\\
+% Suppose both $\var_1$ and $\var_2$ are True so $\var_1 \wedge \var_2$ would be True. Consider the first statement, $\var_1 + \var_2 =2$ so $\var$ must be 1 or True to make the statement True. For this case the second statement is True. Suppose both $\var_1$ and $\var_2$ are False or just one of them is False. In that case, the first statement is True even independent of the value of $\var$. For the second statement, $\var$ must be 0 or False as $\var_1 + \var_2$ can not be more than 1.\\
+
+% \textit{6)} $\var := \var_1 \vee \var_2$\\
+% $\var_1 +\var_2 -2\var \leq 0 $\\
+% $\var_1 +\var_2 -\var \geq 0 $\\
+% The reasoning is similar to the one for the $\wedge$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Encoding Update Statements as Linear Constraints}
+% \label{subsec:up-lin}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% In this section we present how we can perform the symbolic execution by defining a mixed-integer linear programming (MILP) problem and linearizing update statements in the $\history$ over the symbolic instance ($\symIns{i}$) which is created by the \Cref{alg:init-algo}. In MILP only a subset of the undetermined variables are integers, whereas the rest of variables are real valued. In our method we convert each update statement as a linear equation generates the output symbolic instance from the the previous input symbolic instance and transform the equation into a set of linear constraints. The rest of this section will first describe the process of linearizing a single update statements and translating it into a set of constraints.\\
+
+% %An update statement $u_i$ is a combination of a modifier function $\mu_{u_i}(t)$ and conditional function $\theta_{u_i}(t)$. The binary variable $x_{u_i,t}$ indicates whether $t$ satisfies the conditional function of $q_i$. A tuple t, the value of attribute $A_j$ in the updated tuple $t' \in \db$ is defined as follows: \\
+% \textbf{1)} If $\history[i]$ is an \textbf{update statement}:\\
+% An update statement $u=\history[i]$ is a combination of a set function $\pset$ and conditional function $\cond$.
+% The binary variable $\bVar{i}{i}$ indicates whether $\symIns{i}$ satisfies the conditional function of $\history[i]$.\\
+% $\bVar{i}{i} = \symCond{i}{i}$\\
+% If we consider $\symCond{i}{i}$ as a new variable $\var$, it can be linearized using constraints in above \Cref{subsec:cond-lin}.
+% For $\symIns{i+1} \gets \symExe{i}{i}$ , when $\history[i]$ is an update statement:
+% %$$\symIns{i+1}.\attr{j}= \psetAttr{i}{i}{j} \otimes \bVar{i}{i}$$
+% % $$t'.A_j= \mu_{q_i}(t).A_j \otimes x_{\history[i],\symIns{i}}$$
+% %, whereas $\upBound$ is the upper bound of the domain of $\attr{j}$
+% If we use the normal dependency algorithm without optimization (\Cref{alg:depend-algo}), we linearize it as follows :\\
+% $\symIns{i+1}.\attr{j}= \symIns{i}.\attr{j} \otimes (1-\bVar{i}{i}) + \setAttr{i}{i}{j} \otimes \bVar{i}{i}$\\
+% %\texttt{The First Method (Symbolic Execution)}
+% %............
+% %\texttt{The Second Method (QFix Method)}
+% %$$t'.A_j= x_{q_i,t}\otimes \mu_{q_i}(t).A_j + (1- x_{q_i,t}) \otimes t.A_j$$
+% For each update the symbolic execution can be expressed as following whereas $\upBound$ is the upper bound of the domain of $\symIns{i}.\attr{j}$.\\
+% $\symIns{i+1}.\attr{j}= u.\attr{j} + v.\attr{j}$\\
+% The following constraints are defined for $u$ and $v$.\\
+% $u.A_j \leq \setAttr{i}{i}{j}$ \\
+% $u.A_j \leq \bVar{i}{i} \times \upBound $ \\
+% $u.A_j \geq \setAttr{i}{i}{j} - (1- \bVar{i}{i})\upBound$ \\
+% $v.A_j \leq \symIns{i}.\attr{j}$ \\
+% $v.A_j \leq (1- \bVar{i}{i})\times \upBound$ \\
+% $v.A_j \geq \symIns{i}.\attr{j} - \bVar{i}{i} \times \upBound$\\
+
+% \textbf{2)} If $\history[i]$ is an \textbf{insert statement}:\\
+% We just need to consider an insert operation for our symbolic execution if it belongs to $\deltaHist$. We can ignore other insert operations as they would not affect the result of historical what-if query. If $\symIns{new}$ has new values for each attributes of symbolic instance, the insert operation can be encoded as follows:\\
+% if i=0 $\symIns{i+1}.\attr{j}= \symIns{new}.\attr{j}$\\
+% else $\symIns{i+1}.\attr{j}= \symIns{i}.\attr{j}$\\
+% In \Cref{alg:depend-algo}, line 4,8 and 9 can be ignored since insert statements do not have any conditional function.\\
+
+% \textbf{3)} If $\history[i]$ is a \textbf{delete statement}:\\
+% We do not need to encode the effect of delete operations on the symbolic instance as it just remove some of tuples from database. So for the symbolic execution if $\history[i]$ is a delete statement , we will have:\\
+% $\symIns{i+1}.\attr{j}= \symIns{i}.\attr{j}$\\
+% In this case we mainly need to consider the conditional function $\symCond{i}{i+1}$ in \Cref{alg:depend-algo}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Additional Optimizations}
+% \label{sec:opt-appr}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% In our implementation, we apply several additional optimization to improve the performance of answering historical what-if queries.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \partitle{Excluding Updates based on Relations}
+% For histories that update multiple relations, we can exclude updates of relations that are not updated by an of the updates in the modifications from $\deltaHist$ as in our update language there is no information flow between relations.
+% % We can just consider update operations in the history that are modified the same relations that are updated by the modifications($\deltaHist$) as they can not be affected by the historical what-if query.
+% We apply this optimization before program slicing.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \partitle{Attribute Slicing}
+% \BG{We need to do a transitive closure for that, because of stuff like $C = A + 2$ in $\pset$}
+% We just can consider attributes that are used in the modifications($\deltaHist$) or dependent updates in our programming slicing. It means we can consider only attributes that are modified by an update $u \in \deltaHist$ or its dependent updates (in the $\pset$ ) or are read by them (in the $\cond$). It can be effective for tables with large number of attributes and updates that changes a small subset of attributes.
+% % We also can exclude update operations reading from attributes that are not modified by the modifications($\deltaHist$) because they can not be affected by the changes that are performed by the historical what-if query. \\
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \partitle{Data Slicing For Delete Statements}
+% \BG{This seems out of data, and I think this basically evaluation of the delete over symbolic instance and maybe selection pushing which the database will do anyways.}
+% In addition of data slicing that are defined for reenactment queries, we can consider more data slicing rules.\\
+% \textbf{1)} Data slicing optimization in \Cref{alg:whatif-algo} that is discussed in \Cref{sec:filter} can be improved. For simplicity of exposition consider a single modification $m = \xid.u \gets u'$. To compute the delta, we can filter the input to the reenactment queries using a condition $\theta(u) \wedge \neg\theta(u')$ for $\ract{\history}$ in \texttt{ApplyDataSlicing($\deltaHist,\ract{\history}$)}. Also, $\neg\condOf{\up} \wedge \condOf{\up'}$ for $\ract{\history[\deltaHist]}$ in \texttt{ApplyDataSlicing($\deltaHist,\ract{\history[\deltaHist]}$)}.\\
+% \textbf{2)} In \Cref{alg:depend-algo} for delete statements, we can add some data slicing rules to optimize it. For a delete statements that is in the history and they does not belong to $\deltaHist$, we can filter tuples that are deleted by it because they would not affect the result of historical what-if query. So, instead of $\symIns{i+1} \gets \symExe{i}{i}$, we can have a new constraints $\symIns{i+1} \gets \neg\symCond{i}{i}$. By applying the negation of conditional function,  tuples that satisfy the conditional function of the delete statement are filtered and will be excluded from the symbolic instance.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "historical_whatif"
+%%% End:

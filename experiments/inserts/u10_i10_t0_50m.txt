@@ -1,0 +1,13 @@
+what if (update g set extras = extras + 62 where pickup_community_area <= 1;)
+replace (1)
+in (update g set trip_total = trip_total + 57 where pickup_community_area <= 1;
+update g set tolls = tolls + 72 where pickup_community_area > 67;
+update g set trip_total = trip_total + 44 where pickup_community_area > 44;
+update g set trip_total = trip_total + 30 where pickup_community_area > 31;
+update g set fare = fare + 79 where pickup_community_area > 20;
+insert into g values ('inserted', to_timestamp('1970-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 1, 91, 36, 73, 20);
+update g set extras = extras + 93 where pickup_community_area > 43;
+update g set fare = fare + 92 where pickup_community_area > 6;
+update g set fare = fare + 9 where pickup_community_area > 68;
+update g set fare = fare + 7 where pickup_community_area > 70;
+update g set extras = extras + 78 where pickup_community_area > 24;);

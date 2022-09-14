@@ -1,0 +1,170 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{theo}\label{theo:data-slicing-single-mod}
+% Consider a historical what-if query $\hwhatif =(\history, \rel, \deltaHist)$ with a single modification $\deltaHist= \{ m \}$ for $m = \up \gets \up'$ where $\up = \update{\pset}{\cond}$ and $\up' = \update{\pset'}{\cond'}$ and $\up$ is the first statement in $\up$. Let $\condDSh{\modi}$ and $\condDSm{\modi}$ be as shown in \Cref{eq:update-ds-cond}. Then
+% \[\iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}= \iDiff{\ract{\history}(\qDSh(\rel))}{\ract{\history[\deltaHist]}(\qDSm(\rel))}\]
+% \end{theo}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{theo}
+% Consider a historical what-if query $\hwhatif =(\history, \rel, \deltaHist)$ with a single modification $m = \up \gets \up'$ where $\up = \delete{\cond}$ and $\up' = \delete{\cond'}$. % $\theta(u)$ denote the condition of the delete statement $u$ and where
+% Let $\condDSh{\modi} = \cond'$ and $\condDSm{\modi} = \cond$. Then,
+% \[
+%   \iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}
+%   =
+% \iDiff{\ract{\history}(\query_{DS}(\rel))}{\ract{\history[\deltaHist]}(\query_{DS'}(\rel))}
+% \]
+% %
+% %To answer the historical what-if query and compute $\hwhatif= \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist](\db})}$, we can execute reenactment queries on part of data that was modified by either $u$ or $u'$. So, we just need to compute $\qResultDiff{\query}{\selection_{\theta(u) \wedge \neg\theta(u')}(\ract{\history})}{\selection_{\neg\theta(u) \wedge \theta(u')}(\ract{\history[\deltaHist]})}$.
+% %$\,$\\[-4mm]
+% \end{theo}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\tupin}{\tup_{in}}
+\newcommand{\tupup}{\tup_{up}}
+\newcommand{\dfull}{\Delta}
+\newcommand{\dslice}{\Delta_{DS}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{proof}
+  We proof the theorem by induction over the number of modifications ($\card{\deltaHist}$).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \proofpar{\bf Base Case:}
+  We consider a history $\history$ with a single modification $\up \gets \up'$ that replaces the first update of $\history$.
+  In the following, we use $\dfull$ to denote
+  \[
+    \iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}
+  \]
+  and $\dslice$ to denote
+  \[
+    \iDiff{\ract{\history}(\qDSh(\rel))}{\ract{\history[\deltaHist]}(\qDSm(\rel))}
+    \]
+    Note that histories $\history = (\up, \up_2, \ldots, \up_n)$ and $\history[\deltaHist]$ only differ in their first operation ($\up$ or $\up'$). We proof the claim first for updates ($\up = \aupdate$) and then for deletes ($\up = \adelete$).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{$\up = \aupdate$:}
+%
+For any tuple $\tup$ to be in $\dfull$, there has to exist a tuple $\tupup$ for which either (a)  $\histslice{2}{n}(\{\tupup\}) = \{\tup\}$ or (b) $\hsliceOf{\ahmod}{2}{n}(\{\tupup\}) = \{\tup\}$, i.e., $\tup$ is the result of applying one the histories excluding the first statement ($\up$ or $\up'$), and for which also either (i) $\tupup \in \up(\rel) \land \tupup \not\in \up'(\rel)$ or (ii) $\tupup \not\in \up(\rel) \land \tupup \in \up'(\rel)$ holds. To see why this has to be true, consider the only two remaining cases: for all tuples fulfilling (a) or (b) either (iii) $\tupup \in \up(\rel) \land \tupup \in \up'(\rel)$ or (iv) $\tupup \not\in \up(\rel) \land \tupup \not\in \up'(\rel)$ holds. In case (iii), the same suffix history $(\up_2, \ldots, \up_n)$ is applied to $\tupup$ in both $\history$ and $\history[\deltaHist]$ which means that $\tup \in \history(\rel)$ and $\tup \in \history[\deltaHist](\rel)$ which contradicts $\tup \in \dfull$. Case (iv) also contradicts the assumption that  $\tup \in \dfull$.
+  Let us now only consider case (i) since (ii) is symmetric. Consider any tuple $\tupin \in \rel$ such that $\up(\tupin) = \tupup$ (recall that we use $\up(t) = t'$ as a notational shortcut for $\up(\{t\}) = \{t'\}$). We know that $\up'(\tupin) \neq \tupup$, because $\tupup \not\in \up'(\rel)$. This can only be the case if $\tupin$ fulfills the condition of update $\up$ and/or $\up'$, because if $\tupin$ does not fulfill the condition of either update, then both updates return $\tupin$ unmodified and we get $\up(\tupin) = \up(\tupin) = \tupin$ contradicting $\tupup \not\in \up'(\rel)$.
+
+ Recall that $\condOf{\up}$ and $\condOf{\up'}$  are the conditions of $\up$ and $\up'$, respectively.  So far we have established that for any tuple $\tup$ in the result of either $\history$ or $\history[\deltaHist]$ and the tuple $\tupin \in \rel$ it is derived from by either $\history$ or $\history[\deltaHist]$, we have
+
+ \begin{align}
+\tup \in \dfull \Rightarrow \tupin \models \condOf{\up} \lor \condOf{\up'}
+ \end{align}
+
+Using the equivalence $\psi_1 \Rightarrow \psi_2 \Leftrightarrow \neg \psi_2 \Rightarrow \neg \psi_1$ we get:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \begin{align}
+   \tupin \not\models \condOf{\up} \lor \condOf{\up'} \Rightarrow \tup \not\in \dfull
+    \label{eq:update-slicing-cond}
+ \end{align}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Since $\query_{DS}$ only filters out tuples $\tupin$ for which $\tupin \not \models \condOf{\up} \lor \condOf{\up'}$,  \Cref{eq:update-slicing-cond} implies that all tuples filtered by $\query_{DS}$ do not contribute to any tuple in $\dfull$. Thus, we get $\dfull = \dslice$ which concludes the proof for this case.
+
+% We will prove $\delta = \delta_{DS}$ by showing inclusion in both direction.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \proofpar{$\dfull \subseteq \dslice$}
+% %
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \proofpar{$\dfull \supseteq \dslice$}
+
+
+
+
+% \BG{We need to explain why assuming that $m$ changes that first update is ok. Also we need to reason about deletes and inserts.}
+% We prove the theorem by induction over the number of updates in the history $\history$ by considering direct and indirect changes of tuples by updates in the history. For that consider a historical what-if query $\hwhatif = (\history, \db, \deltaHist, \query)$ with a single modification $m = u_1 \gets u_1'$, and the database $\db$.
+% \BG{Do we need $u_2$ for the induction start?}\BG{I assume the argument is by contradiction. If that is the case then we need to say that and for sake of contradiction we then need to assume that there is a tuple not fulfilling the data slicing condition whose removal would change $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$.}
+% \underline{Induction Start}: Assume that $\history=\lbrace u_1,u_2\rbrace$. We prove the claim by contradiction. For sake of contradiction assume that
+% \[\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)} \neq \qResultDiff{\query}{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}\].
+% \BG{We need to not assume that the tuple is affected by the update $u_2$ (that is only one case)}
+% Consider a tuple $t_0 \in \db$ that such that $(\condOf{u_1} \vee \condOf{u_1'}) \not\models t_0$. Let $t_2 = \up_2(\up_1(t_0))$ and $t_2' = \up_2(\up_1'(t_0))$.  For sake of the contradiction assume that either $t_2 \in \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ or $t_2' \in \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$.
+
+% WLOG we can assume that $t_2 \in \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ since the case for $t_2'$ is symmetric.
+
+% the $t_0$ were modified by $u_2$ and created new version $t_1$ where $t_1=u_2(t_0)$.
+% \BG{This is the first time we are using the notation $u(t)$. I am now describing it in the background section.}
+% Since this tuple was not changed by the historical what-if query, $t_1$ is same in both $\ract{\history}(\db)$ and $\ract{\history[\deltaHist]}(\db)$. So, we can remove the tuple $t_1$ from the delta $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ and the result of historical what-if query would be same. As a result, we can filter such tuples from input to reenactment queries.
+% %
+%  \underline{Induction Step}: Assume $\history=\lbrace u_1,\ldots ,u_{n}\rbrace$  and $t_0$ does not meet the condition $\theta(u_1)$ nor $\theta(u_1')$ but it was modified by other updates in the history $t_{n-1}=u_{n}(\ldots(u_2(t_0)))$. We can remove the tuple $t_{n-1}$ from the delta $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ and the result of historical what-if query would be same. We need to show that the same holds for $\history=\lbrace u_1,\ldots,u_{n},u_{n+1}\rbrace$ whereas $t_{n}=u_{n+1}(t_{n-1})$. Since $t_{n-1}$ is an input into the $u_{n+1}$ is exactly same in $\ract{\history}(\db)$ and $\ract{\history[\deltaHist]}(\db)$, $t_{n}$ as the output of $u_{n+1}$ would be also same in both reenactment queries. So, we can remove $t_{n}$ from the delta $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ without any changes to the result of historical what-if query.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{$\up = \adelete$:}
+%
+% In the following, we use $\dfull$ to denote $\iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}$ and $\dslice$ to denote $\iDiff{\ract{\history}(\query_{DS}(\rel))}{\ract{\history[\deltaHist]}(\query_{DS'}(\rel))}$.
+Now consider the case where $\up$ is a delete statement.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{$\dfull \subseteq \dslice$:}
+%
+  We prove this direction by contradiction. We have two histories $\history$ and $\history[\deltaHist]$ that only differ in the first statement: $\up = \delete{\cond}$ in $\history$ and $\up' = \delete{\cond'}$ in $\history[\deltaHist]$.
+%
+  Consider  a tuple $\tup \in   \iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}$ and WLOG assume the $\tup \in \ract{\history}(\rel)$ (the other case is symmetric). Then there has to exist $\tupin \in \rel$ such that $\ract{\history}(\{\tupin\}) = \{ \tup \}$, i.e., $\tupin$ is in the provenance of $\tup$. For this to be the case $\tupin \models \neg\,\cond$, i.e.,  $\tupin$ does not fulfill the condition $\cond$ of the delete $\up$ (otherwise it would have been deleted), and $\tupin \models \cond'$ (otherwise $\tup$ would not be in $\iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}$).
+  For sake of contradiction assume that $\tup \not \in \iDiff{\ract{\history}(\qDSh(\rel))}{\ract{\history[\deltaHist]}(\qDSm(\rel))}$. Since the two histories only differ in the first statement, this means that $\tupin$ does not fulfill the selection condition of $\qDSh$. Recall that this selection condition is $\cond'$. Thus, we have $\tupin \models \neg \cond'$ which contradicts $\tupin \models \cond'$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{$\dfull \supseteq \dslice$:}
+%
+Consider a tuple $\tup \in \dslice$ and as above let $\tupin \in \rel$ denote the tuple it is derived from. We have to show that $\tup \in \dfull$. Since $\tup \in \dslice$ either $\tup \models \cond \land \tup \not\models \cond'$ or $\tup \not\models \cond \land \tup \models \cond$. Since these two cases are symmetric, WLOG assume that $\tup \models \cond \land \tup \not\models \cond$. Note that the only difference between  $\ract{\history}(\rel)$ and $\ract{\history}(\qDSh(\rel))$ is the selection applied by $\qDSh$. Thus, $\tup \in \ract{\history}(\qDSh(\rel))$. Also $\tup \not\in \ract{\history[\deltaHist]}(\qDSm)$ holds, because $\tupin$ is already filtered out by $\up'$ (it fulfills $\cond'$). It follows that $\tup \in \dfull$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{\bf Inductive Step:}
+We again use $\dfull$ to denote $\iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}$ and $\dslice$ to denote $\iDiff{\ract{\history}(\qDSh(\rel))}{\ract{\history[\deltaHist]}(\qDSm(\rel))}$ in the following. For a tuple $t$, let $t_i$ be denote $\history_i(t)$ and $t_i'$ to denote ($\ahmod_i(t)$). Abusing notation, let $\modi$ in subscripts of $\tup$ denote the position of a modification $\modi$ in $\history$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{$\dfull \subseteq \dslice$:}
+% STAGE 1, tuple (successors) have to fulfill some modified update's condition
+Let $\tup \in \dfull$. Given that the tuple $\tup \in \dfull$, we will show that this implies that there exists $\modi = \up \gets \up'$ in $\deltaHist$ such that $\cond_\modi$ is the condition of $\up$ and $\cond_{\modi}'$ is the condition of $\up'$ and for which $\cond_\modi(t_{\modi -1}) \vee \cond_{\modi}'(t_{\modi -1}')$. This claim follows from inductive use of the  argument for single modifications from the proof of \Cref{theo:data-slicing-single-mod}. If a tuple $t \in \rel$ is not affected by any of the modified updates (i.e., the successors $t_i$ of $t$ do not fulfill any of the conditions of these statements), then the final result produced by $\history(\tup)$ and $\ahmod(\tup)$ which contradicts $\tup \in \dfull$.
+
+Assume that we have access to an oracle that given an input tuple $\tup$ determines whether any successor of $\tup$ fulfills the condition from above:
+
+\[
+  \exists \modi \in \deltaHist: \cond_\modi(t_{\modi -1}) \vee \cond_{\modi}'(t_{\modi -1}')
+\]
+
+Then we could filter input tuples using this oracle without changing the result of the historical what-if query. The only problem is that we cannot simply use a selection with condition, because we have only access to $\tup$, but not its successors $t_i$ (the result of applying the first $i$ updates to $t$). In the remainder of the proof we will show how to filter the input based on a pushed down condition is equivalent to applying the condition to a successor. From this then immediately follows the claim.
+
+Since a reenactment query $\ract{\history}$ is equivalent to the history $\history$, it suffices to show that conditions can be pushed through the relational algebra operators used in $\ract{\history}$. We then apply this repetitively for both $\ract{\history}$ and $\ract{\ahmod}$ to yield $\ract{\history}(\qDSh(\rel))$ and $\ract{\ahmod}(\qDSm(\rel))$.
+In the following we will abuse notation and for a query $\query$, denote by $\pushCond{\cond}{i}$ the condition $\cond$ pushed through the top-most $i$ operators.
+Consider a tuple $\tup = (c_1, \ldots, c_n)$, query $\query$ consisting of a single relational algebra operator, and condition $\cond$ and let $\tup_{out} = \query(\tup)$.
+We need to show that
+\begin{align}
+  \cond(\query(\{\tup\})) = \pushCond{\cond}{1}(\tup)
+  \label{eq:push-down-eq}
+\end{align}
+
+% step 2 conditions over operator outputs can be equivalently  evaluated over inputs when pushed
+
+% step 3 done (theorem follows from 1 + 2)
+Showing this equivalency is possible by a case distinction over the possible relational algebra operators:
+\begin{itemize}
+	\item \textbf{Projection} Consider a projection $\projection_{\vec{A}}$ with $\vec{A} = e_1 \to A_1, \ldots, e_n \to A_n$. Therefore, $\projection_{\vec{A}}(t) = (e_1(c_1), \ldots, e_n(c_n))$. Applying the definition of $\pushCond{\cond}{1}(\tup)$, we get $\pushCond{\cond}{1}(\tup) = (e_1(c_1), \ldots, e_n(c_n)) = \projection_{\vec{A}}(t)$.
+	\item \textbf{Selection} Based on the semantics of selection, $\tup_{out} = \tup$. Based on $\pushCond{\cond}{1} = \cond$, it follows that $\pushCond{\cond}{1}(\tup) = \cond(\tup_{out})$.
+	\item \textbf{Union} Considering that a union has two inputs, the tuple $\tup$ may be present in the left, the right, or both inputs to the union. However, no matter which input it stems from, $\tup_{out} = \tup$. Since $\pushCond{\cond}{1} = \cond$, we have $\pushCond{\cond}{1}(\tup) = \cond(\tup_{out})$.
+\end{itemize}
+
+Applying \Cref{eq:push-down-eq} iteratively, we can push down all conditions to the input table $\rel$ for both reenactment queries $\ract{\history}$ and $\ract{\ahmod}(\rel)$. This condition can then be applied in a selection over $\rel$. Since this is precisely the condition from $\qDSh$ and $\qDSm$, this implies $\dfull \subseteq \dslice$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{$\dfull \supseteq \dslice$} There are three cases where $\dslice$ could contain tuples not in $\dfull$. The first two cases are symmetric in form, and they are the cases where a tuple $\tup$ is filtered to exclusively $H$ ($\ahmod$ symmetrically). The third case is when a tuple might be inserted by $\qDSh(\rel)$ ($\qDSm(\rel)$).
+%%
+We can eliminate the third case using the following argument. First observe that $\qDSh(\rel) \subseteq \rel$ as it applies a selection over the reenactment. Considering our updates are monotone this implies that $\history(\qDSh(\rel)) \subseteq \history(\rel)$. Using the same argument, we also have $\ahmod(\qDSm(\rel)) \subseteq \ahmod(\rel)$. Thus, no new tuples can appear in $\dslice$.
+%%
+  Thus we now only need to consider the first two cases, in which the symmetric difference could possibly produce tuples outside of $\dfull$. For the sake of contradiction, let $\tup$ be a tuple not in $\dfull$ but present in $\dslice$. For a tuple to be in $\dslice$, it needs to match $\cond_\modi$ or $\cond_\modi'$ for at least one $\modi \in \deltaHist$. However, recall that \Cref{eq:update-ds-cond} takes the disjunction over the conditions for $\history$ and $\ahmod$. That is, if a tuple matches at least one, it is included in the slice of the data, making the case that a tuple is filtered to exclusively one history impossible (any tuple modified by just one of the histories is included for reenactment in the other). It then follows from \Cref{theo:data-slicing-single-mod} that $\tup$ must be in $\dfull$ given that it matches the condition $\cond_\modi$ or $\cond_\modi'$ for at least one $\modi \in \deltaHist$. Therefore, we find that $\forall \tup \in \dslice: \tup \in \dfull$, i.e. $\dfull \supseteq \dslice$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "techreport"
+%%% End:

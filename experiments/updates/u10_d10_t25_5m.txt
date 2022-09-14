@@ -1,0 +1,13 @@
+what if (update f set extras = extras + 30 where pickup_community_area = 8;)
+replace (1)
+in (update f set extras = extras + 89 where pickup_community_area = 8;
+update f set extras = extras + 6 where pickup_community_area >= 32;
+update f set extras = extras + 36 where pickup_community_area >= 32;
+update f set trip_total = trip_total + 34 where pickup_community_area >= 32;
+update f set fare = fare + 73 where pickup_community_area >= 32;
+update f set fare = fare + 18 where pickup_community_area = 8;
+update f set tolls = tolls + 82 where pickup_community_area >= 32;
+update f set trip_total = trip_total + 35 where pickup_community_area >= 32;
+update f set extras = extras + 66 where pickup_community_area >= 32;
+update f set fare = fare + 10 where pickup_community_area >= 32;
+update f set trip_total = trip_total + 41 where pickup_community_area >= 32;);

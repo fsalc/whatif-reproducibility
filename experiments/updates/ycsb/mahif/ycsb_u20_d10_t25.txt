@@ -1,0 +1,22 @@
+what if (update usertable set field1=6829 where ycsb_key <= 2500000;)
+replace (1) in
+(update usertable set field1=458 where ycsb_key <= 2500000;
+update usertable set field2=9200 where ycsb_key >= 7500000;
+update usertable set field3=8371 where ycsb_key >= 7500000;
+update usertable set field4=4349 where ycsb_key >= 7500000;
+update usertable set field5=8514 where ycsb_key >= 7500000;
+update usertable set field6=745 where ycsb_key >= 7500000;
+update usertable set field7=5889 where ycsb_key >= 7500000;
+update usertable set field8=6003 where ycsb_key >= 7500000;
+update usertable set field9=6020 where ycsb_key >= 7500000;
+update usertable set field10=4945 where ycsb_key <= 2500000;
+update usertable set field1=5047 where ycsb_key >= 7500000;
+update usertable set field2=438 where ycsb_key >= 7500000;
+update usertable set field3=5627 where ycsb_key >= 7500000;
+update usertable set field4=7037 where ycsb_key >= 7500000;
+update usertable set field5=3004 where ycsb_key >= 7500000;
+update usertable set field6=3862 where ycsb_key >= 7500000;
+update usertable set field7=607 where ycsb_key >= 7500000;
+update usertable set field8=966 where ycsb_key >= 7500000;
+update usertable set field9=891 where ycsb_key >= 7500000;
+update usertable set field10=7276 where ycsb_key <= 2500000;);

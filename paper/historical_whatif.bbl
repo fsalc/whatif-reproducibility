@@ -1,0 +1,482 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{39}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{#1}\fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[\protect\citeauthoryear{Abiteboul and Grahne}{Abiteboul and
+  Grahne}{1985}]%
+        {AG85}
+\bibfield{author}{\bibinfo{person}{Serge Abiteboul} {and}
+  \bibinfo{person}{Gösta Grahne}.} \bibinfo{year}{1985}\natexlab{}.
+\newblock \showarticletitle{Update semantics for incomplete databases}. In
+  \bibinfo{booktitle}{\emph{VLDB}}. \bibinfo{pages}{1--12}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Amsterdamer, Deutch, and Tannen}{Amsterdamer
+  et~al\mbox{.}}{2011}]%
+        {AD11d}
+\bibfield{author}{\bibinfo{person}{Yael Amsterdamer}, \bibinfo{person}{Daniel
+  Deutch}, {and} \bibinfo{person}{Val Tannen}.}
+  \bibinfo{year}{2011}\natexlab{}.
+\newblock \showarticletitle{Provenance for Aggregate Queries}. In
+  \bibinfo{booktitle}{\emph{PODS}}. \bibinfo{pages}{153--164}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Arab, Gawlick, Krishnaswamy, Radhakrishnan,
+  and Glavic}{Arab et~al\mbox{.}}{2016}]%
+        {AG17}
+\bibfield{author}{\bibinfo{person}{Bahareh~Sadat Arab}, \bibinfo{person}{Dieter
+  Gawlick}, \bibinfo{person}{Vasudha Krishnaswamy}, \bibinfo{person}{Venkatesh
+  Radhakrishnan}, {and} \bibinfo{person}{Boris Glavic}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Reenactment for Read-Committed Snapshot Isolation}.
+  In \bibinfo{booktitle}{\emph{CIKM}}. \bibinfo{pages}{841--850}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Arab, Gawlick, Krishnaswamy, Radhakrishnan,
+  and Glavic}{Arab et~al\mbox{.}}{2018}]%
+        {AG18}
+\bibfield{author}{\bibinfo{person}{Bahareh~Sadat Arab}, \bibinfo{person}{Dieter
+  Gawlick}, \bibinfo{person}{Vasudha Krishnaswamy}, \bibinfo{person}{Venkatesh
+  Radhakrishnan}, {and} \bibinfo{person}{Boris Glavic}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{Using reenactment to retroactively capture
+  provenance for transactions}.
+\newblock \bibinfo{journal}{\emph{TKDE}} \bibinfo{volume}{30},
+  \bibinfo{number}{3} (\bibinfo{year}{2018}), \bibinfo{pages}{599--612}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Arab, Gawlick, Radhakrishnan, Guo, and
+  Glavic}{Arab et~al\mbox{.}}{2014}]%
+        {AG14}
+\bibfield{author}{\bibinfo{person}{Bahareh~Sadat Arab}, \bibinfo{person}{Dieter
+  Gawlick}, \bibinfo{person}{Venkatesh Radhakrishnan}, \bibinfo{person}{Hao
+  Guo}, {and} \bibinfo{person}{Boris Glavic}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{A Generic Provenance Middleware for Database
+  Queries, Updates, and Transactions}. In \bibinfo{booktitle}{\emph{TaPP}}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Balmin, Papadimitriou, and
+  Papakonstantinou}{Balmin et~al\mbox{.}}{2000}]%
+        {hung17}
+\bibfield{author}{\bibinfo{person}{Andrey Balmin}, \bibinfo{person}{Thanos
+  Papadimitriou}, {and} \bibinfo{person}{Yannis Papakonstantinou}.}
+  \bibinfo{year}{2000}\natexlab{}.
+\newblock \showarticletitle{Hypothetical Queries in an OLAP Environment}. In
+  \bibinfo{booktitle}{\emph{VLDB}}. \bibinfo{pages}{220--231}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Bourhis, Deutch, and Moskovitch}{Bourhis
+  et~al\mbox{.}}{2016}]%
+        {bourhis16}
+\bibfield{author}{\bibinfo{person}{Pierre Bourhis}, \bibinfo{person}{Daniel
+  Deutch}, {and} \bibinfo{person}{Yuval Moskovitch}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Analyzing data-centric applications: Why, what-if,
+  and how-to}. In \bibinfo{booktitle}{\emph{ICDE}}. \bibinfo{pages}{779--790}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Bourhis, Deutch, and Moskovitch}{Bourhis
+  et~al\mbox{.}}{2020}]%
+        {bourhis-20-eqinalphupq}
+\bibfield{author}{\bibinfo{person}{Pierre Bourhis}, \bibinfo{person}{Daniel
+  Deutch}, {and} \bibinfo{person}{Yuval Moskovitch}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Equivalence-Invariant Algebraic Provenance for
+  Hyperplane Update Queries}. In \bibinfo{booktitle}{\emph{SIGMOD}}.
+  \bibinfo{pages}{415--429}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Bucur, Kinder, and Candea}{Bucur
+  et~al\mbox{.}}{2014}]%
+        {bucur14}
+\bibfield{author}{\bibinfo{person}{Stefan Bucur}, \bibinfo{person}{Johannes
+  Kinder}, {and} \bibinfo{person}{George Candea}.}
+  \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{Prototyping symbolic execution engines for
+  interpreted languages}.
+\newblock \bibinfo{journal}{\emph{SIGARCH Comput Archit News}}
+  \bibinfo{volume}{42}, \bibinfo{number}{1} (\bibinfo{year}{2014}),
+  \bibinfo{pages}{239--254}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Buneman, Khanna, and Tan}{Buneman
+  et~al\mbox{.}}{2001}]%
+        {BK01}
+\bibfield{author}{\bibinfo{person}{Peter Buneman}, \bibinfo{person}{Sanjeev
+  Khanna}, {and} \bibinfo{person}{Wang-Chiew Tan}.}
+  \bibinfo{year}{2001}\natexlab{}.
+\newblock \showarticletitle{Why and Where: A Characterization of Data
+  Provenance}. In \bibinfo{booktitle}{\emph{ICDT}}. \bibinfo{pages}{316--330}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Cadar and Sen}{Cadar and Sen}{2013}]%
+        {cadar13}
+\bibfield{author}{\bibinfo{person}{Cristian Cadar} {and}
+  \bibinfo{person}{Koushik Sen}.} \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{Symbolic execution for software testing: three
+  decades later}.
+\newblock \bibinfo{journal}{\emph{CACM}} \bibinfo{volume}{56},
+  \bibinfo{number}{2} (\bibinfo{year}{2013}), \bibinfo{pages}{82--90}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Campbell, Arab, and Glavic}{Campbell
+  et~al\mbox{.}}{2022}]%
+        {techreport}
+\bibfield{author}{\bibinfo{person}{Felix~S. Campbell},
+  \bibinfo{person}{Bahareh~S. Arab}, {and} \bibinfo{person}{Boris Glavic}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Efficient Answering of Historical What-if Queries
+  (extended version)}.
+\newblock  (\bibinfo{year}{2022}).
+\newblock
+\showeprint[arxiv]{2203.12860}~[cs.DB]
+
+
+\bibitem[\protect\citeauthoryear{Cheney}{Cheney}{2007}]%
+        {cheney07}
+\bibfield{author}{\bibinfo{person}{James Cheney}.}
+  \bibinfo{year}{2007}\natexlab{}.
+\newblock \showarticletitle{Program slicing and data provenance.}
+\newblock \bibinfo{journal}{\emph{IEEE Data Eng. Bull.}} \bibinfo{volume}{30},
+  \bibinfo{number}{4} (\bibinfo{year}{2007}), \bibinfo{pages}{22--28}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Chu, Wang, Weitz, and Cheung}{Chu
+  et~al\mbox{.}}{2017}]%
+        {chu2017}
+\bibfield{author}{\bibinfo{person}{Shumo Chu}, \bibinfo{person}{Chenglong
+  Wang}, \bibinfo{person}{Konstantin Weitz}, {and} \bibinfo{person}{Alvin
+  Cheung}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Cosette: An Automated Prover for SQL}. In
+  \bibinfo{booktitle}{\emph{CIDR}}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Cooper, Silberstein, Tam, Ramakrishnan, and
+  Sears}{Cooper et~al\mbox{.}}{2010}]%
+        {CooperSTRS10}
+\bibfield{author}{\bibinfo{person}{Brian~F. Cooper}, \bibinfo{person}{Adam
+  Silberstein}, \bibinfo{person}{Erwin Tam}, \bibinfo{person}{Raghu
+  Ramakrishnan}, {and} \bibinfo{person}{Russell Sears}.}
+  \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{Benchmarking cloud serving systems with YCSB}. In
+  \bibinfo{booktitle}{\emph{SoCC}}. \bibinfo{pages}{143--154}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Cui, Widom, and Wiener}{Cui
+  et~al\mbox{.}}{2000}]%
+        {CW00b}
+\bibfield{author}{\bibinfo{person}{Yingwei Cui}, \bibinfo{person}{Jennifer
+  Widom}, {and} \bibinfo{person}{Janet~L. Wiener}.}
+  \bibinfo{year}{2000}\natexlab{}.
+\newblock \showarticletitle{Tracing the Lineage of View Data in a Warehousing
+  Environment}.
+\newblock \bibinfo{journal}{\emph{TODS}} \bibinfo{volume}{25},
+  \bibinfo{number}{2} (\bibinfo{year}{2000}), \bibinfo{pages}{179--227}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Dashti, Basil~John, Shaikhha, and Koch}{Dashti
+  et~al\mbox{.}}{2017}]%
+        {dashti17}
+\bibfield{author}{\bibinfo{person}{Mohammad Dashti}, \bibinfo{person}{Sachin
+  Basil~John}, \bibinfo{person}{Amir Shaikhha}, {and}
+  \bibinfo{person}{Christoph Koch}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Transaction Repair for Multi-Version Concurrency
+  Control}. In \bibinfo{booktitle}{\emph{SIGMOD}}. \bibinfo{pages}{235--250}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{de~Moura and Bjørner}{de~Moura and
+  Bjørner}{2011}]%
+        {moura-11-smt}
+\bibfield{author}{\bibinfo{person}{Leonardo~Mendonça de Moura} {and}
+  \bibinfo{person}{Nikolaj Bjørner}.} \bibinfo{year}{2011}\natexlab{}.
+\newblock \showarticletitle{Satisfiability Modulo Theories: Introduction and
+  Applications}.
+\newblock \bibinfo{journal}{\emph{CACM}} \bibinfo{volume}{54},
+  \bibinfo{number}{9} (\bibinfo{year}{2011}), \bibinfo{pages}{69--77}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Deutch, Ives, Milo, and Tannen}{Deutch
+  et~al\mbox{.}}{2013}]%
+        {deutch13}
+\bibfield{author}{\bibinfo{person}{Daniel Deutch}, \bibinfo{person}{Zachary~G
+  Ives}, \bibinfo{person}{Tova Milo}, {and} \bibinfo{person}{Val Tannen}.}
+  \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{Caravan: Provisioning for What-If Analysis}. In
+  \bibinfo{booktitle}{\emph{CIDR}}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Difallah, Pavlo, Curino, and
+  Cudré-Mauroux}{Difallah et~al\mbox{.}}{2013}]%
+        {DifallahPCC13}
+\bibfield{author}{\bibinfo{person}{Djellel~Eddine Difallah},
+  \bibinfo{person}{Andrew Pavlo}, \bibinfo{person}{Carlo Curino}, {and}
+  \bibinfo{person}{Philippe Cudré-Mauroux}.} \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{OLTP-Bench: An Extensible Testbed for Benchmarking
+  Relational Databases}.
+\newblock \bibinfo{journal}{\emph{PVLDB}} \bibinfo{volume}{7},
+  \bibinfo{number}{4} (\bibinfo{year}{2013}), \bibinfo{pages}{277--288}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Fagin, Kuper, Ullman, and Vardi}{Fagin
+  et~al\mbox{.}}{1986}]%
+        {fagin-86-upld}
+\bibfield{author}{\bibinfo{person}{Ronald Fagin}, \bibinfo{person}{Gabriel~M.
+  Kuper}, \bibinfo{person}{Jeffrey~D. Ullman}, {and} \bibinfo{person}{Moshe~Y.
+  Vardi}.} \bibinfo{year}{1986}\natexlab{}.
+\newblock \showarticletitle{Updating Logical Databases}.
+\newblock \bibinfo{journal}{\emph{Adv. Comput. Res.}}  \bibinfo{volume}{3}
+  (\bibinfo{year}{1986}), \bibinfo{pages}{1--18}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Feng, Huber, Glavic, and Kennedy}{Feng
+  et~al\mbox{.}}{2021}]%
+        {FH21}
+\bibfield{author}{\bibinfo{person}{Su Feng}, \bibinfo{person}{Aaron Huber},
+  \bibinfo{person}{Boris Glavic}, {and} \bibinfo{person}{Oliver Kennedy}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Efficient Uncertainty Tracking for Complex Queries
+  with Attribute-level Bounds}. In \bibinfo{booktitle}{\emph{SIGMOD}}.
+  \bibinfo{pages}{528--540}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Green, Karvounarakis, and Tannen}{Green
+  et~al\mbox{.}}{2007}]%
+        {GK07}
+\bibfield{author}{\bibinfo{person}{Todd~J. Green}, \bibinfo{person}{Gregory
+  Karvounarakis}, {and} \bibinfo{person}{Val Tannen}.}
+  \bibinfo{year}{2007}\natexlab{}.
+\newblock \showarticletitle{Provenance Semirings}. In
+  \bibinfo{booktitle}{\emph{PODS}}. \bibinfo{pages}{31--40}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Imieli{\'n}ski and Lipski~Jr}{Imieli{\'n}ski
+  and Lipski~Jr}{1984}]%
+        {IL84a}
+\bibfield{author}{\bibinfo{person}{Tomasz Imieli{\'n}ski} {and}
+  \bibinfo{person}{Witold Lipski~Jr}.} \bibinfo{year}{1984}\natexlab{}.
+\newblock \showarticletitle{Incomplete Information in Relational Databases}.
+\newblock \bibinfo{journal}{\emph{JACM}} \bibinfo{volume}{31},
+  \bibinfo{number}{4} (\bibinfo{year}{1984}), \bibinfo{pages}{761--791}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Kennedy and Koch}{Kennedy and Koch}{2010}]%
+        {pip10}
+\bibfield{author}{\bibinfo{person}{Oliver Kennedy} {and}
+  \bibinfo{person}{Christoph Koch}.} \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{PIP: A database system for great and small
+  expectations}. In \bibinfo{booktitle}{\emph{ICDE}}.
+  \bibinfo{pages}{157--168}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{King}{King}{1976}]%
+        {K76}
+\bibfield{author}{\bibinfo{person}{James~C King}.}
+  \bibinfo{year}{1976}\natexlab{}.
+\newblock \showarticletitle{Symbolic execution and program testing}.
+\newblock \bibinfo{journal}{\emph{CACM}} \bibinfo{volume}{19},
+  \bibinfo{number}{7} (\bibinfo{year}{1976}), \bibinfo{pages}{385--394}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Luckow, Păsăreanu, Dwyer, Filieri, and
+  Visser}{Luckow et~al\mbox{.}}{2014}]%
+        {luckow14}
+\bibfield{author}{\bibinfo{person}{Kasper Luckow}, \bibinfo{person}{Corina~S
+  Păsăreanu}, \bibinfo{person}{Matthew~B Dwyer}, \bibinfo{person}{Antonio
+  Filieri}, {and} \bibinfo{person}{Willem Visser}.}
+  \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{Exact and approximate probabilistic symbolic
+  execution for nondeterministic programs}. In \bibinfo{booktitle}{\emph{ASE}}.
+  \bibinfo{pages}{575--586}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Meliou, Gatterbauer, Moore, and Suciu}{Meliou
+  et~al\mbox{.}}{2010}]%
+        {MG10}
+\bibfield{author}{\bibinfo{person}{A. Meliou}, \bibinfo{person}{W.
+  Gatterbauer}, \bibinfo{person}{K.F. Moore}, {and} \bibinfo{person}{D.
+  Suciu}.} \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{The Complexity of Causality and Responsibility for
+  Query Answers and non-Answers}.
+\newblock \bibinfo{journal}{\emph{PVLDB}} \bibinfo{volume}{4},
+  \bibinfo{number}{1} (\bibinfo{year}{2010}), \bibinfo{pages}{34--45}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Meliou and Suciu}{Meliou and Suciu}{2012}]%
+        {MeliouS12}
+\bibfield{author}{\bibinfo{person}{Alexandra Meliou} {and} \bibinfo{person}{Dan
+  Suciu}.} \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{Tiresias: The Database Oracle for How-To Queries}.
+  In \bibinfo{booktitle}{\emph{SIGMOD}}. \bibinfo{pages}{337--348}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Pearl}{Pearl}{2000}]%
+        {P00}
+\bibfield{author}{\bibinfo{person}{J. Pearl}.} \bibinfo{year}{2000}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Causality: models, reasoning, and
+  inference}}.
+\newblock \bibinfo{publisher}{Cambridge Univ Pr}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Roy and Suciu}{Roy and Suciu}{2014}]%
+        {RS14}
+\bibfield{author}{\bibinfo{person}{Sudeepa Roy} {and} \bibinfo{person}{Dan
+  Suciu}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{A formal approach to finding explanations for
+  database queries}. In \bibinfo{booktitle}{\emph{SIGMOD}}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Sundarmurthy, Koutris, Lang, Naughton, and
+  Tannen}{Sundarmurthy et~al\mbox{.}}{2017}]%
+        {SK17}
+\bibfield{author}{\bibinfo{person}{Bruhathi Sundarmurthy},
+  \bibinfo{person}{Paraschos Koutris}, \bibinfo{person}{Willis Lang},
+  \bibinfo{person}{Jeffrey Naughton}, {and} \bibinfo{person}{Val Tannen}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{m-tables: Representing Missing Data}. In
+  \bibinfo{booktitle}{\emph{ICDT}}, Vol.~\bibinfo{volume}{68}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Torlak and Bodik}{Torlak and Bodik}{2014}]%
+        {torlak2014}
+\bibfield{author}{\bibinfo{person}{Emina Torlak} {and}
+  \bibinfo{person}{Rastislav Bodik}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{A lightweight symbolic virtual machine for
+  solver-aided host languages}. In \bibinfo{booktitle}{\emph{ACM SIGPLAN
+  Notices}}, Vol.~\bibinfo{volume}{49}. \bibinfo{pages}{530--541}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Wang, Meliou, and Wu}{Wang
+  et~al\mbox{.}}{2017}]%
+        {wang16}
+\bibfield{author}{\bibinfo{person}{Xiaolan Wang}, \bibinfo{person}{Alexandra
+  Meliou}, {and} \bibinfo{person}{Eugene Wu}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Qfix: Diagnosing errors through query histories}.
+  In \bibinfo{booktitle}{\emph{SIGMOD}}. \bibinfo{pages}{1369--1384}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Weiser}{Weiser}{1981}]%
+        {W81}
+\bibfield{author}{\bibinfo{person}{M. Weiser}.}
+  \bibinfo{year}{1981}\natexlab{}.
+\newblock \showarticletitle{Program slicing}.
+\newblock \bibinfo{journal}{\emph{ICSE}} (\bibinfo{year}{1981}),
+  \bibinfo{pages}{439--449}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Winslett}{Winslett}{1986}]%
+        {winslett-86-upldcnv}
+\bibfield{author}{\bibinfo{person}{Marianne Winslett}.}
+  \bibinfo{year}{1986}\natexlab{}.
+\newblock \showarticletitle{Updating Logical Databases Containing Null Values}.
+  In \bibinfo{booktitle}{\emph{ICDT}}, Vol.~\bibinfo{volume}{243}.
+  \bibinfo{pages}{421--435}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Yang, Meneghetti, Fehling, Liu, and
+  Kennedy}{Yang et~al\mbox{.}}{2015}]%
+        {lenses15}
+\bibfield{author}{\bibinfo{person}{Ying Yang}, \bibinfo{person}{Niccolo
+  Meneghetti}, \bibinfo{person}{Ronny Fehling}, \bibinfo{person}{Zhen~Hua Liu},
+  {and} \bibinfo{person}{Oliver Kennedy}.} \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{Lenses: An on-demand approach to etl}.
+\newblock \bibinfo{journal}{\emph{PVLDB}} \bibinfo{volume}{8},
+  \bibinfo{number}{12} (\bibinfo{year}{2015}), \bibinfo{pages}{1578--1589}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Zhou, Arulraj, Navathe, Harris, and Xu}{Zhou
+  et~al\mbox{.}}{2019}]%
+        {zhou-19-autvqequssm}
+\bibfield{author}{\bibinfo{person}{Qi Zhou}, \bibinfo{person}{Joy Arulraj},
+  \bibinfo{person}{Shamkant~B. Navathe}, \bibinfo{person}{William Harris},
+  {and} \bibinfo{person}{Dong Xu}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Automated Verification of Query Equivalence Using
+  Satisfiability Modulo Theories}.
+\newblock \bibinfo{journal}{\emph{PVLDB}} \bibinfo{volume}{12},
+  \bibinfo{number}{11} (\bibinfo{year}{2019}), \bibinfo{pages}{1276--1288}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Zhuge, Garcia-Molina, Hammer, and Widom}{Zhuge
+  et~al\mbox{.}}{1995}]%
+        {ZG95}
+\bibfield{author}{\bibinfo{person}{Yue Zhuge}, \bibinfo{person}{Hector
+  Garcia-Molina}, \bibinfo{person}{Joachim Hammer}, {and}
+  \bibinfo{person}{Jennifer Widom}.} \bibinfo{year}{1995}\natexlab{}.
+\newblock \showarticletitle{View maintenance in a warehousing environment}.
+\newblock \bibinfo{journal}{\emph{SIGMOD Record}} \bibinfo{volume}{24},
+  \bibinfo{number}{2} (\bibinfo{year}{1995}), \bibinfo{pages}{316--327}.
+\newblock
+
+
+\end{thebibliography}

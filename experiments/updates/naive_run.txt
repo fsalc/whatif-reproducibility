@@ -1,0 +1,1 @@
+time psql -h localhost -p 5432 -U whatif -f FILE

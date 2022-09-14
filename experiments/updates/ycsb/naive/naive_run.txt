@@ -1,0 +1,1 @@
+time psql -h localhost -p 5453 -U whatif -d ycsb_whatif -f FILE

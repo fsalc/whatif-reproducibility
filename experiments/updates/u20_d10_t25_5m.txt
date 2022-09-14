@@ -1,0 +1,23 @@
+what if (update f set extras = extras + 74 where pickup_community_area = 8;)
+replace (1)
+in (update f set tolls = tolls + 17 where pickup_community_area = 8;
+update f set extras = extras + 25 where pickup_community_area >= 32;
+update f set tolls = tolls + 81 where pickup_community_area >= 32;
+update f set fare = fare + 53 where pickup_community_area >= 32;
+update f set extras = extras + 60 where pickup_community_area >= 32;
+update f set trip_total = trip_total + 14 where pickup_community_area >= 32;
+update f set fare = fare + 40 where pickup_community_area >= 32;
+update f set extras = extras + 82 where pickup_community_area >= 32;
+update f set trip_total = trip_total + 28 where pickup_community_area >= 32;
+update f set fare = fare + 96 where pickup_community_area = 8;
+update f set fare = fare + 92 where pickup_community_area = 8;
+update f set extras = extras + 16 where pickup_community_area >= 32;
+update f set extras = extras + 74 where pickup_community_area >= 32;
+update f set fare = fare + 72 where pickup_community_area >= 32;
+update f set extras = extras + 24 where pickup_community_area >= 32;
+update f set tolls = tolls + 63 where pickup_community_area >= 32;
+update f set tolls = tolls + 19 where pickup_community_area >= 32;
+update f set trip_total = trip_total + 31 where pickup_community_area >= 32;
+update f set tolls = tolls + 100 where pickup_community_area >= 32;
+update f set fare = fare + 44 where pickup_community_area >= 32;
+update f set tolls = tolls + 81 where pickup_community_area >= 32;);

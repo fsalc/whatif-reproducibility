@@ -1,0 +1,52 @@
+\begin{abstract}
+  % What-if queries predict how hypothetical updates to a database would affect the result of a query.
+  % \BGDel{For instance, \emph{``how would a 1\% increase in sales affect the company's revenue this year?''}}{too detailed in abstract}
+  % However, it may not be  obvious how the such an update can be implemented.
+  We introduce \emph{historical what-if queries}, a novel type of what-if analysis that determines the effect of a hypothetical change to the transactional history of a database. For example, \emph{``how would revenue be affected if we would have charged an additional \$6 for shipping?''} % We argue that such queries are  easier to formulate than traditional what-if queries as they are based on changes to past actions instead of to the results of these actions as in traditional what-if queries.
+  % operations of a business and the user knows how he could have realized these changes.
+\iftechreport{Such queries may lead to more actionable insights than traditional what-if queries as their results can be used to inform future actions, e.g., increasing shipping fees.}
+%What-if queries % are an effective method for
+%predict how the results of an analysis would change based on hypothetical changes to a database. % For example, how would a 10\% increase in sales in California affect my company's revenue this year?
+%While a what-if query determines the effect of a hypothetical change on a query's result, it is often unclear how such a change could have been achieved limiting the practical applicability of such queries. We propose an alternative model for what-if queries where the user proposes a hypothetical change to past update operations.  % (transaction executions).
+%Answering such a query amounts to determining the effect of a hypothetical change to past operations on the current database state (or a query's result). % For example, how would my revenue be affected if I would have charged 5\% interest for account overdrafts instead of 10\%?
+%We argue that such % questions, which we call
+%\emph{historical what-if} queries are often easier to formulate for a user and lead to more actionable insights.
+We develop efficient techniques for answering historical what-if queries, i.e., determining how  a modified history affects the current database state. Our techniques are based on \emph{reenactment}, a % declarative
+ replay technique for transactional histories.
+%replay technique for transactional histories, to evaluate the effect of a modified history on the current database state. % Reenactment is .
+% that we have presented in the previous work.
+We optimize this process using
+% Since, reenacting all updates reduce performance and it is not necessary to evaluate the effect of updates which has same input and output in the original and modified history, we introduce some techniques to detect such updates to exclude from reenactment queries.
+ program and data slicing techniques  that determine which updates and what data can be excluded from reenactment without affecting the result. Using an implementation of our techniques in \emph{Mahif} (a Middleware for Answering Historical what-IF queries) we demonstrate their effectiveness experimentally. % that our optimizations are effective.
+% and reenact just update statements in a history which are might be affected by the hypothetical change.
+% Furthermore, we present data slicing techniques that reduce the amount of processing data to
+% improve our approach without compromising accuracy.
+% We provide some correctness proofs for our proposed techniques.
+% Finally,
+% Our experimental evaluation demonstrates the effectiveness of Mahif and of these optimizations.
+% through extensive experiments. % evaluations.
+%we % develop a method for
+%statically analyze the provenance dependencies of a history % to be able
+%to limit reenactment to transactions and data % that may have been
+%affected by a hypothetical change. % proposed by the user.
+
+%  However, it is often hard for a user to formulate such hypothetical changes to the database, because a what-if query does not answer the important question of how such a change in the database state could have been achieved. For instance, how to increase the sales in California by 10\% is potentially a much harder question to answer than determining the effect of this sales increase on the company's revenue.
+%   Such changes are typically based on past operations.
+% %  In fact, it may be much easier for the user to formulate a what-if questions as changes to past actions (the history of the database) instead of changes to the current database state.
+%   %For example, how would my revenue be affected if I would have charged 5\% interest for account overdraws instead of 10\%.
+%   Such a question can be interpreted as hypothetical changes to update operations (transactions) run in the past.
+% %  , e.g., in this example it corresponds to changes to all past transactions that applied the interest to a user account using an update operation.
+% We refer such queries that ask questions about hypothetical changes to a transactional history as \emph{historical what-if} queries.
+%   In this work we study how to efficiently answer such queries, i.e., how to effectively determine the changes to the current database state (or to a view over the current database) based on hypothetical changes to the database history. We exploit a declarative replay technique called reenactment we have developed in previous work that replays a transactional workload or part thereof using temporal queries. Reenactment enables us to replay hypothetical histories to determine their effect on the current data or the  result of an analysis query.
+%  To make this approach efficient we develop static (schema-level) and dynamic analysis techniques for transactional workloads that enable use omit replaying transactions if that are not affected by the hypothetical change to the history.
+% \BG{In case we do this:}
+% Furthermore, we adopt techniques from incremental view maintenance to limit the replay to data affected by the historical what-if query.
+  % Reenactment can be applied for predictive analytics or whatif queries. It would be beneficial if this feature also will be implemented in Oracle DB.
+% In particular, for most
+\end{abstract}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "historical_whatif"
+%%% End:

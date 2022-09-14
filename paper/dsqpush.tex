@@ -1,0 +1,89 @@
+The operator $\qpushCond{\cond}{\query}$ mentioned above pushes a selection condition through a query $\query$. So far we have assumed for easy of presentation that a history accesses a single relation $R$. We will stick to this restriction for now and define $\qpushCond{\cond}{\query}$ under this assumption. Afterwards, we will discuss how to generalize data slicing to histories that access multiple relations which is often the case for inserts that use queries.
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    \qpushCond{\cond}{R} &= \cond\\
+    \qpushCond{\cond}{\selection_{\cond'}(\query)} &= \qpushCond{\cond \land \cond'}{\query}\\
+    \qpushCond{\cond}{\projection_{\vec{e}}(\query)} &= \qpushCond{\cond[\vec{A} \gets \vec{e}]}{\query}\\
+    % \qpushCond{\cond}{\aggregation_{f(A),G}(\query)} &= \qpushCond{\cond[\vec{A} \gets \vec{e}]}{\query}\\
+    \qpushCond{\cond}{\query_1 \union \query_2} &= \qpushCond{\cond}{\query_1} \lor \qpushCond{\cond[\schema{\query_1} \gets \schema{\query_2}]}{\query_2}\\
+    % \qpushCond{\cond}{\query_1 \join_{\cond'} \query_2} &= \qpushCond{\cond}{\query_1} \lor \qpushCond{\cond}{\query_2}\\
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\partitle{Data slicing for histories accessing multiple relations}
+To generalize data slicing to histories that access multiple relations, we have to generate a separate slicing condition for every relation accessed by the history. For that we extend our push-down rules for conditions. Note that similar to how we deal with inserting and deleting statements from a history and replacing a statement $\up$ with a statement $\up'$ of a different type, modifications that change what relation is modified by a statement can be rewritten into a deletion of the original statement followed by a insertion of the modified statement. In turn these modifications can be rewritten into modifications that replace a statement with a statement of the same type that modifies the same relation using no-op statements. Thus, from now on we only need to consider modifications that replace a statement $\up$ with a statement $\up'$ where both $\up$ and $\up'$ modify the same relation. We use $\mpushCond{\cond}{\history}{\rel}$ to denote the condition generated for relation $\rel$ by pushing condition $\cond$ through history $\history$. Intuitively, statements that modify a relation $S$ can be ignored when computing the condition for a relation $\rel$ if $\rel \neq S$. For inserts with query, we use $\mqpushCond{\cond}{\query}{\rel}$, explained below, to push $\cond$ through the query $\query$ for relation $\rel$. The relation-specific data slicing conditions for updates, deletes, and inserts are shown below. As before we assume a modification $\up \gets \up'$ and use $\condOf{\up}$ to denote the condition of statement  $\up$ if $\up$ is an update or delete.
+
+\begin{itemize}
+\item Update $\aupdate(\rel)$:
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    \mcondDSh{\modi}{S} = \condDSm{\modi}{S} =
+    \begin{cases}
+      \condOf{u} \vee \condOf{u'} &\mathbf{if}\, \rel = S\\
+      \T & \mathbf{otherwise}\\
+    \end{cases}
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item Delete $\adelete(\rel)$:
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    \condDSh{\modi} &=
+                      \begin{cases}
+                        \condOf{u'} &\mathbf{if}\, \rel = S\\
+                        \T & \mathbf{otherwise}\\
+                      \end{cases}\\
+    \condDSm{\modi} &=
+                      \begin{cases}
+                        \condOf{u} &\mathbf{if}\, \rel = S\\
+                        \T & \mathbf{otherwise}\\
+                      \end{cases}
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \item Insert $\ainsert(\rel)$:
+\end{itemize}
+
+Based on these extended definitions, we then define pushing relation-specific conditions through histories as shown in \Cref{fig:pushing-relation-specific}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t]
+  \centering
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  \label{eq:pushing-queries-multi-rel}
+  \mpushCond{\condDSh{\modi}}{0}{\rel}                                                 & = \mcondDSh{\modi}{\rel}                            \\
+  \mpushCond{\condDSh{\modi}}{j+1}{rel}                                               & =
+                                                                                        \begin{cases}
+                                                                                          \subst{\mpushCond{\condDSh{\modi}}{j}{\rel}}{\vec{A}}{\vec{e}} & \mathbf{if}\, \up_{i-j} = \update{\pset}{\cond}(\rel) \\
+                                                                                          \revm{\mpushCond{\condDSh{\modi}}{j}{\rel} \lor \mqpushCond{\mpushCond{\condDSh{\modi}}{j}{\rel}}{\query}{S}} &\revm{\mathbf{if}\, \up_{i-j} = \aqinsert}\\
+                                                                                          \mpushCond{\condDSh{\modi}}{j}{\rel}             & \mathbf{otherwise}                           \\
+                                                                                        \end{cases}
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \caption{Pushing relation-specific data slicing conditions}\label{fig:pushing-relation-specific}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Note that in the definition of $\mpushCond{\condDSh{\modi}}{j}{\rel}$ we make use of $\mqpushCond{\mpushCond{\condDSh{\modi}}{j}{\rel}}{\query}{S}$ which we define below. % Here, let $\relsOf{\query}$ denote the relations accessed by query $\query$.
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    \mqpushCond{\cond}{R}{S} &=
+                               \begin{cases}
+                                 \cond &\mathbf{if}\, R = S\\
+                                 \T &\mathbf{otherwise}
+                               \end{cases}\\
+    \mqpushCond{\cond}{\selection_{\cond'}(\query)}{\rel} &= \mqpushCond{\cond \land \cond'}{\query}{\rel}\\
+    \mqpushCond{\cond}{\projection_{\vec{e}}(\query)}{\rel} &= \mqpushCond{\cond[\vec{A} \gets \vec{e}]}{\query}{\rel}\\
+    \mqpushCond{\cond}{\query_1 \union \query_2}{\rel} &= \mqpushCond{\cond}{\query_1}{\rel} \lor \mqpushCond{\cond[\schema{\query_1} \gets \schema{\query_2}]}{\query_2}{\rel}\\
+    % \mqpushCond{\cond}{\aggregation_{f(A),G}(\query)}{\rel} &= \mqpushCond{\cond[\vec{A} \gets \vec{e}]}{\query}{\rel}\\
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "techreport"
+%%% End:

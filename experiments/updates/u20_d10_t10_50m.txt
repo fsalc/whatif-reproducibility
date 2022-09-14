@@ -1,0 +1,23 @@
+what if (update g set trip_total = trip_total + 29 where pickup_community_area <= 7;)
+replace (1)
+in (update g set tolls = tolls + 6 where pickup_community_area <= 7;
+update g set trip_total = trip_total + 75 where pickup_community_area >= 33;
+update g set trip_total = trip_total + 77 where pickup_community_area >= 33;
+update g set tolls = tolls + 1 where pickup_community_area >= 33;
+update g set extras = extras + 64 where pickup_community_area >= 33;
+update g set trip_total = trip_total + 20 where pickup_community_area >= 33;
+update g set fare = fare + 69 where pickup_community_area >= 33;
+update g set tolls = tolls + 50 where pickup_community_area >= 33;
+update g set extras = extras + 95 where pickup_community_area >= 33;
+update g set extras = extras + 66 where pickup_community_area <= 7;
+update g set trip_total = trip_total + 77 where pickup_community_area <= 7;
+update g set trip_total = trip_total + 83 where pickup_community_area >= 33;
+update g set extras = extras + 79 where pickup_community_area >= 33;
+update g set fare = fare + 71 where pickup_community_area >= 33;
+update g set fare = fare + 42 where pickup_community_area >= 33;
+update g set fare = fare + 22 where pickup_community_area >= 33;
+update g set trip_total = trip_total + 100 where pickup_community_area >= 33;
+update g set extras = extras + 93 where pickup_community_area >= 33;
+update g set extras = extras + 81 where pickup_community_area >= 33;
+update g set trip_total = trip_total + 65 where pickup_community_area >= 33;
+update g set trip_total = trip_total + 48 where pickup_community_area >= 31;);

@@ -1,0 +1,132 @@
+\begin{proof}
+  We start by proving an auxiliary result that will be used in the main part of the proof: if all statements of a history $\history$ are tuple independent deletes and updates (\Cref{def:tuple-independence}), then for any database $\db$ we have
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align}
+    \label{eq:history-TI}
+    \history(\db) &= \bigcup_{\tup \in \db} \history(\{\tup\})
+  \end{align}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  We then prove that \Cref{eq:tuple-level-slice-test}  implies \Cref{eq:slice-original-cond} for histories consisting of updates and deletes which are both tuple independent. This follows from the definition of tuple independence (\Cref{def:tuple-independence}). \Cref{eq:tuple-level-slice-test} is implied by \Cref{eq:single-inst-slice-test}, because the  worlds of $\vcdbini$ encode a superset of $\db$ by construction and \Cref{theo:vc-updates-are-possible-worlds-semantics} (updates over  VC-databases have possible world semantics). The equivalence of \Cref{eq:slice-test-cases} and \Cref{eq:single-inst-slice-test} follows from the definition of database deltas. Finally, the equivalence of $\history(\db_{t}) = \history'(\db_{t})$ and \Cref{eq:db-equals-symbolic} follows from \Cref{theo:vc-updates-are-possible-worlds-semantics}.
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \proofpar{\textbf{Union factors through tuple independent histories:}}
+    Consider a history $\history = (u_1, \ldots, u_n)$ such that for all $i \in [1,n]$ statement $\up_i$ is tuple independent.  We will prove that this implies \Cref{eq:history-TI}. We proof this claim by induction.
+
+  \proofpar{Base case:}
+  $\history = (\up_1)$ for some statement $\up_1$. The claim follows directly from the definition of tuple independence.
+
+  \proofpar{Inductive step:}
+  Let $\history = (\up_1, \ldots, \up_n)$ and assume that for any database $\db$ we have $ \hislice{\history(\db)}{[1,n]} = \bigcup_{\tup \in \db} \hislice{\history(\db)}{[1,n]}(\{\tup\})$. We have to show that $\history(\db) = \bigcup_{\tup \in \db} \history(\{\tup\})$. For any tuple $\tup \in \db$ for which $\hislice{\history}{[1,n]}(\tup) \neq \emptyset$  let $s = \hislice{\history}{[1,n]}(\{\tup\})$. WLOG assume that $\db = \{t_1, \ldots, t_k\}$ such for some integer $l$ we have $\hislice{\history}{[1,n]}(\{\tup_i\}) \neq \emptyset$ for $i \leq l$ and $\hislice{\history}{[1,n]}(\{\tup_i\}) = \emptyset$ for $i > l$  (it is always possible to find such an arrangement of the tuples of $\db$). Then,
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    &\hislice{\history(\db)}{[1,n]}\\
+    = &\bigcup_{\tup \in \db} \hislice{\history(\db)}{[1,n]}(\{\tup\})\\
+    = &\bigcup_{\tup \in \db \land \hislice{\history}{[1,n]}(\tup) \neq \emptyset} \hislice{\history(\db)}{[1,n]}(\{\tup\})\\
+    = &\{s_1, \ldots, s_l\}
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  Because $\up_n$ is tuple independent, we know that
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    &\up_n(\{s_1, \ldots, s_l\})\\
+    = &\bigcup_{s_i \in \{s_1, \ldots, s_l\}} \up_n(s_i)\\
+    = & \bigcup_{\tup_i \in \db} \up_n(\hislice{\history}{[1,n]}(\tup_i)) \tag{based on $s = \hislice{\history}{[1,n]}(\tup)$}\\
+    = &\bigcup_{\tup_i \in \db} \history(\{\tup_i\})
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  This concludes the proof of \Cref{eq:history-TI}.
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \proofpar{\textbf{\Cref{eq:tuple-level-slice-test}  implies \Cref{eq:slice-original-cond}}:}
+  We will proof this implication by proving the contrapositive:  $\neg (\ref{eq:slice-original-cond}) \Rightarrow \neg (\ref{eq:tuple-level-slice-test})$.
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{align*}
+    &\neg (\ref{eq:slice-original-cond}) \\
+    = &\neg \iDiff{\history(\db)}{\history[\deltaHist](\db)} = \iDiff{\hslice{\history}{\idxs}(\db)}{\hslice{\history[\deltaHist]}{\idxs}(\db)}\\
+    \Leftrightarrow &\iDiff{\history(\db)}{\history[\deltaHist](\db)} \neq \iDiff{\hslice{\history}{\idxs}(\db)}{\hslice{\history[\deltaHist]}{\idxs}(\db)}
+  \end{align*}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  For two relations ($\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ and $\iDiff{\hslice{\history}{\idxs}(\db)}{\hslice{\history[\deltaHist]}{\idxs}(\db)}$ in our case) to be different, there has to exist at least one tuple $\tup$ that is in one, but not in the other. WLOG assume that $\tup \in \iDiff{\history(\db)}{\history[\deltaHist](\db)}$:
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align*}
+      \Rightarrow &\exists \tup: \tup \in \iDiff{\history(\db)}{\history[\deltaHist](\db)} \land \tup \not\in \iDiff{\hslice{\history}{\idxs}(\db)}{\hslice{\history[\deltaHist]}{\idxs}(\db)}
+    \end{align*}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Since all histories are tuple independent, we have:
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align}
+  \label{eq:delta-TI-has-difference}
+      \Rightarrow \exists \tup:\,\,\, &\tup \in \diffsym\left(\bigcup_{s \in \db}\history(\{s\}),\bigcup_{s \in \db}\ahmod(\{s\})\right)\\
+                    \land &\tup \not\in \diffsym\left(\bigcup_{s \in \db}\hslice{\history}{\idxs}(\{s\}), \bigcup_{s \in \db} \hslice{\ahmod}{\idxs}(\{s\})\right)
+    \end{align}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    This can only be the case if there exists at least one tuple $t_{\in} \in \db$ such that the two delta are different. To see why this is the case assume the negation: for all $t_{in} \in \db$ both deltas return the same results which contradicts \Cref{eq:delta-TI-has-difference}.
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{align*}
+      \Rightarrow \exists \tup_{in} \in \{t_{in}\}: &\iDiff{\history(\{t_{in}\})}{\history[\deltaHist](\{t_{in}\})}\\
+      &\neq \iDiff{\hslice{\history}{\idxs}(\{t_{in}\})}{\hslice{\history[\deltaHist]}{\idxs}(\{t_{in}\})}\\[3mm]
+      \Rightarrow \forall \tup \in \{t\}: &\iDiff{\history(\{t\})}{\history[\deltaHist](\{t\})}\\
+      &= \iDiff{\hslice{\history}{\idxs}(\{t\})}{\hslice{\history[\deltaHist]}{\idxs}(\{t\})}\\[3mm]
+           = &\neg (\ref{eq:slice-original-cond})
+    \end{align*}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This concludes the proof that \Cref{eq:tuple-level-slice-test} implies \Cref{eq:slice-original-cond}.
+
+% which implies that there has to exist at least one $t_{in} \in \db$ such that $\history(\{t_{in}\}) = t$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{\textbf{\Cref{eq:single-inst-slice-test} implies \Cref{eq:tuple-level-slice-test}:}}
+To proof this claim, we first have to show that for each tuple $t \in \db$, it follows that $\db_t = \{t \}$ is in $\worldsOf{\vcdbini}$. Recall that $\vcdbini = \{\vct\}$ where $\vct$ consists of variables only and $\lcond(\vcdbini,\vct) = \T$. Furthermore, $\gcond(\vcdbini) = \adbconstr$ where $\adbconstr$ is a disjunction of conjunctions of range constraints such that each conjunction  ``covers'' all attribute values withing a partition of $\db$. WLOG let $t = (c_1, \ldots, c_m)$ and $\vct = (x_1, \ldots, x_m)$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{align*}
+  &\db_t \in \worldsOf{\vcdbini}\\
+  \Leftrightarrow &\exists \varAssign: \varAssign(\vct) = t \land \varAssign(\lcond(\vcdbini,\vct)) \land \varAssign(\gcond(\vcdbini))
+\end{align*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Based on our assumption this requires that $\varAssign(x_i) = c_i$. Since $\lcond(\vcdbini,\vct) = \T$, trivially $\varAssign(\lcond(\vcdbini,\vct)) = \T$. It remains to be shown that $\varAssign(\gcond(\vcdbini)) = \T$. Let $\db_{frag}$ denote the fragment of the partition of $\db$ based on which $\adbconstr$ was created that contains $t$. Recall that the conjunction in $\adbconstr$ produced for $\db_{frag}$ contains one range constraint for each attribute $A_i$, bounding the value of $x_i$ by the smallest and largest value of $A_i$ in $\db_{frag}$. Since $t$'s values are considered when determining the minimum and maximum values, this means that $\varAssign(x_i) = t.A_i$ fulfills each range constraint and, thus, also the conjunction. This implies that $\varAssign(\gcond(\vcdbini))$ and we know that $\db_t \in \worldsOf{\vcdbini}$ which means that \Cref{eq:single-inst-slice-test} implies \Cref{eq:slice-original-cond}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{\textbf{\Cref{eq:slice-test-cases} is equivalent to \Cref{eq:single-inst-slice-test}:}}
+\Cref{eq:slice-test-cases} is derived from \Cref{eq:single-inst-slice-test} by substituting the deltas for their definition which preserves equivalence.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \proofpar{\Cref{eq:slice-test-cases-simple} is equivalent to \Cref{eq:slice-test-cases}}
+% \Cref{eq:slice-test-cases-simple} is derived from \Cref{eq:slice-test-cases} by applying the following substitution:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\proofpar{\textbf{\Cref{eq:db-equals-symbolic}:}}
+
+Substituting \Cref{eq:db-equals-symbolic} into \Cref{eq:slice-test-cases}, we get the final slicing condition $\aslicetest$. Based on \Cref{theo:vc-updates-are-possible-worlds-semantics}, this substitution does not change the semantics. Thus, if $\aslicetest$ is true, then $\idxs$ is a valid slice.
+
+%     Substituting the definition of $\iDiff{\db}{\db'}$, we get:
+
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     \begin{align*}
+%       \Rightarrow \exists \tup: &\left((\tup \in \history(\db) \land \tup \neg\in \history[\deltaHist](\db)\\
+%                                 &\lor (\tup \in \history(\db) \land \tup \neg\in \history[\deltaHist](\db))\right)\\
+%                                   \land &\left((\tup \not\in \hslice{\history}{\idxs}(\db) \land  \tup \not\in \hslice{\history[\deltaHist]}{\idxs}(\db))\\
+%                                         &\lor (\tup \in \hslice{\history}{\idxs}(\db) \land  \tup \in \hslice{\history[\deltaHist]}{\idxs}(\db))\right)
+%     \end{align*}
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%     WLOG assume $\tup \in \history(\db)$ (the other case is symmetric).
+
+
+  \end{proof}
+
+  %%% Local Variables:
+  %%% TeX-master: "techreport"
+  %%% End:

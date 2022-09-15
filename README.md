@@ -55,7 +55,7 @@ A script is included to execute the Autotools build scripts to configure GProM t
 ③ Executing `python3 step_3_experiment_harness.py` will run the experiment tool and rebuild the LaTeX document.
 Should the tool fail during its execution, it can be rerun and will resume from its last state.
 
-## Running Your Own Code
+## Running Your Own Queries
 
 From the directory of this repository, running `./gprom/bin/gprom -backend postgres -host localhost -port 5432 -user whatif -passwd mahif -db whatif` will place you into an interactive shell where you can evaluate SQL queries within GProM.
 

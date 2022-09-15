@@ -49,3 +49,6 @@ A script is included to execute the Autotools build scripts to configure GProM t
 
 ③ Executing `python step_3_experiment_harness.py` will run the experiment tool and rebuild the LaTeX document.
 Should the tool fail during its execution, it can be rerun and will resume from its last state.
+
+## Running Your Own Code
+

@@ -18,6 +18,11 @@ This document will detail in the following sections how to set up each component
 
 The scripts were designed for usage in a container or virtual machine running **Ubuntu 22.04.1 LTS "jammy"**.
 
+**Caveats:**
+
+- The scripts use `apt` to install packages and have been tested with this particular version of Ubuntu
+- The scripts use systemd to start / stop postgres
+
 ## Components
 
 ### PostgreSQL
@@ -25,7 +30,7 @@ The scripts were designed for usage in a container or virtual machine running **
 A script has been supplied to download & initialize the databases and tables required to run the experiments.
 A user `whatif` has password `mahif` to access the databases `whatif`, `tpcc` and `ycsb` on port `5453`.
 
-⓪ First, you will need to download the data (consider this step 0!) from https://drive.google.com/drive/folders/1QbHYupkAqraZhZSlWwz8FU1As9WNmpxe?usp=sharing and place them in the `data` folder.
+⓪ First, you will need to download the data (consider this step 0!) from https://drive.google.com/drive/folders/1QbHYupkAqraZhZSlWwz8FU1As9WNmpxe?usp=sharing and place them in the `data` folder inside the repository.
 
 ① Then, do `./step_1_install_dependencies.sh` once you have added the data.
 

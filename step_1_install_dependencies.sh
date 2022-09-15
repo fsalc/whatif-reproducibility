@@ -2,15 +2,15 @@
 
 # Install dependencies
 sudo apt update
-sudo apt install build-essential postgresql libpq-dev texlive-latex-extra texlive-science python3 python3-pip autoconf automake libtool libreadline-dev libsqlite3-dev flex bison -y
+sudo apt install build-essential postgresql libpq-dev texlive-latex-extra texlive-science python3 python3-pip autoconf automake libtool libreadline-dev libsqlite3-dev flex bison gcc-9 -y
 pip install -r requirements.txt
 
 # Postgres
 sudo systemctl start postgresql.service
 sudo -u postgres psql < database_setup.sql
 export PGPASSWORD=mahif
-psql -h localhost -p 5432 -U whatif < data/tpcc.sql
-psql -h localhost -p 5432 -U whatif < data/ycsb.sql
+pg_restore -h localhost -p 5432 -U whatif -d tpcc data/tpcc.bin
+pg_restore -h localhost -p 5432 -U whatif -d ycsb data/tpcc.bin
 
 # Tell user to install CPLEX
 echo "\n\n\nDependencies for GProM have been installed!"

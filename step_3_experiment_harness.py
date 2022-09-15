@@ -158,16 +158,16 @@ def updates_naive(dataset, u):
                 for slice in postgres_time_slices(times):
                     breakdown.write(f'{u},{slice[1]},{slice[0]},{dataset.upper()}\n')
 
-'''
-def datasizes(dataset, method, communitymax):
+# '''
+# def datasizes(dataset, method, communitymax):
 
-    # Choose file
-    file = f'datasize/u100_d15_communitymax{communitymax}_{"f" if dataset == "5m" else "g"}.txt'
+#     # Choose file
+#     file = f'datasize/u100_d15_communitymax{communitymax}_{"f" if dataset == "5m" else "g"}.txt'
 
-    # Execute
-    execute_gprom(file, 'whatif', method)
-    #return parse_gprom_timer(execute_gprom(file, 'whatif', method))
-'''
+#     # Execute
+#     execute_gprom(file, 'whatif', method)
+#     #return parse_gprom_timer(execute_gprom(file, 'whatif', method))
+# '''
 
 def dependents(method, d):
 
@@ -266,13 +266,13 @@ if __name__ == '__main__':
             updates_naive(dataset, u)
 
     # This experiment was superseded by "updates"
-    '''
-    # datasizes
-    for method in methods.keys():
-        for dataset in ['5m', '50m']:
-            for communitymax in [8, 24, 77]:
-                datasizes(dataset, method, communitymax)
-    '''
+    # '''
+    # # datasizes
+    # for method in methods.keys():
+    #     for dataset in ['5m', '50m']:
+    #         for communitymax in [8, 24, 77]:
+    #             datasizes(dataset, method, communitymax)
+    # '''
 
     # dependents
     for method in ['R+PS', 'R+PS+DS']:

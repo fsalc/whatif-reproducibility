@@ -1,41 +1,41 @@
 \section{Related Work}
 \label{sec:related-work}
 
-%\BG{Talk about incomplete DBs and updates over them \cite{AG85,IL84a}}
+%
 
-% \BG{This needs to changed from the reenactment related work to a more appropriate one for this paper covering: what-if queries + incremental view maintenance, different types of predictive queries such as the how-to queries of Tiresias (given a change to the query result show what change to the input could have caused it). QFix is essentially a variation on this where the change to the output has to be achieved by a change to the queries (updates). Also QFix has some relation to our dependency analysis idea. Relationship to program slicing and symbolic execution (cite PL paper and James Cheney making the connection between provenance and program slicing.}
+% 
 %%%%%%%%%%%%%%%%%%%%%%%%
 What-if queries determine the effect of a hypothetical change to an input database on the results of a query.
 To avoid having to reevaluate the query over the full input including the hypothetical changes, incremental view maintenance is often applied to answer what-if queries~\cite{hung17,deutch13,ZG95,bourhis16}. % to the data to evaluate the effect of the change on the query's output.
 The how-to queries of Tiresias~\cite{MeliouS12}  determine how to translate a  change
 to a query result into modifications of the input data. Similar to their approach, our system utilizes
-% provides support for historical how-to queries, allowing the definition and integrated evaluation of a large set of constrained optimization problems, specifically
+%
 Mixed Integer Programming to express a set of possible worlds. % on top of a relational database system.
 The QFix system~\cite{wang16} is essentially a variation on this where the change to the output has to be achieved by a change to a query (update) workload.
 The query slicing technique of QFix is similar to our program slicing optimization. The main difference is that
 we apply symbolic execution to a single tuple instance, i.e.,
 the number of constraints we produce is independent of the database size.
-% an important difference is that we limit
- % and it is independent of the number of tuples in the database which should be changed.
-%We mainly generate constrains based on update statements.
-%Thus, the number of constraints as input to the constraint solver depends only on the number of updates.
+% 
+ % 
+%
+%
 
-% instead of applying it to the input database.
-% apply Query-Slicing that is close to our dependency analysis idea.
+% 
+% 
 Several provenance models for relational queries have been studied such as Why-provenance, minimal Why-provenance~\cite{BK01}, and Lineage~\cite{CW00b}. The K-relations introduced by Green et al.~\cite{GK07} generalize these models for positive relational algebra.
-%Green's semiring annotation framework has been the target of extensive research including
-%relations annotated with annotations from multiple semirings~\cite{KB12},  rewriting queries to minimize provenance~\cite{AD11b},
-%factorization of provenance polynomials~\cite{OZ11}, extraction of provenance polynomials from the PI-CS~\cite{GM13} % and Provenance Games~\cite{KL13}
-%model, and extensions for aggregation~\cite{AD11d} and set difference~\cite{GP10}.
-%We introduced MV-semirings model which generalize Green's semiring annotation frameworkand and reenactment technique to support updates and concurrent transactions~\cite{AG14,AG17,AG18}.
+%
+%
+%
+%
+%
 In~\cite{AG14,AG17,AG18} we have introduced  MV-semirings~\cite{AG14,AG17,AG18} as an extension of K-relations that supports transactional updates. Furthermore, we did introduce reenactment as a technique for replaying histories using queries. The reenactment query for a history is equivalent to the  history under MV-semiring semantics~\cite{AG14,AG17,AG18}, i.e., it returns the same database state and provenance. \cite{bourhis-20-eqinalphupq} did study extensions of semiring-annotated relations for updates that allow updates to be deleted from a history. However, this approach only supports a limited class of updates.
-% Avoiding additional cost of replaying update operations (e.g., I/O caused by writing logs), is one of the advantage of reenactment.
+%
 
 The connection of provenance and program slicing was % to the best of our knowledge
 first observed in~\cite{cheney07}.
-% In~\cite{fan2008} %a class of integrity
-% constraints for relational databases were proposed as a conditional functional dependencies.
-% for Capturing Data Inconsistencies.
+%
+%
+%
 We present a method that statically analyzes potential provenance dependencies among statements in the history using a method which borrows ideas from symbolic execution~\cite{bucur14,K76,luckow14}, incomplete databases~\cite{AG85, IL84a, pip10, lenses15}, program slicing~\cite{W81}, and expressive provenance models~\cite{AD11d}.
 Symbolic execution has been used extensively in software testing~\cite{cadar13}.
 Cosette~\cite{chu2017} is an automated prover for checking equivalences of SQL queries which converts input queries to constraints over symbolic relations.
@@ -44,56 +44,56 @@ Rosette~\cite{torlak2014} is a
 language for building DSL with built-in support for symbolic evaluation.
 The transaction repair approach from~\cite{dashti17} also detects dependencies between update operations like our optimized program slicing technique for single modifications. However, transaction repair operates on concrete data while we reason about the interactions of updates for a set of inputs encoded compactly as VC-tables.
 
-% using closure bound to predicates but they use data objects and a list
-% of their different versions. In contrast, our approach uses a single symbolic data instance which requires less memory.
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%
-%Several provenance models for relational queries have been introduced in related work including Why-provenance, minimal Why-provenance~\cite{BK01}, and Lineage~\cite{CW00b}.
-%Provenance polynomials introduced by Green et al.~\cite{GK07} generalize these provenance models for positive relational algebra queries ($\RAPlus$). Green's semiring annotation framework has been the target of extensive research including
-%relations annotated with annotations from multiple semirings~\cite{KB12}, rewriting queries to minimize provenance~\cite{AD11b}, factorization of provenance polynomials~\cite{OZ11}, extraction of provenance polynomials from the PI-CS~\cite{GM13} and Provenance Games~\cite{KL13} models, and extensions for aggregation~\cite{AD11d} and set difference~\cite{GP10}.
-%% and studying the combination of annotations from multiple semirings~\cite{KB12}~\cite{KB12,AD11b,OZ11,AD11d}.
-%Our MV-semirings generalize this model to support updates and transactions.
+%
+%
+%
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%relations annotated with annotations from multiple semirings, rewriting queries to minimize provenance~\cite{AD11b}, factorization of provenance polynomials~\cite{OZ11}, extraction of provenance polynomials from the PI-CS~\cite{GM13} and Provenance Games~\cite{KL13} models, and extensions to set difference~\cite{GP10} and aggregation~\cite{AD11d}.
 %
-% Kostylev et al.~\cite{KB12} discussed data annotated with annotations from multiple semirings.
-% Amsterdamer et al.~\cite{AD11b} explained rewriting queries into equivalent queries with minimal provenance. Oltenau et al.~\cite{OZ11} described factorization of provenance polynomials. Additionally, it has been shown that provenance polynomials can be derived from the PI-CS~\cite{GM13} and Provenance Games~\cite{KL13} models.
-%  which is an extension of the
-% relation model with annotations from a commutative semiring that described how
-% these annotations propagate using positive relational algebra (${\cal RA}^+$)
-% queries.
-% How to model and compute the provenance of database queries has been widely studied. Buneman et al.~\cite{BK01} defines the difference between Why-provenance and Where-provenance. Why-provenance determines which tuples were used to compute a result whereas Where-provenance defines which inputs is a value in the result copied from. Also,~\cite{CC09} addressed this problem for a relational version. Cui et al.~\cite{CW00b} presented the Lineage provenance model that was implemented based on tracing queries and it iteratively trace the provenance of an output though a relational query.
 %
-%\cite{KG12} described an overview of Lineage, Why-provenance, and minimal Why-provenance model and its extensions beyond positive relational algebra (e.g., set difference~\cite{GP10,AD11a,GI09} and aggregation~\cite{AD11d,T13}).
 %
-% Buneman et al.
-%~\cite{BK13} proposed a model that relax the semiring model for a hierarchical data model where the difference between data and annotation is easily recognizable that permits queries to treat part of a hierarchy as annotations and others as data.
-% Amsterdamer et al.~\cite{AD11b} explained rewriting queries into equivalent queries with minimal provenance. Oltenau et al.~\cite{OZ11} described factorization of provenance polynomials. Additionally, it has been shown that provenance polynomials can be derived from the PI-CS~\cite{GM13} and Provenance Games~\cite{KL13} models.
-%Similar to our approach, Lipstick~\cite{AD11c}, LogicBlox~\cite{GA12}, DBNotes~\cite{BC05a}, Perm~\cite{GM13}, and many other systems encode provenance annotations in a standard data model and use query instrumentation to propagate these annotations. % during query processing.
 %
-%Several papers~\cite{VC07,BC08a} % ,AD13a}
-%study provenance for updates, e.g., Vansummeren et al.~\cite{VC07} compute provenance for SQL DML statements.
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
 %%%%%%%%%%
-%However, these approaches modify updates to eagerly capture provenance, do not track provenance through concurrent transactions, and are often not integrated with provenance for queries.
-%We take  interactions among transactions into account using a generalization of the semiring model for transactions.
+%
+%
 
 
-% In relational databases, transactions contains update operations and DBMS applies concurrency control techniques to guarantee ACID properties for transactions. Concurrent transactions can be executed under different concurrency control protocols
+%
 
-%and have pioneered the reenactment approach for computing such provenance over regular relational databases.
-% Our model extends the semiring annotation framework with update operations and transactional semantics. We also implemented provenance computation for RC-SI transactions by
-% propagating a relational encoding of provenance annotations. Similar to the
-% Perm system, we reconstruct provenance when it is requested instead of eagerly computing provenance for all transactions.
-% It is essential for computing provenance of database updates to consider the transactional semantics and idiosyncrasies of concurrency control mechanisms.
-% to
-% gather and manage information about the origin of tuple versions accurately.
-%In~\cite{AD13a}, transactions are simply defined as sequences of update operations so it cannot be considered as concurrent database transactions.  Buneman et al.
-%~\cite{BC08a} also presents a copy-based provenance type for the nested update language and nested relational calculus.
-%It is essential to compute the provenance of transaction without having to eagerly materialize or store provenance information during transaction execution. In this work, we reconstruct provenance when it is requested by a user and we do not compute or store provenance for all update operations. Consequently, it avoids the runtime and storage overhead of provenance computation for  update operations and concurrent transactions.
-%Zhang et al.~\cite{ZJ10}
-%proved that an audit log and time travel is enough for computing the provenance of past queries. This approach only needs slight modifies to the standard query rewrite rules for computing provenance information applying annotation propagation. We also demonstrate that audit logging and time travel are sufficient for computing the provenance of RC-SI transactions. Ariadne system~\cite{GE13} also uses the idea of employing a log of operations, changes to data and reconstructing provenance by replaying such operations in the context of stream processing and the DistTape system~\cite{ZM13} in distributed datalog processing.
-%In terms of defining the semantics of concurrent transactions, we rely on standard concurrency control protocols that are widely applied in commercial and open-source da\-ta\-base systems. Particularly, we focus on  read committed snapshot isolation (RC-SI) multi-versioning concurrency control protocols corresponding to isolation levels  \texttt{READ COMMITTED} in systems such as Oracle and PostgreSQL.\footnote{Newer versions of PostgreSQL implement a serializable variant of snapshot isolation called serializable snapshot isolation (SSI). See \Cref{sec:snapshot-isolation}.}
-% In~\cite{AG16}, we introduced the provenance model for SI concurrent transactions which extends the well-known semiring provenance framework with update operations and transactional semantics. In this work, we extend it to support RC-SI concurrency control protocols as well.
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Local Variables:

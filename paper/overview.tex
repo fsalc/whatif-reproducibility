@@ -5,29 +5,29 @@ Our algorithm to the historical what-if query is based on MV-semirings model and
 \subsection{Retrieving Information}
 \label{def:retrieve-info}
 In the first step, we should retrieve information about the what-if query and other update statement that might be depend on the what-if query by querying audit logs. In particular, we need to know what was the original SQL statement and all other update statement that were executed by the same transaction, when each statement was executed, which statements were executed after the what-if query by other transactions, and what concurrency control protocol were used for execution of these transactions.
-%We must retrieve information based on the applied concurrency control protocol and execution time of each  statement of other transaction.
-%The following rules are defined for transactions that were executed under SI.
-%Assume the what-if statement must be executed as a part of the transaction $\xid$ and $\xid_i \sqsubseteq \xid_0, \ldots, \xid_n$ are belongs to the history $\history$,
+%
+%
+%
 In overall, following SQL statements and their related information are required to be retrieved.
 \begin{itemize}
 \item $u_1, \ldots, u_n$ where $\xid = (u_1, \ldots, u_n, c)$ and $\modi = T.u_i \gets u$
 \item $\forall u_j \in H$ where $1 \leq i < j \leq n \wedge u_i \hSorder u_j$
-%Retrieve $u_0, \ldots, u_m$ of the transaction $\xid_i$ where $End(\xid) < Start(\xid_i)$ and these transactions executed under SI. This means all update statement of the transaction $\xid_i$ must be retried
-%as the start time of Transaction $\xid_i$ is greater than the end time or the commit time of the Transaction $\xid$
-%because $\xid_i$ sees a  snapshot of the database containing all changes of the transaction $\xid$.
+%
+%
+%
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Dependency Rules}
 \label{def:basic-rules}
 We can check basic rules to approximate the dependency of update statement of transactions based on the \Cref{def:dependency1} without replaying concurrent transactions. Lets $R$ be a set of tables that are modified by $u$ or $u_i$ where $\modi = T.u_i \gets u$ and $u_j$ is a retrieved update statement from the previous step.
-%it is possible Transaction $\xid_i$ depends on $\xid$.
-%\item \textbf{Checking Tables:} $(Write(\xid) \cap Write(\xid_i)\neq \emptyset) \vee (Write(\xid) \cap Read(\xid_i)\neq \emptyset)$  whereas $Write$ are set of tables that are modified or written by a transaction and $Read$ are set of tables that a transaction reads from them. This rule is beneficial for update and delete statements. However, for insert statements transitivity should be checked.
+%
+%
 \begin{itemize}
 \item \textbf{Checking Tables:} $(R \cap Write(u_j)\neq \emptyset) \vee (R \cap Read(u_j)\neq \emptyset)$  whereas $Write$ are set of tables that are modified or written by $u_j$ and $Read$ are set of tables that a $u_j$ reads from them. This rule is beneficial for update and delete statements. However, for insert statements transitivity should be checked.
 \item \textbf{Analyzing Effect of Updates:} Our algorithm must analyze effect of the what-if query and its respective original update statement on $u_i$
-%other update statements
+%
 by evaluating their value assigns and condition sets. The following example shows how analyzing effect of an update can help to detect dependent updates.
-% Let $\theta_1$ be a condition set of an update statement before change and $\theta_1'$ be a condition set of an update statement after change (condition set of a whatif query). Suppose we want to check the dependency of this update with another update statement which has a condition set $\theta_2$. the dependency is true if : $(\theta_1 \wedge \theta_2)\vee(\theta_1'\wedge \theta_2)$ is true.
+%
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{exam}
@@ -38,7 +38,7 @@ Consider \Cref{ex:running-example}, all SQL statement $u_1$,$u'_1$,$u_2$, and $u
 \subsection{Reenactment}
 \label{sec:reenactment}
 In ~\cite{AG14,AG16,AG17}, we show how we can apply reenactment to replay parts of a transactional history using queries respecting the visibility rules enforced by the concurrency control protocols.
-%We can apply reenactment for $u_{after}$ and all detected dependent update statement $u_i$ to obtain the result of the what-if query .
+%
 \begin{itemize}
 \item \textbf{Reenact Updates:} We construct a reenactment query $\ract{u}$ for each update statement that was detected as a dependent in the previous step. Each reenactment query $\ract{u}$ simulates the update statement $u$ which modified a relation $R$ by returning the updated version of $R$ over the database state that was seen by $u$ using time travel features.
 \item \textbf{Reenact historical what-if query:} We should merge the reenactment of original updates and all dependent update to construct $\ract{\history}$. Then, do the same thing with the modified updates that are determined in the what-if query and all dependent update to construct $\ract{\history[\modi]}$. The merging process is based on visibility rules enforced by the concurrency control protocol as we discussed in ~\cite{AG16,AG17}.
@@ -75,24 +75,24 @@ FROM (SELECT SUM(M.Bonus) x FROM
 %$\,$\\[-12mm]
 \end{exam}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{exam}
-%To construct the $\ract{\cal WI}$ for \Cref{ex:algo-example}, we should first construct reenactment queries and then merge them based on SI visibility rules. We use HistJoin (HJ) method to construct $\ract{\cal WI}$ that is presented in ~\cite{AG17}. $\xidAttr$ stores the latest updating transaction ID of tuples in database snapshots. Therefor, the query $\selection_{\xidAttr =
-%  \xid}(\snapshot{R}{\finish{\xid} + 1})$ determines which tuple versions were created or modified by a transaction $\xid$. We apply the SQL \lstinline!CASE! construct to determine for each tuple whether it should be updated and merge them when it is possible. Note, time travel features are used to retrieve snapshot of the table $R$ at time t which is shown as \lstinline!R AS OF $t$!. We assume $\tidAttr$ is unique immutable tuple identifiers attribute in the database. For more detail about these techniques see ~\cite{AG16,AG17}.
-%\begin{lstlisting}
-%SELECT ID, Name, Position,
-%							(CASE WHEN (Bonus = 550) THEN Bonus+10
-%							ELSE (CASE  WHEN (Bonus <1000) THEN Bonus+50
-%							ELSE (CASE  WHEN (Bonus = 1000)THEN Bonus-500
-%							ELSE Bonus END)END)END) AS Bonus
-%FROM (SELECT $\tidAttr$ AS rid, ID, Name, Position, Bonus
-%      FROM Employee AS OF $\start{\xid_1}$)
-%      NATURAL JOIN
-%     (SELECT $\tidAttr$ AS rid
-%      FROM Employee AS OF $\finish{\xid_3} + 1$
-%      WHERE $\xidAttr$ = $T_1$ OR $\xidAttr$ = $T_2$ OR $\xidAttr$ = $T_3$)
-%\end{lstlisting}
-%%$\,$\\[-12mm]
-%\end{exam}
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

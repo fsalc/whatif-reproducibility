@@ -19,9 +19,9 @@
 \section{Naïve Algorithm}\label{sec:naive-solution}
 
 Before giving an overview of our approach, we briefly revisit the naïve algorithm (\Cref{alg:naive-sol}) in more detail. WLOG assume that $\deltaHist$ modifies the first update in the history (and possibly others). If this is not the case, then we can simply ignore the prefix of the history before the first modified statement and use the state of the database before that statement instead of the database before first statement in the history. The input to the algorithm is the history $\history$, the database state before the first statement of $\history$ was executed ($\db)$, the current state of the database $\naivedbcur$ which is assumed to be equal to $\history(\db)$, and the modifications $\deltaHist$ of the historical what-if  query $\hwhatif$. We assume that $\db$ can be accessed using time travel.
-% We first discuss a naive approach for answering historical what-if queries (\Cref{alg:naive-sol}) and then discuss the optimized approach used in this work.
+% 
 The algorithm first creates a copy of $\db'$ of $\db$.  % the database state before the first statement of $\history$.
-% creates $\db_0$ \FC{Change notation or better explain?}, a copy of the original database $\db$ as of the start time of $\deltaHist$ using time travel (\Cref{alg-line:naive-dbzero}).
+% 
 Note that we only need to copy relations that are accessed by the history. The state of any relation not accessed by $\history$ will be the same in $\history(\db)$ and $\ahmod(\db')$.  We rename the relations in $\db'$ to avoid name clashes.
 We then execute $\ahmod$ over the copy $\db'$  resulting in $\naivedbmod = \ahmod(\db')$ (\Cref{alg-line:naive-mod-history}).
 In the last step (\Cref{alg-line:naive-mod-history}), the delta of $\naivedbcur$ and $\naivedbmod$ is computed. The delta computation is implemented as a single query for each relation of $\db$ accessed by $\history$. For instance, a relational algebra query computing the delta for a  relation $\rel$ with schema $\schema{\rel} = (A,B)$ is shown below. Note that $+$ and $-$ are constants, i.e., the projections add an additional column storing the annotation of a tuple.
@@ -30,20 +30,7 @@ In the last step (\Cref{alg-line:naive-mod-history}), the delta of $\naivedbcur$
   \projection_{A,B,-}(\rel_{cur} - \rel_{mod}) \union   \projection_{A,B,+}(\rel_{mod} - \rel_{cur})
 \]
 
-% executed and the symmetric difference of their results is return as the result of the what-if query.
-% Reconsider \Cref{ex:running-example}.
-% \Cref{fig:Transitive-Transactions-Example} shows $\history$ and $\history[\deltaHist]$. %as it shows original transactions and the modified update.
-% %It also presents the order of execution time of updates in the history.
-% \Cref{fig:running-example-instance} shows $\db_0$, \Cref{fig:updated-example-instance} and \Cref{fig:whatif-example-instance} show $\db$ and $\db'$, respectively. The result of $\qResultDiff{\query_{total}}{\db}{\db'}$ is shown in \Cref{fig:whatif-result}.
-% \BG{Should we move part of the discussion for why the naive algorithm sucks here?}
-%
-%\begin{enumerate}
-%\item Use time travel to create a copy of $\db$ as of the start time of $\history$. %\footnote{Many DBMS support a feature called time travel which enables query access to previous versions of a table, e.g., \lstinline!... FROM R AS OF (X)! will return the version of table $R$ that was valid at time $X$.}
-%\item Evaluate the modified history $\history[\deltaHist]$ over the copy. If $\history[\deltaHist]$ contains concurrent transactions, then we need to ensure that statements are grouped together as transactions and executed in the  order given in the history. This can be achieved by opening multiple client connections (one per transaction) and executing statements in the order given by the history using the client connection associated with a transaction $\xid$ to execute statements of transaction $\xid$.
-%\item Evaluate $\query$ over both $\history(\db)$ and $\history[\deltaHist](\db)$ and compute their symmetric difference using SQL. Ignoring the $+$ and $-$ annotations, we compute $\iDiff{R}{R'}$ as $(R - R') \union (R' - R)$. % \lstinline!SELECT *, '+' AS annot FROM (SELECT * FROM R EXCEPT SELECT * FROM R') UNION ALL SELECT *, '+' AS annot FROM (SELECT * FROM R' EXCEPT SELECT * FROM R))!}
-%\end{enumerate}
- % Then, retrieve required information about $\xid$  such as other statements that were executed by this transactions, what other transactions executed concurrently and what concurrency control protocol was applied. Then, we should execute $\xid'$ and other concurrent transactions under the same concurrency control protocol policy and time sequence to evaluate and materialize $\history[\deltaHist]$. Finally, we should run the query $\query$ on both $\history(\db)$ and $\history[\deltaHist](\db)$ to compute the
- % delta.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{algorithm}[t]
   \caption{Optimized, Reenactment-based \abbrHW Algorithm}
@@ -70,39 +57,6 @@ In the last step (\Cref{alg-line:naive-mod-history}), the delta of $\naivedbcur$
 We now give a high-level overview of our \Cref{alg:whatif-algo} for answering a \abbrHW $\hwhatif = (\history, \db, \deltaHist)$.  % that we already introduce informally in \Cref{sec:introduction}.
 To answer a historical what-if query, we need to compute $\history(\db)$ and $\ahmod(\db)$, and compute the delta of $\history(\db)$ and $\ahmod(\db)$. As mentioned earlier, we utilize a technique called reenactment for this purpose. In the following we first give an overview of reenactment and then discuss how it is applied by our approach. % and briefly discuss optimization techniques that we have developed for answering historical what-if queries.
 
-%(t=\text{\upshape \textquotesingle}Savings\text{\upshape \textquotesingle})
-% The result $\iDiff{\subract{O}{\history}(\db)}{\subract{O}{\ahmod}(\db)}$ of $\hwhatif$ is computed as shown below.
-
-% \BG{This is not the correct incremental maintenance!}
-
-% \begin{align*}
-%   \iDiff{\subract{O}{\history}(\db)}{\subract{O}{\history[\deltaHist]}(\db)}&=  \projection_{id,cu,co,p,sf,-}(\subract{O}{\history}(\db)- \subract{O}{\history[\deltaHist]}(\db))\\
-%                                                                             &\hspace{4mm}  \union \projection_{id,cu,co,p,sf,+}(\subract{O}{\history[\deltaHist]}(\db)-\subract{O}{\history}(\db))
-% \end{align*}
-
-% \FCDel{We can limit the history of SQL commands that were executed after the first modification in $\deltaHist$ since the database versions created by statements before the first modified statement have to be the same in $\history[\deltaHist]$ and $\history$ and, thus, can not affect the final result of the historical what-if query.}{not here}
-
-
-% We now give a high-level overview of our \Cref{alg:whatif-algo} for answering a historical what-if query $\hwhatif = (\history, \db, \deltaHist)$.
-% % that employs the optimizations introduced in the previous sections.
-% % onsidering historical what-if query $\hwhatif$ is a tuple  $(\history, \db, \deltaHist, \query)$ as it is defined in \Cref{def:change-problem}, the answering historical what-if query algorithm is presented in the \Cref{alg:whatif-algo}.
-% % For simplicity, we assume $\deltaHist$ has a single modification $\modi$.\\
-% %where $\history$ is a transactional history run over a database instance $\db$, $\deltaHist$ denotes a sequence of modifications to $\history$ as introduced above, and $\query$ is a query over the schema of $\db$.
-% Our \Cref{alg:whatif-algo} first computes an overestimated set of updates $updateList$ which excludes updates proven to not alter data that is modified by any modified updates  in $\deltaHist$ by our program slicing approach as described in \Cref{sec:dep-ana}. A reenactment query is generated for $\history$ and $\history[\deltaHist]$, pruning updates absent from $updateList$. The input to these reenactment queries is affected by our data slicing technique (\Cref{sec:filter}), which excludes data that is not modified by any update in $\deltaHist$. Both program and data slicing fundamentally reduce the amount of computation done by the reenactment queries. Finally, function \texttt{SymmetricDiff} takes the two reenactment queries as input, computes $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ using the reenactment queries.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%In the following we introduce three optimizations to the naïve approach:
-
-%\begin{itemize}
-%\item \textbf{Incremental Maintenance} - we present how to use incremental view maintenance techniques to improve the performance of our process. We discuss that we do not need to compute the whole new database state and we can reproduce only part of the database that might be affected by the modifications in the historical what-if query.
-%\item \textbf{Reenactment} - we use \textit{reenactment}~\cite{AG17,AG18}, a declarative replay technique presented in~\citeauthor*{AG18,AG17} to avoid additional storage for copying the database and overhead of re-executing all update operations in the history. This technique enables us to apply additional optimization methods such as programming slicing and data slicing in our approach.\BG{Why/How does this technique enable that?}
-%\item \textbf{Data Slicing} - we filter the input of the reenactment query to exclude data from reenactment if it is proven to not contribute to the delta between $\history(\db)$ and $\history[\deltaHist](\db)$.
-%For that we need a provenance model that tracks dependencies of data on operations.
-%\item \textbf{Program Slicing} - we describe how to determine a set of update operations that are sufficient for replaying and reenactment to avoid considering all of update operations in a history in our approach.
-%In the experiment section, we show the cost of using programming slicing is amortized by avoiding  the cost of creating a copy of database and re-running modified history.\BG{See above, the copy has to be done for naive only, so this argument is not specific to program slicing. If we want to add a remark at the end of this section, we rather can talk about the trade-off the comes from PS being database size independent.}
-%as long as the input to a statement $u$ is the same  in $\history$ and $\history[\deltaHist]$ we avoid replaying $u$ since its output will be the same in $\history[\deltaHist]$ and $\history$. Determining the % relevant
-%  subset of updates to replay is akin to a technique from programming language research called \emph{program slicing}~\cite{W81} that determines which part of a program affects the value of a set of variables at a certain position of a program (e.g., an output).
-%\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Reenactment}
@@ -179,43 +133,6 @@ $\subract{O}{\history[\deltaHist]}$ differs from $\subract{O}{\history}$ in that
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Incremental Maintenance and Reenactment}\label{sec:reenact-and-incremental}
-
-% The naive approach evaluates the query $\query$ of a historical what-if query $\hwhatif$ over the current database state $\history(\db)$ and over $\history[\deltaHist](\db)$ and then computes the delta of the results.
-% In our approach, we cast the computation of $\qResultDiff{\query}{\history(\db)}{\history[\deltaHist](\db)}$ as an incremental view maintenance problem. We compute $\query(\history(\db))$ and incrementally maintain this result based on $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ using an incremental view maintenance technique (e.g.,~\cite{KA14}). We produce the part of result that might be changed by the historical what-if query instead of reproducing the whole database state.
-
-% %The part of database that is not changed by the historical what-if query would be same in $\history(\db)$ and $\history[\deltaHist](\db)$ and it does not help users to understand the effect of a hypothetical change to past operations of their business.\BG{The previous argument is about users, but really at this point we should not argue about users anymore. We have defined the problem formally, now it is just about performance. So we should motivate the technique from that angle.}
-
-% As a result, we just need to compute $\qResultDiff{\query}{\history(\db)}{\history[\deltaHist](\db)}$. We do not need to involve $\query$ in our computation and we can apply it on top of the $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ result in the final step. As $\query(\iDiff{\history(\db)}{\history[\deltaHist](\db)})$ would have same output result as $\iDiff{\query(\history(\db))}{\query(\history[\deltaHist](\db))}$, our main focus is computing $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$. In the rest of paper, we mostly use $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ as an answer to the historical what-if query and we ignore $\query$ as it can be applied later without affecting a final result of historical what-if query.
-
-% % As mentioned above, we want to optimize the reenactment-based approach for answering historical what-if queries by determining which updates have to be replayed and which subset of the database we have to apply the reenactment to. First observe that for a historical what-if query $\hwhatif$,
-% %To further improve performance, we focus on the computation of $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$.\\
-% We apply  \textit{reenactment}, a declarative replay technique for transactions that we have introduced in previous work~\cite{AG17,AG18}, to compute $\history[\deltaHist](\db)$. First we need to create a reenactment query for each update statement of the transaction in the history and then merge these individual reenactment queries to get the reenactment query for the transaction and then the whole history.
-% %The reenactment query for a transaction $T$ is equivalent to $T$ as they returns the same database state and has the same
-% %provenance under MV-semiring model that we have introduced in~\cite{AG17}. MV-semiring is a specific class of semirings that encode provenance information and the derivation of tuples based on a transactional history.  It is an extension of the semiring annotation framework for updates and transaction. We have demonstrated that $\ract{\history} \equiv_{\ppSRV} \history$, i.e., the reenactment query produces the same annotated relation as the original transaction ran in the context of history $\history$, i.e., it has the same result and provenance. Here $\ppSRV$ denotes the MV-semiring version of provenance polynomials.
-% \BG{We need to introduce $\equiv_{\ppSRV}$ since we use it in the following quoted theorem which means that reenactment produces the same results when data is annotated with provenance. Unless we use this fact, we may state the more restricted version of this result: reenactment and histories are equivalent under bag semantics $\equiv_{\semN}$ (Still the notation needs to be introduced).}
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{theo}[\cite{AG18}]\label{theo:update-reenactment-equivalence-SI}
-%   Let $\xid$ be a transaction and $\ract{\xid}$ its reenactment query.
-%   Then,
-%   $\ract{\xid}$ simulates the whole $\xid$ and they are annotation equivalent:
-% %
-% $
-% \xid \equiv_{\ppSRV} \ract{\xid}
-% $.
-% \end{theo}
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% The proof and detail about reenactment queries are given in~\cite{AG17,AG18}.\\
-
-% Given a transactional history $\history$, reenactment generates a \textit{reenactment query} $\ract{\history}$ which is equivalent to the history under standard bag and set semantics.
-% In order to compute $\ract{\history}$, first we generate a reenactment query for each update statement $\ract{\up}$ in the history to simulate the effects of them and then we merge these reenactment queries. For instance, $\ract{\up}$ for an update statement $\up$ is defined as the union of modified versions of all tuples that fulfill the $\cond$ function of the update and the version of tuples before  execution of the update that do not fulfill the $\cond$ function. The merging step for the sequence of updates in the history is computed recursively. For example, $\ract{\up_i}$ is written on top of the the result of the reenactment of the previous update in the history ($\ract{\up_{i+1}}$).
-% Importantly, reenactment queries can be expressed in standard SQL using time travel and can be used to replay only a part of a history. Thus, we can run the query $\ract{\history[\deltaHist]}$ over $\db$ to generate $\history[\deltaHist](\db)$. Compared to the naive approach this has the advantage that there is no need to copy the database and we avoid the logging overhead caused by running update operations. More importantly, it enables the data slicing and program slicing optimizations that we discuss next.
-% \BG{In the example we use notation $\subractR{R}$ which has not been introduced. In general we need to clarify better what a reenactment query is, is it one query per relation or is it for one specific relation only.}
-% % the extension  that  which can
-% % as a mechanism to construct an $\mvK$-annotated relation $R$ produced by a transaction $\xid$ ran as part of a history $\history$ by running a so-called reenactment query $\ract{\xid}$.
-% % ,  overhead to materialize $\history[\modi]$. In this work, we
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Reenacting Historical What-if Queries}
@@ -233,12 +150,7 @@ Continuing with our example from above, the result $\iDiff{\subract{O}{\history}
 \BG{Possibly shorten:}
 We use \Cref{alg:whatif-algo} to answer historical what-if queries. This algorithm applies two novel optimizations that significantly improve  performance. Program slicing (\Cref{alg-line:opt-ps}, discussed in \Cref{sec:dep-ana})  determines subsets of histories (encoded as a set of positions $\idxs$ called a \emph{slice}) which are sufficient for computing the answer to the what-if query $\hwhatif$. We then generate reenactment queries (\Cref{alg-line:opt-h-renact,alg-line:opt-m-renact})  for the slices of $\history$ and $\ahmod$ according to $\idxs$. Recall that $\hslice{\history}{\idxs}$ denotes the history generated from $\history$ by removing all statements not in $\idxs$. Afterwards (\Cref{alg-line:opt-h-ds,alg-line:opt-m-ds}), we apply our second optimization, data slicing (discussed in \Cref{sec:filter}). Data slicing injects selection conditions into the reenactment query that filter out data that is irrelevant for computing the result of the \abbrHW. The result of data and program slicing is an optimized version of a reenactment query that has to process significantly less data and avoids reenacting updates that are irrelevant for $\hwhatif$. We then calculate the delta of these two queries and return it as the answer for $\hwhatif$ (\Cref{alg-line:opt-diff}).
 
-% We now give a high-level overview of our \Cref{alg:whatif-algo} for answering a historical what-if query $\hwhatif = (\history, \db,\query, \deltaHist)$.
-% % that employs the optimizations introduced in the previous sections.
-% % onsidering historical what-if query $\hwhatif$ is a tuple  $(\history, \db, \deltaHist, \query)$ as it is defined in \Cref{def:change-problem}, the answering historical what-if query algorithm is presented in the \Cref{alg:whatif-algo}.
-% % For simplicity, we assume $\deltaHist$ has a single modification $\modi$.\\
-% %where $\history$ is a transactional history run over a database instance $\db$, $\deltaHist$ denotes a sequence of modifications to $\history$ as introduced above, and $\query$ is a query over the schema of $\db$.
-% Our \Cref{alg:whatif-algo} first computes an overestimated set of updates $updateList$ which excludes updates proven to not alter data that is modified by any modified updates  in $\deltaHist$ by our program slicing approach as described in \Cref{sec:dep-ana}. A reenactment query is generated for $\history$ and $\history[\deltaHist]$, pruning updates absent from $updateList$. The input to these reenactment queries is affected by our data slicing technique (\Cref{sec:filter}), which excludes data that is not modified by any update in $\deltaHist$. Both program and data slicing fundamentally reduce the amount of computation done by the reenactment queries. Finally, function \texttt{SymmetricDiff} takes a query $\query$ and the two reenactment queries as input, computes $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ using the reenactment queries.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

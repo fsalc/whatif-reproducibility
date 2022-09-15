@@ -1,21 +1,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{theo}\label{theo:data-slicing-single-mod}
-% Consider a historical what-if query $\hwhatif =(\history, \rel, \deltaHist)$ with a single modification $\deltaHist= \{ m \}$ for $m = \up \gets \up'$ where $\up = \update{\pset}{\cond}$ and $\up' = \update{\pset'}{\cond'}$ and $\up$ is the first statement in $\up$. Let $\condDSh{\modi}$ and $\condDSm{\modi}$ be as shown in \Cref{eq:update-ds-cond}. Then
-% \[\iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}= \iDiff{\ract{\history}(\qDSh(\rel))}{\ract{\history[\deltaHist]}(\qDSm(\rel))}\]
-% \end{theo}
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{theo}
-% Consider a historical what-if query $\hwhatif =(\history, \rel, \deltaHist)$ with a single modification $m = \up \gets \up'$ where $\up = \delete{\cond}$ and $\up' = \delete{\cond'}$. % $\theta(u)$ denote the condition of the delete statement $u$ and where
-% Let $\condDSh{\modi} = \cond'$ and $\condDSm{\modi} = \cond$. Then,
-% \[
-%   \iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}
-%   =
-% \iDiff{\ract{\history}(\query_{DS}(\rel))}{\ract{\history[\deltaHist]}(\query_{DS'}(\rel))}
-% \]
-% %
-% %To answer the historical what-if query and compute $\hwhatif= \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist](\db})}$, we can execute reenactment queries on part of data that was modified by either $u$ or $u'$. So, we just need to compute $\qResultDiff{\query}{\selection_{\theta(u) \wedge \neg\theta(u')}(\ract{\history})}{\selection_{\neg\theta(u) \wedge \theta(u')}(\ract{\history[\deltaHist]})}$.
-% %$\,$\\[-4mm]
-% \end{theo}
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,26 +76,26 @@ Since $\query_{DS}$ only filters out tuples $\tupin$ for which $\tupin \not \mod
 
 
 
-% \BG{We need to explain why assuming that $m$ changes that first update is ok. Also we need to reason about deletes and inserts.}
-% We prove the theorem by induction over the number of updates in the history $\history$ by considering direct and indirect changes of tuples by updates in the history. For that consider a historical what-if query $\hwhatif = (\history, \db, \deltaHist, \query)$ with a single modification $m = u_1 \gets u_1'$, and the database $\db$.
-% \BG{Do we need $u_2$ for the induction start?}\BG{I assume the argument is by contradiction. If that is the case then we need to say that and for sake of contradiction we then need to assume that there is a tuple not fulfilling the data slicing condition whose removal would change $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$.}
-% \underline{Induction Start}: Assume that $\history=\lbrace u_1,u_2\rbrace$. We prove the claim by contradiction. For sake of contradiction assume that
-% \[\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)} \neq \qResultDiff{\query}{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}\].
-% \BG{We need to not assume that the tuple is affected by the update $u_2$ (that is only one case)}
-% Consider a tuple $t_0 \in \db$ that such that $(\condOf{u_1} \vee \condOf{u_1'}) \not\models t_0$. Let $t_2 = \up_2(\up_1(t_0))$ and $t_2' = \up_2(\up_1'(t_0))$.  For sake of the contradiction assume that either $t_2 \in \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ or $t_2' \in \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$.
+%
+%
+%
+%
+%
+%
+%
 
-% WLOG we can assume that $t_2 \in \qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ since the case for $t_2'$ is symmetric.
+%
 
-% the $t_0$ were modified by $u_2$ and created new version $t_1$ where $t_1=u_2(t_0)$.
-% \BG{This is the first time we are using the notation $u(t)$. I am now describing it in the background section.}
-% Since this tuple was not changed by the historical what-if query, $t_1$ is same in both $\ract{\history}(\db)$ and $\ract{\history[\deltaHist]}(\db)$. So, we can remove the tuple $t_1$ from the delta $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ and the result of historical what-if query would be same. As a result, we can filter such tuples from input to reenactment queries.
-% %
-%  \underline{Induction Step}: Assume $\history=\lbrace u_1,\ldots ,u_{n}\rbrace$  and $t_0$ does not meet the condition $\theta(u_1)$ nor $\theta(u_1')$ but it was modified by other updates in the history $t_{n-1}=u_{n}(\ldots(u_2(t_0)))$. We can remove the tuple $t_{n-1}$ from the delta $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ and the result of historical what-if query would be same. We need to show that the same holds for $\history=\lbrace u_1,\ldots,u_{n},u_{n+1}\rbrace$ whereas $t_{n}=u_{n+1}(t_{n-1})$. Since $t_{n-1}$ is an input into the $u_{n+1}$ is exactly same in $\ract{\history}(\db)$ and $\ract{\history[\deltaHist]}(\db)$, $t_{n}$ as the output of $u_{n+1}$ would be also same in both reenactment queries. So, we can remove $t_{n}$ from the delta $\qResultDiff{\query}{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ without any changes to the result of historical what-if query.
+%
+%
+%
+%
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \proofpar{$\up = \adelete$:}
 %
-% In the following, we use $\dfull$ to denote $\iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}$ and $\dslice$ to denote $\iDiff{\ract{\history}(\query_{DS}(\rel))}{\ract{\history[\deltaHist]}(\query_{DS'}(\rel))}$.
+%
 Now consider the case where $\up$ is a delete statement.
 
 

@@ -12,41 +12,41 @@ We propose \emph{historical what-if queries} (\emph{\abbrHW}), a novel type of w
 
 
 
-% which defines such changes based on past business operations and historical transactions so achieving such changes is clear and answering such queries can help users to decide about their future policies and business operations. . Since this change is based on the past update operation that was executed on the database in the past, it is easy for the user to implement this change again and he can decide whether to change their business operations or keep it like before.
+%
 
 
-% It gives an insight that how increasing sales can affect the revenue but answering "how sales can be increased?" is a harder question and ambiguous.
+%
 
-% The answer to a what-if query explains how the query's result would change if the update would have been applied to the database.
+%
 
-% postulates a hypothetical update to a database and explains
-% can be used to
-% determine how a query's result would change based on hypothetical changes to a database. It helps users to understand how a change to data could affect the result of a query. However, it is usually unclear how such a change could have been happened.
+%
+%
+%
 
-% To make this approach efficient we develop static (schema-level) and dynamic analysis techniques for transactional workloads that enable use omit replaying transactions if that are not affected by the hypothetical change to the history.
+%
 
-%Answering such \textit{what-if queries} amounts to efficiently maintaining view (the query result) under updates.
+%
 
 
-%What-if queries are often realized using incremental view maintenance (e.g.,~\cite{deutch13,hung17,ZG95}) to avoid having to fully reevaluate the query over the input incorporating the hypothetical changes.
-% to determine the effect the change has on the query's output.
-%An example for a What-if query is: \textit{``How would a 10\% increase in sales % in California
-%  affect my company’s revenue this year?''}
-%While a what-if query provides insight into how a change to data would affect the result of a query, % it is often hard for a user to formulate such hypothetical changes to the database,
-% % because
-%it does not answer the important question of how such a change % of the database state
-%could have been achieved. For instance, how to increase % the
-%sales % in California
-%by 10\% is potentially a much harder question to answer than determining the effect of this  increase % in sales
-%on % the company's
-%revenue.
-%  Such changes are typically based on past operations.
-% In fact, it may be much easier for the user to formulate what-if questions as changes to past actions (the history of the database) instead of changes to the current database state. For example: \textit{``How would revenue be affected if we would have charged 5\% interest for account overdrafts instead of 10\%?''}  Such a question can be interpreted as hypothetical changes to update operations or database transactions executed in the past, e.g., changing all past updates that applied interest to a user's account to use an interest rate of \%5. Importantly, the answer to such a question is more likely to lead to actionable insights.
-% If the  hypothetical change to overdraft interest would result in a significant increase in revenue, then it is immediately clear how to implement this change --- by decreasing the overdraft interest. % While this example may be a bit contrived,
-% This example illustrates the fundamental difference between regular what-if queries that propose a change to the data and \emph{historical what-if queries}, the new type of predictive queries that we propose in this work, which postulate a change to past database operations.
-%We refer such queries that ask questions about hypothetical changes to a transactional history as \emph{historical what-if} queries.
-%  In this work we study how to efficiently answer such queries, i.e., how to effectively determine the changes to the current database state (or to a view over the current database) based on hypothetical changes to the database history. We exploit a declarative replay technique called reenactment we have developed in previous work that replays a transactional workload or part thereof using temporal queries. Reenactment enables us to replay hypothetical histories to determine their effect on the current data or the  result of an analysis query.
-% To make this approach efficient we develop static (schema-level) and dynamic analysis techniques for transactional workloads that enable use omit replaying transactions if that are not affected by the hypothetical change to the history.
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t]
@@ -269,29 +269,28 @@ Bob's request can be expressed as a \emph{historical what-if query} which replac
 The hypothetical change results in an increase of the shipping fee for the record with ID 12 (highlighted in red).
 By evaluating the effect of changing a past action (an update) instead of changing the current state of the database as in classical what-if analysis,
 the answer to a historical what-if query can inform future actions. For example, if revenue is increased significantly by using a \$60 cutoff for waiving shipping fees, then we may apply this higher threshold in the future.
-%   This policy was implemented though the update shown below (the database schema is shown in \Cref{fig:running-example-instance}):
-% %
-% \begin{lstlisting}
-% UPDATE Order SET ShippingFee=0 WHERE Price>=50;
-% \end{lstlisting}
-% %
-%In this example, we examine the transitive dependency of transactions.
-%Consider the order table for an online retailer shown in \Cref{fig:running-example-instance}. % (ignore annotations for now)
-% stores order information like \emph{ID}, \emph{Price}, and \emph{Shipping Fee} and customer information such as \emph{Customer} (customer name), and \emph{Country} (country of residency).
+% 
+% 
+% 
+% 
+% 
+% 
+%I
+%C
+% 
 %
-%The retailer did introduce
-% as shown in \Cref{fig:Transitive-Transactions-Example}. The result of the this history is shown in \Cref{fig:updated-example-instance}.
-% \footnote{As we will discuss further in \Cref{sec:approach}, our approach also handles concurrent execution of transactions - even under lower isolation levels}
-%Bob, a manager at the retailer, requests a report on how raising the minimum order price from \$50 to \$60  for reducing the shipping fee (update $\up_1$) would impact  revenue
-% The revenue per country can be computed using a query $\query_{total}$:
-% \begin{lstlisting}
-% SELECT sum(Price+ShippingFee) AS Total, Country
-% FROM Order
-% GROUP BY Country
-% \end{lstlisting}
-% Bob's request can be expressed as a \emph{historical what-if query} which replace the update $u_1$ with update ${u_1}'$ that is highlighted in red in \Cref{fig:Transitive-Transactions-Example}. \Cref{fig:whatif-example-instance} shows the new state of the order database after executing the modified transactional history over the database from \Cref{fig:running-example-instance}. % \Cref{fig:original-query-result} shows the original and result of $\query_{total}$.
-% % The result of this query over the database produced by the hypothetical history is shown in \Cref{fig:whatif-query-result}.
-% Note that the hypothetical change results in an increase in the shipping fee for the record with ID 12 (highlighted in red).
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
 \end{exam}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -327,96 +326,96 @@ The existence of an update in a transactional history is often dependent on the 
 A \textbf{naïve approach} for answering a \abbrHW is shown in \Cref{fig:Naive-Method}. This method creates a copy of the database as it was before the execution of the first update that has been modified by $\deltaHist$, and then executes the modified history on this copy. % It then executes the requested query on the copied database and the original. Finally, i
 It then computes the symmetric difference between the current database state (which is the result of evaluating the original transactional history $\history$ over $\db$) and the database state that is the result of evaluating the modified history $\ahmod$ over the copy of database $\db$.  % is the answer to the historical what-if query. Note that
 Note that this requires access to a past database state $\db$ before the execution of the first update of the history, e.g., we can use a DBMS with support for \textit{time travel} to access $\db$ (e.g., Oracle, SQLsever, DB2).
-% The disadvantages of the naive method are non-trivial.
+%
 The naïve method requires additional storage to store the copy of $\db$ and the evaluation of the modified history results in a large amount of write I/O. % for updating data and write-ahead logging (WAL).
-% Creating a copy of the database and evaluating the modified history results in a large amount of write I/O.
-%Moreover, most database systems log modifications of update operations using write-ahead logging (WAL) for recovery purposes, whose cost is prohibitive for evaluating or replaying a large number of updates.
-% While some systems allow WAL to be deactivated,
-        %         for temporary tables,
+%
+%
+%
+        %
 However, an even larger concern is that the modifications  $\deltaHist$ may only affect a small fraction of the data and many updates in the history may be irrelevant for computing the symmetric difference. % That is, evaluating all updates of the modified history over all tuples in $\db$ is likely to be overkill.
 
 
-%(no matter whether real or hypothetical) using temporal queries.
-% Such queries can be executed using any DBMS with support for \textit{time travel} (e.g., Oracle, DB2, SQLsever).
-% \BGDel{Time travel can be implemented using triggers for systems that do not support this functionality natively.}{too detailed for intro}
-        %         The naive solution to implement historical what-if queries is to reevaluate the modified history to produce an updated database state. Afterwards, we evaluate the user provided query over both the current database state and the updated database state and then determine what has changed.
+%
+%
+%
+        %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Our \textbf{proposed method} is shown in \Cref{fig:Prop-Method}. In order to overcome the limitations of the naïve method, we propose Mahif as a system that answers \abbrHWs using reenactment~\cite{AG14,AG17,AG18}%  which is a declarative replay technique for transactional history by a temporal query.
-% Our approach is based on reenactment~\cite{AG14,AG17}, %a technique we have developed
+% 
 , a declarative technique for replaying transactional histories using queries.
-% Like the naïve method,
+% 
 Our approach also uses time travel to access $\db$, the state of the database just before the time the first modified update was executed. In contrast to the naïve method, the database does not need to be copied. % Instead, time travel is used to get the state of the database before the update that is being modified, which is then the beginning state of the reenactment.
 Instead, the modified history is reenacted over $\db$ by running a query $\ract{\ahmod}$.
 Thus, reenactment has the advantage of not incurring write I/O.
 The result of query $\ract{\ahmod}$ is equal to the result of executing $\ahmod$ over $\db$.  % to the naive method, we run the requested query on the result of the reenactment and original database state and then
 We then compute the symmetric difference between the result of the modified history (returned by $\ract{\ahmod}$) and the current database state ($\history(\db)$) computed by reenacting $\history$ over $\db$. Reenacting $\history$, while seemingly redundant, allows us to develop novel optimizations which % dramatically decrease the amount data that needs to be processed and enables us to
 exclude irrelevant updates from the history and irrelevant data from reenactment. % if they provably have no effect on the answer of the historical what-if query.
- % and, by evaluating a history as a single query enables the DBMS to optimize across statements in the history.
+ %
 
-% The main advantage of using reenactment lies in these optimization, but reenactment has the additional advantage that it does not incur write I/O and that many small operations (the update statement of the history) are replaced with a single query enabling the database's query optimizer to optimize across multiple statements in the history. % as well as enabling the aforementioned optimizations.
+% 
 
-% One advantage of using reenactment is it does not need to copy the database. Reenactment avoids the logging overhead caused by running updates. Also, it enables optimizations such as program slicing that minimize the number of updates to reenact and data slicing which reduces input data into the reenactment.
+% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \partitle{Program Slicing}
 To be able to identify updates that can safely be excluded from the evaluation of an \abbrHW, we introduce the notion of a \emph{slice}. A slice for a \abbrHW $\hwhatif$ is a subset of the updates from $\history$ and $\ahmod$ that is sufficient for computing the result of $\hwhatif$. We identify a property called tuple-independence which holds for a large class of updates (corresponding to SQL update and delete statements without joins and subqueries, and \lstinline!INSERT ... VALUES ...! statements). Tuple independence ensures that we can determine whether a subset of updates is a slice by testing for each individual tuple from the database whether the subset produces the same result for $\hwhatif$ than for the full histories. To improve the efficiency of slicing, we compress $\db$ into a set of constraints that compactly over-approximate the database. Inspired by program slicing and symbolic execution techniques~\cite{bucur14,luckow14}, and ideas from incomplete databases~\cite{AG85,IL84a}, we develop a technique that evaluates updates from a history over a single tuple symbolic instance (a tuple with variables as attribute values) subject to the constraints from the compressed database. The result of symbolic evaluation is a single tuple symbolic instance that encodes all possible tuples in the result of the history for any input tuple fulfilling the compressed database constraints. We then use a constraint solver % (MILP solver in our case)
   to determine whether a candidate slice produces the same result for $\hwhatif$ as the full histories for every possible input tuple. If that is the case, then it is safe to use the slice instead of $\history$ and $\ahmod$ to answer $\hwhatif$.
 The cost of program slicing only depends on the number of updates in the history and the size of the constraints encoding the data distribution of the database. %Thus, % this method
-% is suited well for larger database instances and
-% allows us to
-%         we can trade performance of program slicing for reduced slice size by tuning the compression.
+% 
+% 
+% 
 
 
-% Towards this goal we propose a \textit{program slicing method} that  statically analyzes potential
-% %provenance
-% dependencies among updates in a history and excludes updates from reenactment if we can prove that their exclusion will not affect the result of the historical what-if query. Technically, our method
-% is inspired by program slicing and symbolic execution techniques from the programming languages community~\cite{bucur14,luckow14}.
-% % This method is similar to ideas from programming languages, i.e., symbolic execution~\cite{bucur14,luckow14}.
-% % and constraint databases \cite{gomez14,kuper13}.
-% We simulate updates in the history through symbolic execution to determine updates that may dependent on updates modified by a historical what-if query. We formalize symbolic execution using ideas from incomplete databases~\cite{AG85,IL84a}.
-% Dependent updates may produce different  outputs in the original and modified history. In order to improve performance of our approach, we just consider dependent updates in reenactment as only these updates may  affect the final result of the historical what-if query.
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \partitle{Data Slicing}
 We also propose \emph{data slicing} to prune data that we can prove is irrelevant for computing the answer to a \abbrHW. Based on the observation that any tuple in the symmetric difference has to be affected by at least one statement that was modified by $\deltaHist$, we filter the input of reenactment to remove tuples which are guaranteed to not be affected by any update modified by $\deltaHist$. In addition to the class of queries supported by program slicing, data slicing is also applicable to insert statements with queries (\lstinline!INSERT ... SELECT! in SQL).
 \BGDel{Our symbolic execution framework is of independent interest and can aide other static analysis task the require reasoning over multiple possible datasets or evaluation of updates over an incomplete database.}{Need space, maybe mention in future work}
-%The proposed optimizations enables us exclude data from the replay (\textit{data slicing}) and to avoid replaying parts of the history (\textit{program slicing}).
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 The main contributions of this paper are:
 \begin{itemize}[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt,leftmargin=*]
-%\item We formalize the problem of answering historical what-if queries.
-% and provide related definitions to solve it.
-%and detecting dependent updates.
+%
+%
+%
 \item
 We formalize historical what-if queries and present a novel method for answering such queries based on reenactment.
-%Our approach is based on \emph{reenactment}, a technique for replaying a transactional history using queries to avoid additional overhead of re-executing update in a transactional history and implement
-% The reenactment query for a transaction $T$ is equivalent to $T$ within the context of a history under MV-semiring semantics, i.e., it returns the same database state % as the transaction
-%  and has the same provenance. We reduce reenactment queries with MV-semiring semantics to queries in standard SQL that return a relational encoding of % of MV-semiring
-%  provenance.
+%
+%
+%
+%
 
-% \item We present our solution and algorithms for answering historical what-if queries.
+%
 
 \item We present two optimization techniques, \emph{program slicing} and \emph{data slicing}, which determine which updates and what data can be safely excluded when answering a \abbrHW.
-  % hat determines statically whether updates from the history can be excluded from reenactment without affecting the results of the historical what-if query. For that we build a symbolic execution framework rooted in incomplete databases which allows us to encode the outcomes of a transactional history over all possible databases instances of a certain size. We then employ a constraint solver to compute a slice of the history, i.e., a subsequence  that is sufficient for answering the historical what-if query.
+  %
 
-% \item We discuss an additional optimization technique---\emph{data slicing}---which filters the input data of a reenactment queries.
+%
 
 \item We demonstrate experimentally that our approach outperforms the naïve approach and that our optimizations result in significant additional performance improvements. % Note that the cost of program slicing is mostly determined by the number of updates in the history, but is independent of the database size. Thus, this method is suited well for larger database instances.
 
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% REMAINDER
+%
 
-% The remainder of the paper is organized as follows. We discuss background in \Cref{sec:background} and define historical what-if queries  in \Cref{sec:whif-def}. Afterwards, we discuss a naïve solution for our problem (\Cref{sec:naive-solution}) and then given an overview of our approach (\Cref{sec:overview}). \Cref{sec:filter} and \Cref{sec:dep-ana} introduces our data slicing and program slicing optimizations. In \Cref{sec:sym-exe} we introduce symbolic execution and explain how it is used for program slicing. % and how to translate and how a MILP solution is used to execute it(\Cref{sec:sym-lin}).
-% In \Cref{sec:related-work}, we discuss related work, discuss experimental results in \Cref{sec:experiments}, and conclude in \Cref{sec:conclusions}.
-%\BG{Remove SI ok?}
+%
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\partitle{Snapshot Isolation} Snapshot isolation~\cite{BB95} is a widely applied multi-versioning concurrency control protocol. Under SI each trans\-ac\-tion $\xid$ sees a private snapshot of the database containing changes of transactions that have committed before $\xid$ started and $\xid$'s own changes. SI disallows concurrent transaction to update the same data item. This is typically implemented by using write locks where transactions waiting for a lock have to abort if the transaction currently holding the lock commits.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\subsection{Running Example}
-%\label{sec:run-examp}
-%We can consider different cases for a what-if query when we examine the effect of changing an update operation in a transaction on other transactions. For example, when a user wants to change an update operation in a transaction $T_1$, the other transaction $T_2$ that was executed after $T_1$ might be effected by this change or not. We state a transaction $T_2$ is depend on other transaction $T_1$  which includes what-if query if a tuple that is modified by the transaction $T_1$ was or would be also modified by the transaction $T_2$.
+%
+%
+%
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "historical_whatif"

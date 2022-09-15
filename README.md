@@ -56,3 +56,30 @@ A script is included to execute the Autotools build scripts to configure GProM t
 Should the tool fail during its execution, it can be rerun and will resume from its last state.
 
 ## Running Your Own Code
+
+From the directory of this repository, running `./gprom/bin/gprom -backend postgres -host localhost -port 5432 -user whatif -passwd mahif -db whatif` will place you into an interactive shell where you can evaluate SQL queries within GProM.
+
+A historical what-if query has syntax `WHAT IF (stmt; ...;) REPLACE (1, ...) IN (stmt; ...;);`
+which replaces in the history given after `IN` the statements at positions `1, ...` (1-indexed) with the statements provided after `IF`. 
+
+For example:
+
+```sql
+WHAT IF (UPDATE f SET fare = fare + 44 WHERE pickup_community_area <= 1;)
+REPLACE (1)
+IN (UPDATE f SET fare = fare + 24 WHERE pickup_community_area <= 1;
+UPDATE f SET trip_total = trip_total + 35 WHERE pickup_community_area = 16;
+UPDATE f SET tolls = tolls + 40 WHERE pickup_community_area = 16;
+UPDATE f SET fare = fare + 77 WHERE pickup_community_area = 16;
+UPDATE f SET tolls = tolls + 32 WHERE pickup_community_area = 16;
+UPDATE f SET fare = fare + 56 WHERE pickup_community_area <= 1;
+UPDATE f SET trip_total = trip_total + 52 WHERE pickup_community_area = 16;
+UPDATE f SET extras = extras + 84 WHERE pickup_community_area = 16;
+UPDATE f SET trip_total = trip_total + 8 WHERE pickup_community_area = 16;
+UPDATE f SET tolls = tolls + 39 WHERE pickup_community_area = 16;
+UPDATE f SET trip_total = trip_total + 7 WHERE pickup_community_area = 16;);
+```
+
+This query will test the hypothetical modification (`UPDATE f SET fare = fare + 44 WHERE pickup_community_area <= 1;`) that will replace the first update in the transactional history (`UPDATE f SET fare = fare + 24 WHERE pickup_community_area <= 1;`).
+
+

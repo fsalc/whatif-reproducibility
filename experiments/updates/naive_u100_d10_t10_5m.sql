@@ -1,7 +1,9 @@
 \o /dev/null
+\timing ON
 
 create temporary table f1 as (select * from f);
 create index community_area_index ON f1 (pickup_community_area);
+
 update f1 set tolls = tolls + 0 where pickup_community_area <= 7;
 update f1 set trip_total = trip_total + 91 where pickup_community_area >= 33;
 update f1 set fare = fare + 19 where pickup_community_area >= 33;
@@ -103,4 +105,5 @@ update f1 set fare = fare + 85 where pickup_community_area >= 33;
 update f1 set extras = extras + 21 where pickup_community_area >= 33;
 update f1 set tolls = tolls + 45 where pickup_community_area >= 33;
 update f1 set tolls = tolls + 60 where pickup_community_area >= 33;
-explain (analyze true, timing false) (select * from f except select * from f1) union (select * from f1 except select * from f);
+
+explain analyze (select * from f except select * from f1) union (select * from f1 except select * from f);

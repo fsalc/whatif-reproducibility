@@ -1,6 +1,11 @@
+# TODO: run naive tests
+# TODO: selectivity figure
+# TODO: test end-to-end
+
 import re
 import pandas as pd
 import better_plotter
+import os.path
 from subprocess import STDOUT, check_output, call
 
 # Constants
@@ -73,6 +78,28 @@ timer: translator - program slicing optimization                            - to
 timer: ====================================================================
 timer: TOTAL                                                                - total:    66.418699 sec calls:         1 avg:    66.418699 min:    66.418699 max:    66.418699'''
 
+PARSE_POSTGRES_REGEX = 'Time: ([0-9]+\.?[0-9]*|\.[0-9]+)'
+def parse_postgres_timer(s):
+    return [float(p.group(1))/1000 for p in filter(lambda x: x is not None, [re.search(PARSE_POSTGRES_REGEX, l) for l in s.split('\n')])]
+
+def postgres_time_slices(times):
+    # note that this relies on the structure of the output:
+    #   the first 2 timers are the table copy and index creation ("Creation")
+    #   the intermediate timers are the execution of the updates ("Exe")
+    #   the final timer is the symmetric difference ("Delta")
+    return [("Creation", sum(times[:2])), ("Exe", sum(times[2:-1])), ("Delta", times[-1])]
+
+def execute_postgres(file, database):
+    #return check_output(f'psql -h localhost -p {PORT} -U whatif -d {database} < {file}', stderr=STDOUT, timeout=60*30)
+
+    # mocked output
+    return '''Time: 1234.56 ms
+Time: 1000.10 ms
+Time: 2000.20 ms
+Time: 3000.30 ms
+Time: 4000.40 ms
+Time 5000.50 ms'''
+
 def count_past_iterations(file, query):
     df = pd.read_csv(file)
     return df[query(df)].count()
@@ -88,6 +115,7 @@ def updates(dataset, method, u, t):
     elif dataset == 'ycsb' or dataset == 'tpcc':
         file = f'experiments/updates/{dataset}/mahif/{dataset}_u{u}_d10_t{t}.txt'
     if not file: raise Exception('unknown experiment')
+    if not os.path.isfile(file): raise Exception(f'missing experiment: {file}')
 
     # Execute
     f = f'{method} {dataset.upper()}'
@@ -103,7 +131,34 @@ def updates(dataset, method, u, t):
 
             if t == 10 and (method == 'R' or method == 'R+PS+DS'):
                 with open(f'raw_results/optimizations.csv', 'a') as optimizations:
-                    optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n') 
+                    optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
+                with open(f'raw_results/naive.csv', 'a') as optimizations:
+                    optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
+
+def updates_naive(dataset, u):
+    file = False
+    if dataset == '5m' or dataset == '50m':
+        file = f'experiments/updates/naive_u{u}_d10_t10_{dataset}.sql'
+    elif dataset == 'ycsb' or dataset == 'tpcc':
+        file = f'experiments/updates/{dataset}/naive/{dataset}_u{u}_d10_t10.sql'
+    if not file: raise Exception('unknown experiment')
+    if not os.path.isfile(file): raise Exception(f'missing experiment: {file}')
+
+    f = f'Naive {dataset.upper()}'
+    c = count_past_iterations(f'raw_results/naive.csv', lambda df: (df['Updates'] == u) & (df['Method'] == f)).iloc[0]
+
+    for n in range(c+1, REPEATS+1):
+        print(f'Executing updates/datasize/selectivity experiment with {dataset.upper()}, {u} updates, {t}% selectivity (Naive)... {n}/{REPEATS}')
+        times = parse_postgres_timer(execute_postgres(file, 'whatif' if dataset == '5m' or '50m' else dataset))
+        result = sum(times)
+
+        with open(f'raw_results/naive.csv', 'a') as naive:
+            naive.write(f'{u},{result},Naive {dataset.upper()}\n')
+
+        if dataset == '5m' or dataset == '50m':
+            with open(f'raw_results/naive_breakdown.csv', 'a') as breakdown:
+                for slice in postgres_time_slices(times):
+                    breakdown.write(f'{u},{slice[1]},{slice[0]},{dataset.upper()}\n')
 
 '''
 def datasizes(dataset, method, communitymax):
@@ -120,6 +175,7 @@ def dependents(method, d):
 
     # Choose file
     file = f'experiments/dependents/u100_d{d}_t10_5m.txt'
+    if not os.path.isfile(file): raise Exception(f'missing experiment: {file}')
 
     # Execute
     c = count_past_iterations('raw_results/dependent_updates.csv', lambda df: (df['Percentage of Dependent Updates'] == d) & (df['Method'] == method)).iloc[0]
@@ -134,6 +190,7 @@ def selectivities(method, communitymax):
 
     # Choose file
     file = f'experiments/selectivity/u100_d1_communitymax{communitymax}.txt'
+    if not os.path.isfile(file): raise Exception(f'missing experiment: {file}')
 
     # Execute
     c = count_past_iterations('raw_results/affected_data.csv', lambda df: (df['Community Max'] == communitymax) & (df['Method'] == method)).iloc[0]
@@ -148,6 +205,7 @@ def inserts(dataset, method, u):
 
     # Choose file
     file = f'experiments/inserts/u{u}_i10_t10_{dataset}.txt'
+    if not os.path.isfile(file): raise Exception(f'missing experiment: {file}')
 
     # Execute
     c = count_past_iterations('raw_results/inserts.csv', lambda df: (df['Updates'] == u) & (df['Method'] == method) & (df['Size'] == dataset.upper())).iloc[0]
@@ -162,6 +220,7 @@ def mixed(dataset, method, u):
 
     # Choose file
     file = f'experiments/mixed/u{u}_ix10_t10_{dataset}.txt'
+    if not os.path.isfile(file): raise Exception(f'missing experiment: {file}')
 
     # Execute
     c = count_past_iterations('raw_results/mixed.csv', lambda df: (df['Updates'] == u) & (df['Method'] == method) & (df['Size'] == dataset.upper())).iloc[0]
@@ -176,6 +235,7 @@ def multimods(method, m):
 
     # Choose file
     file = f'experiments/multimod/taxitrips/u100_d10_m{m}_5m.txt'
+    if not os.path.isfile(file): raise Exception(f'missing experiment: {file}')
 
     # Execute
 
@@ -202,6 +262,10 @@ if __name__ == '__main__':
             for u in [10, 20, 50, 100, 200]:
                 for t in [0, 10, 25]:
                     updates(dataset, method, u, t)
+
+    for dataset in ['5m', '50m', 'tpcc', 'ycsb']:
+        for u in [10, 20, 50, 100, 200]:
+            updates_naive(dataset, u)
 
     # This experiment was superseded by "updates"
     '''
@@ -247,6 +311,9 @@ if __name__ == '__main__':
     df = pd.read_csv('raw_results/t10_optimizations.csv').groupby(['Updates', 'Method']).mean().to_csv('results/t10_optimizations.csv') # t10_optimizations
     df = pd.read_csv('raw_results/t25_optimizations.csv').groupby(['Updates', 'Method']).mean().to_csv('results/t25_optimizations.csv') # t25_optimizations
     df = pd.read_csv('raw_results/optimizations.csv').groupby(['Updates', 'Method']).mean().to_csv('results/optimizations.csv') # optimizations (compare r and r+ps+ds)
+    df = pd.read_csv('raw_results/naive.csv').groupby(['Updates', 'Method']).mean().to_csv('results/naive.csv') # optimizations (compare naive and r+ps+ds)
+
+    df = pd.read_csv('raw_results/naive_breakdown.csv').groupby(['Updates', 'Time Slice', 'Size']).mean().to_csv('results/naive_breakdown.csv') # optimizations (compare naive and r+ps+ds)
 
     df = pd.read_csv('raw_results/dependent_updates.csv').groupby(['Percentage of Dependent Updates', 'Method']).mean().to_csv('results/dependent_updates.csv') # dependent updates
 

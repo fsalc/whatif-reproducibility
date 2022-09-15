@@ -1,4 +1,5 @@
 \o /dev/null
+\timing ON
 
 create temporary table usertable1 as (select * from usertable);
 create index key_index ON usertable1 (ycsb_key);
@@ -23,3 +24,5 @@ update usertable1 set field1=7724,field2=2372,field3=9606,field4=6536,field5=721
 update usertable1 set field1=3609,field2=2288,field3=8715,field4=8999,field5=2180,field6=974,field7=6995,field8=3446,field9=7468,field10=966 where ycsb_key >= 4500000;
 update usertable1 set field1=701,field2=1206,field3=6957,field4=6959,field5=4650,field6=3209,field7=4259,field8=8260,field9=3624,field10=891 where ycsb_key >= 4500000;
 update usertable1 set field1=8461,field2=3165,field3=8737,field4=4376,field5=6607,field6=925,field7=1015,field8=9864,field9=9837,field10=7276 where ycsb_key <= 500000;
+
+EXPLAIN ANALYZE (SELECT * FROM usertable EXCEPT SELECT * FROM usertable1) UNION (SELECT * FROM usertable1 EXCEPT SELECT * FROM usertable);

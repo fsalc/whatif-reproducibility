@@ -22,6 +22,7 @@ IBM CPLEX is required to run the program slicing optimization within GPRoM.
 We are unable to distribute CPLEX in our package due to licensing restrictions.
 
 Please see http://ibm.biz/cplex-free-for-students and https://www.ibm.com/support/pages/downloading-ibm-ilog-cplex-optimization-studio-v12100 in order to install CPLEX in the system (or container).
+Please note we use **IBM ILOG CPLEX Optimization Studio V12.10.0 for Linux x86-64 Multilingual**, which is part number CC439ML.
 The included scripts expect CPLEX to be installed to `/opt/ibm/ILOG/CPLEX_Studio1210`. The installer should present an option to choose the location.
 
 We are unable to provide a script for this.

@@ -1,4 +1,5 @@
 \o /dev/null
+\timing ON
 
 create temporary table g1 as (select * from g);
 create index community_area_index ON g1 (pickup_community_area);
@@ -14,4 +15,5 @@ update g1 set extras = extras + 84 where pickup_community_area >= 33;
 update g1 set trip_total = trip_total + 8 where pickup_community_area >= 33;
 update g1 set tolls = tolls + 39 where pickup_community_area >= 33;
 update g1 set trip_total = trip_total + 7 where pickup_community_area >= 33;
-explain (analyze true, timing false) (select * from g except select * from g1) union (select * from g1 except select * from g);
+
+explain analyze (select * from g except select * from g1) union (select * from g1 except select * from g);

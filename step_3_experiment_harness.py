@@ -2,7 +2,7 @@ import re
 import pandas as pd
 import better_plotter
 import os.path
-from subprocess import STDOUT, check_output, call
+from subprocess import STDOUT, TimeoutExpired, check_output, call
 
 # Constants
 
@@ -122,7 +122,7 @@ def updates(dataset, method, u, t):
     if method != 'R' or (method == 'R' and t == 10): 
         for n in range(c+1, REPEATS+1):
             print(f'Executing updates/datasize/selectivity experiment with {dataset.upper()}, {u} updates, {t}% selectivity ({method})... {n}/{REPEATS}')
-            result = parse_gprom_timer(execute_gprom(file, 'whatif' if dataset == '5m' or '50m' else dataset, method))
+            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips' if dataset == '5m' or '50m' else dataset, method))
 
             with open(f'raw_results/t{t}_optimizations.csv', 'a') as optimizations:
                 optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
@@ -147,7 +147,10 @@ def updates_naive(dataset, u):
 
     for n in range(c+1, REPEATS+1):
         print(f'Executing updates/datasize/selectivity experiment with {dataset.upper()}, {u} updates, {t}% selectivity (Naive)... {n}/{REPEATS}')
-        times = parse_postgres_timer(execute_postgres(file, 'whatif' if dataset == '5m' or '50m' else dataset))
+        try:
+            times = parse_postgres_timer(execute_postgres(file, 'taxi_trips' if dataset == '5m' or '50m' else dataset))
+        except TimeoutExpired as e:
+            times = [0, 0, 0, 0, 0] # see parse_postgres_timer handling for why this is array of zeroes
         result = sum(times)
 
         with open(f'raw_results/naive.csv', 'a') as naive:
@@ -179,7 +182,7 @@ def dependents(method, d):
     c = count_past_iterations('raw_results/dependent_updates.csv', lambda df: (df['Percentage of Dependent Updates'] == d) & (df['Method'] == method)).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing dependent updates experiment with {d}% dependent updates in history... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'whatif', method))
+        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
         with open('raw_results/dependent_updates.csv', 'a') as dependent_updates:
             dependent_updates.write(f'{d},{grab_timer("TOTAL", result)},{method}\n')
@@ -194,7 +197,7 @@ def selectivities(method, communitymax):
     c = count_past_iterations('raw_results/affected_data.csv', lambda df: (df['Community Max'] == communitymax) & (df['Method'] == method)).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing selectivity experiment with maximum community area {communitymax} ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'whatif', method))
+        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
         with open('raw_results/affected_data.csv', 'a') as affected_data:
             affected_data.write(f'{communitymax},{grab_timer("TOTAL", result)},{method}\n')
@@ -209,7 +212,7 @@ def inserts(dataset, method, u):
     c = count_past_iterations('raw_results/inserts.csv', lambda df: (df['Updates'] == u) & (df['Method'] == method) & (df['Size'] == dataset.upper())).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing inserts experiment with {u} updates in history on {dataset.upper()} dataset ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'whatif', method))
+        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
         with open('raw_results/inserts.csv', 'a') as mixed:
             mixed.write(f'{u},{grab_timer("TOTAL", result)},{method},{dataset.upper()}\n')
@@ -224,7 +227,7 @@ def mixed(dataset, method, u):
     c = count_past_iterations('raw_results/mixed.csv', lambda df: (df['Updates'] == u) & (df['Method'] == method) & (df['Size'] == dataset.upper())).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing mixed inserts & deletes experiment with {u} updates in history on {dataset.upper()} dataset ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'whatif', method))
+        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
         with open('raw_results/mixed.csv', 'a') as mixed:
             mixed.write(f'{u},{grab_timer("TOTAL", result)},{method},{dataset.upper()}\n')
@@ -240,7 +243,7 @@ def multimods(method, m):
     c = count_past_iterations('raw_results/multimod.csv', lambda df: (df['Modifications'] == m) & (df['Method'] == method)).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing multimod experiments with {m} modifications ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'whatif', method))
+        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
         with open('raw_results/multimod.csv', 'a') as mixed:
             mixed.write(f'{m},{grab_timer("TOTAL", result)},{method}\n')
@@ -281,7 +284,7 @@ if __name__ == '__main__':
 
     # selectivities
     for method in methods.keys():
-        for communitymax in range(1, 78):
+        for communitymax in [5, 7, 11, 32, 77]:
             selectivities(method, communitymax)
 
     # inserts
@@ -316,7 +319,7 @@ if __name__ == '__main__':
 
     df = pd.read_csv('raw_results/dependent_updates.csv').groupby(['Percentage of Dependent Updates', 'Method']).mean().to_csv('results/dependent_updates.csv') # dependent updates
 
-    # selectivities
+    df = pd.read_csv('raw_results/affected_data.csv').groupby(['Community Max', 'Method']).mean().to_csv('results/affected_data.csv') # dependent updates
 
     df = pd.read_csv('raw_results/inserts.csv').groupby(['Updates', 'Method', 'Size']).mean().to_csv('results/inserts.csv') # inserts
     df = pd.read_csv('raw_results/mixed.csv').groupby(['Updates', 'Method', 'Size']).mean().to_csv('results/mixed.csv') # mixed
@@ -334,4 +337,4 @@ if __name__ == '__main__':
     ####   Compiling LaTeX   ####
     #############################
 
-    # subprocess.call(["pdflatex", "paper/historical_whatif.tex"])
+    subprocess.call(["pdflatex", "paper/historical_whatif.tex"], cwd="./paper/")

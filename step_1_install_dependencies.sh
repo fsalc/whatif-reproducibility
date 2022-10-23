@@ -11,6 +11,7 @@ sudo -u postgres psql < database_setup.sql
 export PGPASSWORD=mahif
 pg_restore -h localhost -p 5432 -U whatif -d tpcc data/tpcc.bin
 pg_restore -h localhost -p 5432 -U whatif -d ycsb data/ycsb.bin
+pg_restore -h localhost -p 5432 -U whatif -d ycsb data/taxi_trips.bin
 
 # Tell user to install CPLEX
 echo "\n\n\nDependencies for GProM have been installed!"

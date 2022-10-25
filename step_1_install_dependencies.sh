@@ -9,9 +9,10 @@ pip3 install -r requirements.txt
 sudo systemctl start postgresql.service
 sudo -u postgres psql < database_setup.sql
 export PGPASSWORD=mahif
-pg_restore -h localhost -p 5432 -U whatif -d tpcc data/tpcc.bin
-pg_restore -h localhost -p 5432 -U whatif -d ycsb data/ycsb.bin
-pg_restore -h localhost -p 5432 -U whatif -d ycsb data/taxi_trips.bin
+
+psql -h localhost -p 5432 -U whatif -d tpcc < data/tpcc.bin
+psql -h localhost -p 5432 -U whatif -d ycsb < data/ycsb.bin
+psql -h localhost -p 5432 -U whatif -d taxi_trips < data/taxi_trips.bin
 
 # Tell user to install CPLEX
 echo "\n\n\nDependencies for GProM have been installed!"

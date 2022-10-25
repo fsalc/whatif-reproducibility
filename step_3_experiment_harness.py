@@ -337,4 +337,4 @@ if __name__ == '__main__':
     ####   Compiling LaTeX   ####
     #############################
 
-    subprocess.call(["pdflatex", "paper/historical_whatif.tex"], cwd="./paper/")
+    call(["pdflatex", "paper/historical_whatif.tex"], cwd="./paper/")

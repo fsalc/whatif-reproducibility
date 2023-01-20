@@ -2,7 +2,7 @@ import re
 import pandas as pd
 import better_plotter
 import os.path
-from subprocess import STDOUT, TimeoutExpired, check_output, call
+from subprocess import STDOUT, TimeoutExpired, CalledProcessError, check_output, call
 
 # Constants
 
@@ -30,8 +30,11 @@ def grab_timer(timer, timers):
     return list(filter(lambda t: t[0] == timer, timers))[0][1]
 
 def execute_gprom(file, database, method):
-    return check_output(f'{GPROM_LOCATION} -backend postgres -host localhost -port {PORT} -user whatif -passwd mahif -db {database} {GPROM_FLAGS} {methods[method]} -queryFile {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
-
+    try:
+        return check_output(f'{GPROM_LOCATION} -backend postgres -host localhost -port {PORT} -user whatif -passwd mahif -db {database} {GPROM_FLAGS} {methods[method]} -queryFile {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
+    except CalledProcessError as e:
+        print("There was an issue executing GProM:", e)
+        exit(1)
     # mocked output
 #     return '''timer: ASSERT                                                               - total:     0.000403 sec calls:        16 avg:     0.000025 min:     0.000023 max:     0.000030
 # timer: OptimizeModel                                                        - total:     0.010183 sec calls:         1 avg:     0.010183 min:     0.010183 max:     0.010183
@@ -85,7 +88,11 @@ def postgres_time_slices(times):
     return [("Creation", sum(times[:2])), ("Exe", sum(times[2:-1])), ("Delta", times[-1])]
 
 def execute_postgres(file, database):
-    return check_output(f'psql -h localhost -p {PORT} -U whatif -d {database} < {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
+    try:
+        return check_output(f'psql -h localhost -p {PORT} -U whatif -d {database} < {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
+    except CalledProcessError as e:
+        print("There was an issue executing Postgres:", e)
+        exit(1)
 
     # mocked output
 #     return '''Timing is on.
@@ -122,7 +129,7 @@ def updates(dataset, method, u, t):
     if method != 'R' or (method == 'R' and t == 10): 
         for n in range(c+1, REPEATS+1):
             print(f'Executing updates/datasize/selectivity experiment with {dataset.upper()}, {u} updates, {t}% selectivity ({method})... {n}/{REPEATS}')
-            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips' if dataset == '5m' or '50m' else dataset, method))
+            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips' if (dataset == '5m' or dataset == '50m') else dataset, method))
 
             with open(f'raw_results/t{t}_optimizations.csv', 'a') as optimizations:
                 optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
@@ -148,7 +155,7 @@ def updates_naive(dataset, u):
     for n in range(c+1, REPEATS+1):
         print(f'Executing updates/datasize/selectivity experiment with {dataset.upper()}, {u} updates, {t}% selectivity (Naive)... {n}/{REPEATS}')
         try:
-            times = parse_postgres_timer(execute_postgres(file, 'taxi_trips' if dataset == '5m' or '50m' else dataset))
+            times = parse_postgres_timer(execute_postgres(file, 'taxi_trips' if (dataset == '5m' or dataset == '50m') else dataset))
         except TimeoutExpired as e:
             times = [0, 0, 0, 0, 0] # see parse_postgres_timer handling for why this is array of zeroes
         result = sum(times)

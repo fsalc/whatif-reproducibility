@@ -1,6 +1,6 @@
 what if (update f set trip_total = trip_total + 7 where pickup_community_area <= 7;
 update f set fare = fare + 11 where pickup_community_area <= 7;
-update f set extras = extras + 12 where extras <= 20;
+update f set trip_total = trip_total + 12 where extras <= 20;
 update f set tolls = tolls + 12 where pickup_community_area <= 7;
 update f set trip_total = trip_total + 4 where pickup_community_area <= 7;)
 replace (1, 20, 40, 60, 80)

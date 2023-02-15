@@ -8,46 +8,6 @@ its practical utility is limited because it does not provide any insights about 
 We argue that this problem is not specific to this example, but rather is a fundamental issue with classical what-if analysis since the hypothetical update to the database is part of the input.
 We propose \emph{historical what-if queries} (\emph{\abbrHW}), a novel type of what-if queries where the user postulates a hypothetical change to the transactional history of the database.
 
-
-
-
-
-%
-
-
-%
-
-%
-
-%
-%
-%
-
-%
-
-%
-
-
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t]
   \centering
@@ -93,33 +53,6 @@ We propose \emph{historical what-if queries} (\emph{\abbrHW}), a novel type of w
   \caption{History $\history$ implementing the shipping fee policy and a hypothetical change of the policy (update ${u_1}'$ replaces $u_1$ to raise the price for waiving shipping fees to \$60).}
   \label{fig:Transitive-Transactions-Example}
 \end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{figure}[t]
-%   $,$                                                                                                                                                  \\[-7mm]
-%   \centering
-%   \resizebox{1\columnwidth}{!}{
-%   \begin{minipage}{1.5\columnwidth}
-%     \centering {\large \bf Order}                                                                                                                     \\[2mm]
-%     \begin{tabular}{|c|c|c|c|c|c|c|l}
-        %         \thead{ID} & \thead{Customer} & \thead{Item} & \thead{Quantity} & \thead{Price} & \thead{ShippingFee} & \thead{Status} &                       \\ \cline{1-7}
-        %       %         $\cMarker{T_0}{6}{1}(\upMarker{I}{T_0}{2}{1}(x_1))$ &
-                                                                                %                                                                                 11 & Susan  & X &  1 & 20 & 5 & Shipped & $o_1$                                            \\
-                                                                                %    %                                                                                 $\cMarker{T_0}{6}{2}(\upMarker{I}{T_0}{3}{2}(x_2))$ &
-                                                                                                                                                                                                                             %                                                                                                                                                                                                                              12 & Alex  & X &  2 & 20 & 5 & Received & $o_2$                                                                                                \\
-                                                                                                                                                                                                                             %    %                                                                                                                                                                                                                              $\cMarker{T_0}{6}{4}(\upMarker{I}{T_0}{4}{3}(x_3))$ &
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        13 & Jack  & Y &  2 & 30 & 3 & Received & $o_3$                                            \\
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       %       %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        $\cMarker{T_0}{6}{4}(\upMarker{I}{T_0}{5}{4}(x_4))$ &
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               14 & Mark  & Z &  6 & 10 & 4 & Canceled & $o_4$                                            \\ \cline{1-7}
-        %       \end{tabular}
-        %         \end{minipage}
-        %         }                                                                                                                                                    \\[-3mm]
-        %         \caption{Database state after executing the original history}
-        %         \label{fig:updated-example-instance}
-        %%       \end{minipage}
-        %         \end{figure}
-        % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t]
   $\,$                                                                                                                                                   \\[-5mm]
   \centering
@@ -144,22 +77,6 @@ We propose \emph{historical what-if queries} (\emph{\abbrHW}), a novel type of w
     \caption{Result of  executing the original history $\history$.}
     \label{fig:updated-example-instance}
   \end{minipage}
-  % \begin{minipage}{0.27\linewidth}
-  %   \centering
-  %   \resizebox{1\columnwidth}{!}{
-  %   \begin{minipage}{1.5\columnwidth}
-  %     \centering {\large \bf Query result}                                                                                                                \\[2mm]
-  %     \begin{tabular}{|c|c|l}
-  %       \thead{Total} & \thead{Country}&                                                                                                                \\ \cline{1-2}
-  %       73 & UK & $o'_1 + o''_2$                                                                                                                         \\
-  %       94 & US & $o'_3 + o_4$                                                                                                                           \\
-  %       \cline{1-2}
-  %     \end{tabular}
-  %   \end{minipage}
-  % }                                                                                                                                                     \\[-3mm]
-  %   \caption{$\query_{total}$ result}
-  %   \label{fig:original-query-result}
-  % \end{minipage}
 \end{figure}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -187,69 +104,8 @@ We propose \emph{historical what-if queries} (\emph{\abbrHW}), a novel type of w
     \caption{Result of executing the hypothetical history $\ahmod$.}
     \label{fig:whatif-example-instance}
   \end{minipage}
-  % \begin{minipage}{0.27\linewidth}
-  %   \centering
-  %   \resizebox{1\columnwidth}{!}{
-  %     \begin{minipage}{1.5\columnwidth}
-  %       \centering {\large \bf Query result}                                                                                                                \\[2mm]
-  %       \begin{tabular}{|c|c|l}
-  %         \thead{Total} & \thead{Country}                                                                                                                 \\ \cline{1-2}
-  %         \cellcolor{shadered}78 & UK & $o'_1 + o'_2$                                                                                                     \\
-  %         94 & US & $o'_3 + o_4$                                                                                                                           \\
-  %         \cline{1-2}
-  %       \end{tabular}
-  %     \end{minipage}
-  %   }                                                                                                                                                     \\[-3mm]
-  %   \caption{$\query_{total}$ result}
-  %   \label{fig:whatif-query-result}
-  % \end{minipage}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%.
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{figure*}[t]
-%   \centering
-%   \begin{minipage}{0.49\linewidth}
-%   \centering
-%     \resizebox{1\columnwidth}{!}{
-%   \begin{minipage}{1.4\columnwidth}
-%    \centering {\large \bf Employee}\\[2mm]
-%     \begin{tabular}{l|c|c|c|c|c|l}
-%      & \thead{ID} & \thead{Name} & \thead{Calls} & \thead{Sales} & \thead{Bonus} & \\ \cline{2-6}
-%     $\cMarker{T_1}{22}{1}(\upMarker{U}{T_1}{21}{1}(\cMarker{T_0}{6}{1}(\upMarker{I}{T_0}{2}{1}(x_1)))$ & 101 & David Spears & 18 &  15 & 0 & $e'_1$ \\
-% $\cMarker{T_0}{6}{2}(\upMarker{I}{T_0}{3}{2}(x_2))$ & 102 & Mark Smith & 40 &  20 & 100 & $e_2$ \\
-%     $\cMarker{T_0}{6}{3}(\upMarker{I}{T_0}{4}{3}(x_3))$ &  103 & Susan Sommers & 80 &  50 & 200 & $e_3$ \\
-%      $\cMarker{T_2}{24}{4}(\upMarker{U}{T_2}{23}{4}(\cMarker{T_0}{6}{4}(\upMarker{I}{T_0}{5}{4}(x_4)))$ &  104 & Robert Singer & 120 &  80 & 350 & $e'_4$ \\ \cline{2-6}
-%     \end{tabular}
-%   \end{minipage}
-% }
-%   \caption{Database state after executing the original history}
-%   \label{fig:updated-example-instance}
-% \end{minipage}
-% % \end{figure}
-% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % \begin{figure}[t]
-%   \begin{minipage}{0.49\linewidth}
-%   \centering
-% \resizebox{1\columnwidth}{!}{
-%   \begin{minipage}{1.4\columnwidth}
-%    \centering {\large \bf Employee}\\[2mm]
-%     \begin{tabular}{l|c|c|c|c|c|l}
-%       & \thead{ID} & \thead{Name} & \thead{Calls} & \thead{Sales} & \thead{Bonus} & \\ \cline{2-6}
-%     $\cMarker{T_1}{22}{1}(\upMarker{U}{T_1}{21}{1}(\cMarker{T_0}{6}{1}(\upMarker{I}{T_0}{2}{1}(x_1)))$ & 101 & David Spears & 18 &  15 & 0 & $e'_1$ \\
-% $\cMarker{T_3}{26}{2}(\upMarker{U}{T_3}{25}{2}(\cMarker{T_1}{22}{2}(\upMarker{U}{T_1}{21}{2}(\cMarker{T_0}{6}{2}(...)))$ & 102 & Mark Smith & 40 &  20 & \cellcolor{shadered} 150 & $e"_2$ \\
-%     $\cMarker{T_0}{6}{3}(\upMarker{I}{T_0}{4}{3}(x_3))$ &  103 & Susan Sommers & 80 &  50 & 200 & $e_3$ \\
-%      $\cMarker{T_2}{24}{4}(\upMarker{U}{T_2}{23}{4}(\cMarker{T_0}{6}{4}(\upMarker{I}{T_0}{5}{4}(x_4)))$ &  104 & Robert Singer & 120 &  80 & 350 & $e'_4$ \\ \cline{2-6}
-%     \end{tabular}
-%   \end{minipage}
-% }
-%   \caption{Database state based on the historical what-if query}
-%   \label{fig:whatif-example-instance}
-% \end{minipage}
-
-% \end{figure*}
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{exam}
@@ -270,27 +126,6 @@ The hypothetical change results in an increase of the shipping fee for the recor
 By evaluating the effect of changing a past action (an update) instead of changing the current state of the database as in classical what-if analysis,
 the answer to a historical what-if query can inform future actions. For example, if revenue is increased significantly by using a \$60 cutoff for waiving shipping fees, then we may apply this higher threshold in the future.
 % 
-% 
-% 
-% 
-% 
-% 
-%I
-%C
-% 
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
 \end{exam}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -1,8 +1,8 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Background and Notation}
 \label{sec:background}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \begin{figure}[t]
 \centering
 \begin{minipage}{1.0\linewidth}
@@ -15,7 +15,7 @@
   \label{fig:expr-grammar}
 \end{figure}
 \iftechreport{
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{figure}[t]
 \centering
 \begin{align*}
@@ -30,157 +30,154 @@
   \caption{Equivalence rules for expressions \exprbf}
   \label{fig:equ-for-expr}
 \end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-}
-% In this section, we present the background and definitions necessary for our approach.
 
-% A \emph{relation schema} $\relSchema(A_1, \ldots, A_n)$ consists of a name $R$ and a list of attribute names $A_1$ to $A_n$. The arity of a relation schema is the number of attributes in the schema.
-% A \emph{database schema} $\dbSchema = \{{\relSchema_1}, \ldots, {\relSchema_n}\}$ is a set of relation schemata ${\relSchema_1}$ to ${\relSchema_n}$.
-Given a universal value domain $\dataDomain$, a relation $\rel$ (instance) of % a schema $\relSchema$ of
-arity $n$ is a subset of $\dataDomain^{n}$. A database instance (or database for short) $\db$ % of schema $\dbSchema = \{ \relSchema_1, \ldots, \relSchema_n \}$
-is a set of relations $\rel_1$ to $\rel_n$. We use $\schema{\rel}$ to denote the schema of relation $\rel$. % such that $\rel_i$ is an instance of $\relSchema_i$.
-%
+}
+
+Given a universal value domain $\dataDomain$, a relation $\rel$ (instance) of 
+arity $n$ is a subset of $\dataDomain^{n}$. A database instance (or database for short) $\db$ 
+is a set of relations $\rel_1$ to $\rel_n$. We use $\schema{\rel}$ to denote the schema of relation $\rel$.
+
 We consider three type of update operations: updates, inserts, and deletes. In the following, we will use the term \textit{update statement}, or statement for short, as an umbrella term for updates, deletes, and inserts. We view statements as functions that take a relation $\rel$ (or database in the case of inserts with a query) as input and return an updated version of $\rel$. We use $\up$ to denote any such statement and use $\up(\rel)$ (and sometimes abusing notation also $\up(\db)$) to denote the result of applying statement $\up$ to relation $\rel$. An insert $\ainsert(\rel)$ inserts tuple $t$ with the same arity as $\rel$ into relation $\rel$. An insert $\aqinsert(\rel)$ inserts the result of the query $\query$ evaluated over database $\db$ into $\rel$. A delete $\adelete(\rel)$ removes all tuples from $\rel$ that do not fulfill condition $\cond$. Finally, an update $\aupdate(\rel)$ updates the values of each tuple $t$ that fulfills condition $\cond$ based on a list of expressions $\pset$ and returns all other input tuples unmodified. $\pset$ is a list of expressions $(\expr_1,...,\expr_n)$ with the same arity as $\rel$. Each such expression is over the schema of $\rel$. We will sometimes use $(\attr{i_1}\leftarrow\expr_1,...,\attr{i_m}\leftarrow\expr_m)$ as a notional shortcut assuming that the expression for each attribute that is not explicitly mentioned is the identity. For instance, $\pset = (B \leftarrow B + 3)$ over schema $(A,B,C)$ denotes $(A, B + 3, C)$. For an update or delete $\up$ we use $\condOf{\up}$ to denote the update's (delete's) condition. Similarly, $\psetOf{\up}$ for an update $\up$ denotes the update's list of $\pset$ expressions.
 
-% E
 
-% An \textbf{update operation} $\up$ is an update $U$ (modifies one or more tuples), insert $I$ (adds one or more new tuples), or delete $D$ statement (removes one or more tuples) that modifies a relation $R$. Our approach primarily concerns itself with update statements. An update statement has a modification function $\pset$ and a condition $\cond$. $\up(t)=t'$ denotes that $\up$ modifies the tuple $t$ and creates the new tuple $t'$ in the relation $R$. $\pset$ assigns an expression $\expr$ over variables $\var$ and constants $\cons$ to an attribute $\attr{i}$ of a relation $R$ with $n$ attributes. $\pset=(\attr{1}\leftarrow\expr_1,...,\attr{n}\leftarrow\expr_n)$.
 
-A condition $\cond$ (as used in updates and deletions) is a Boolean expression over % atomic conditions which are
-comparisons between scalar expressions containing variables and constants. The grammar defining the syntax of $\pset$ and $\cond$ expressions is shown in \Cref{fig:expr-grammar}. For any expression $\expr$, $\expr'$, and $\expr''$ we use $\subst{\expr}{\expr'}{\expr''}$ to denote the result of substituting each occurrence of $\expr'$ in $\expr$ with $\expr''$. We write $\pset(t)$ to denote the tuple produced by evaluating the expressions from $\pset$ over input tuple $t$ (required to be of the same arty as $\pset$). For example, for a relation $R(A, B, C)$, tuple $t = (1, 1, 1)$, and  $\pset = (A, A + B, 20)$ we get $\pset(t) = (1, 2, 20)$. % A delete consists only of a condition $\theta$. An insert is a non-empty set of tuples $Ins$ with the same attributes as the relation it is defined
+
+
+A condition $\cond$ (as used in updates and deletions) is a Boolean expression over 
+comparisons between scalar expressions containing variables and constants. The grammar defining the syntax of $\pset$ and $\cond$ expressions is shown in \Cref{fig:expr-grammar}. For any expression $\expr$, $\expr'$, and $\expr''$ we use $\subst{\expr}{\expr'}{\expr''}$ to denote the result of substituting each occurrence of $\expr'$ in $\expr$ with $\expr''$. We write $\pset(t)$ to denote the tuple produced by evaluating the expressions from $\pset$ over input tuple $t$ (required to be of the same arty as $\pset$). For example, for a relation $R(A, B, C)$, tuple $t = (1, 1, 1)$, and  $\pset = (A, A + B, 20)$ we get $\pset(t) = (1, 2, 20)$. 
 Sometimes, we will use $\up(t)$ to denote the tuple that is the result of applying a statement $\up$ to a single tuple $t$.
 We formally define the semantics of evaluating statements over a database $\db$ below. Note that the update statements we define here correspond to SQL update and delete statements without nested subqueries and joins and to \lstinline!INSERT INTO ... VALUES ...! and \lstinline!INSERT INTO ... SELECT ...!.
-%The result of applying an update $u$, delete $d$, or insert $i$ to a relation $R$ is defined as follows:
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \begin{align}
   \aupdate(R) &= \{ \pset(t) \mid t \in R \wedge \cond(t) \} \cup \{ t \mid t \in R \wedge \neg \cond(t) \} \label{eq:update-sem}\\
   \adelete(R) &= \{ t \mid t \in R \wedge \neg \cond(t) \} \label{eq:delete-sem}\\
   \ainsert(R) &= R \cup \{ t \} \label{eq:const-insert-sem}\\
   \aqinsert(R) &= R \cup \query(\db) \label{eq:query-insert-sem}
 \end{align}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% That is, the result contains updated versions of tuples $t$ from $R$ for which the condition of the update evaluates to true (LHS of the union) and all tuples from $R$ for which the condition evaluates to false (RHS of the union).
 
-A \textbf{history} $\history = \up_1, \ldots, \up_n$ % , \hOrder}$
-over a database $\db$ is a sequence of updates over $\db$. % $\hOrder$ is a total order over the operations of $\history$'s  transactions that complies with the order of operations within each transaction.
-%In this work, we focus on a simplified version where
-%on serial histories, i.e., the history can be treated as a sequence of updates.\\
+
+
+A \textbf{history} $\history = \up_1, \ldots, \up_n$ 
+over a database $\db$ is a sequence of updates over $\db$. 
+
+
 Given a history $\history = \up_1, \ldots,\up_n$, we use $\histslice{i}{j}$ for $i \leq j \in [1,n]$ to denote $u_i, u_{i+1}, \ldots, u_j$. Similarly, $\histpre{i}$, called a prefix of $\history$, denotes $\history_{1,i}$. Furthermore, for a set of indices $\idxs = \{ \idx_1, \ldots, \idx_m \}$ such that $\idx_j < \idx_k$ if $j < k$ and $\idx_j, \idx_k \in [1,n]$, we use $\hislice{\idxs}$ to denote $(\up_{\idx_1}, \ldots, \up_{\idx_m})$.
-% Note that $\histpre{\idxs}$, and, thus, also $\history_i$ and  $\histslice{i}{j}$ are histories.
+
 We use $\history(\db)$ to denote the result of evaluating the history $\history$ over a database instance $\db$ (recursively defined below using the fact that $\histpre{n} = \history$) and will use $\dbver{\idx}$ to denote $\histpre{\idx}(\db)$.
-%
+
 \begin{align*}
   \db_1 &= \up_1(\db) &\db_i &= \up_i(\db_{i-1}) \tag{for $1 < i \leq n$}
 \end{align*}
 
 Our program slicing technique relies on a property we call \emph{tuple independence}. Intuitively, statements that fulfill this property process each input tuple individually.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{defi}[Tuple independence]\label{def:tuple-independence}
  A statement $\up$ is \emph{tuple independent} if for every database $\db$, we have $\up(\db) = \bigcup_{t \in \db} \up(\{t\})$
-  % \[
-  %   \up(\db) = \bigcup_{t \in \db} \up(\{t\})
-  %   \]
+  
+  
+  
 \end{defi}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \BG{We could allow one tuple per table instead and get tuple independence for inserts with conjunctive queries, or up to one tuple per union to get independence for union of conjunctive queries?}
 In SQL, all updates and deletes without nested subqueries or joins and inserts without queries are tuple independent. Thus, all of our statements with the exception of $\aqinsert$ are tuple independent.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{lem}[Tuple independent statements]\label{lem:tuple-independent-operator}
 All updates $\aupdate$, deletes $\adelete$, and inserts $\ainsert$ are tuple independent.
 \end{lem}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \ifnottechreport{
   \begin{proofsketch}
 Proven by unfolding of definitions and using the fact that comprehension distributes over union if the conditions in the comprehension are only over the element that is returned. That is, for any set $S$ and condition $\psi$ that only depends on $e$, the following equivalence holds: $\{ e \mid e \in S \land \psi \} = \bigcup_{e \in S} \{ e \mid \psi \}$. For the full proof please see~\cite{techreport}
   \end{proofsketch}
 }
 \iftechreport{\input{tupleindependent-proof}}
-% A \textbf{partial history} represents a part of an update history ($\history_i\subseteq \history$), and it includes all updates from the first update to update number $i$. For the $\history = \{\up_1,$ $\ldots,\up_n\}$, we can consider a partial history $\history_i = \{\up_1,$ $\ldots,\up_i\}$ where $1 \leqslant i \leqslant n$.\\
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \section{Historical What-if Queries}
 \label{sec:whif-def}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-We now formally define historical what-if queries. % and the problem addressed in this work: computing answers to such queries. % We first define a modification, a modified history, and a database delta. Then we define the historical what-if query, and the answer to such query based on these definitions.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We now formally define historical what-if queries. 
+
 Let $\history$ be a history containing an update $\up$.
 Historical what-if queries are based on \textbf{modifications} $\modi = \up \gets \up'$ that replace the statement $\up$ in $\history$ with another statement $\up'$, delete the statement $\up$ at position $i$ ($\modi = \mdel{i}$), or insert a new statement $\up$ at position $i$ ($\modi = \minsert{\up}{i}$).
-%Note that for non-serial histories we would have to also provide an update to $\hOrder$ that removes all operations of $\xid$ and declares how the operations of $\xid'$ are interleaved with operations of other transactions from $\history$.
+
 We use $\deltaHist$ to denote a sequence of modifications and $\ahmod$ to denote the result of applying the modifications
-%\textbf{modifications evaluation}
-$\deltaHist$ to the history $\history$. For example, for a history $\history = u_1, u_2, u_3$ and $\deltaHist = (u_1 \gets u_1', \mdel{3})$ we get $\ahmod = u_1', u_2$. % Using the notation introduced above,  the result of evaluating $\ahmod$ over database $\db$ is denoted as $\ahmod(\db)$.
+
+$\deltaHist$ to the history $\history$. For example, for a history $\history = u_1, u_2, u_3$ and $\deltaHist = (u_1 \gets u_1', \mdel{3})$ we get $\ahmod = u_1', u_2$. 
 Replacing a statement $\up$ with a statement $\up'$ of a different type, e.g., replacing an update with a delete, can be achieved by deleting $\up$ and then inserting $\up'$.
-% Using previously defined applying history to a database, obviously $\ahmod(\db)$ shows the result of evaluating the modified history $\ahmod$ over a database instance $\db$.\\
+
 
 To answer a historical what-if query, we need to compute the difference between the current state of the database, i.e., $\history(\db)$ and the database produced by evaluating the modified history, i.e., $\ahmod(\db)$.
 For that we introduce the notion of a database delta.
-A \emph{database delta} $\iDiff{\db}{\db'}$ contains all tuples that only occur in $\db$ or in $\db'$. Tuples that exclusively are in $\db'$ are annotated with a $+$ and tuples that exclusively appear in $\db$ are annotated with $-$.  % $-t$ denotes that $t$ is in $\db$, but not in $\db'$.
-% We use $\qResultDiff{\query}{\history(\db)}{\ahmod(\db)}$ as a notational shortcut for $\iDiff{\query(\db)}{\query(\db')}$.
+A \emph{database delta} $\iDiff{\db}{\db'}$ contains all tuples that only occur in $\db$ or in $\db'$. Tuples that exclusively are in $\db'$ are annotated with a $+$ and tuples that exclusively appear in $\db$ are annotated with $-$.  
 
-%%%%%%%%%%%%%%%%%%%%
+
+
   \begin{align*}
     \iDiff{\db}{\db'} &=
 \{ +t \mid t \not\in \db \wedge t \in \db' \} \cup \{ -t \mid t \in \db \wedge t \not\in \db' \}
-%                                      \begin{split}
-% &\{ +t \mid t \not\in \db \wedge t \in \db' \}\\ \cup \; &\{ -t \mid t \in \db' \wedge t \not\in \db \}\\
-% \end{split}
+
+
+
   \end{align*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
   We define a historical what-if query and an answer to such query based on the delta of $\history(\db)$ and $\ahmod(\db)$.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{defi}[Historical What-If Queries]
-A \textbf{historical what-if query} $\hwhatif$ is a tuple $(\history, \db, \deltaHist)$ where $\history$ is a  history executed over database instance $\db$, and $\deltaHist$ denotes a sequence of modifications to $\history$ as introduced above. % and $\query$ is a query over the schema of $\db$.
+A \textbf{historical what-if query} $\hwhatif$ is a tuple $(\history, \db, \deltaHist)$ where $\history$ is a  history executed over database instance $\db$, and $\deltaHist$ denotes a sequence of modifications to $\history$ as introduced above. 
 The answer to $\hwhatif$ is defined as:
 \begin{align*}
   \iDiff{\history(\db)}{\ahmod(\db)}
-%    \qResultDiff{\query}{\history(\db)}{\ahmod(\db)}
+
   \end{align*}
 \end{defi}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{figure}[t]
-%   \centering
-% \resizebox{1\columnwidth}{!}{
-%   \begin{minipage}{1.5\columnwidth}
-%   	\centering
-%     \begin{tabular}{|c|c|}
-%       \thead{Total} & \thead{Country} \\ \cline{1-2}
-%       5 & UK \\
-%      0 & US \\
-%        \cline{1-2}
-%   \end{tabular}
-%   \end{minipage}
-% }\\[-1mm]
-%   \caption{$\qResultDiff{\query}{\history(\db)}{\ahmod(\db)}$}
-%   \label{fig:whatif-result}
-% \end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \begin{exam}
 \label{ex:change-prob-example}
-Let $\db$ and $\history$ be the database shown in \Cref{fig:running-example-instance} and history shown in \Cref{fig:updated-example-instance}, respectively. Consider the modification $\deltaHist_1 = (\up_1 \gets {\up_1}')$ where $\up_1$ and ${\up_1}'$ are the updates shown in \Cref{fig:Transitive-Transactions-Example}. $\deltaHist_1$ increases the minimum price for waving shipping fees. % Furthermore, we use $\query_{total}$ to denote the query \lstinline!SELECT SUM(Bonus) FROM Employee! from \Cref{ex:running-example}.
+Let $\db$ and $\history$ be the database shown in \Cref{fig:running-example-instance} and history shown in \Cref{fig:updated-example-instance}, respectively. Consider the modification $\deltaHist_1 = (\up_1 \gets {\up_1}')$ where $\up_1$ and ${\up_1}'$ are the updates shown in \Cref{fig:Transitive-Transactions-Example}. $\deltaHist_1$ increases the minimum price for waving shipping fees. 
 Bob's historical what-if query from this example can be written as $\hwhatif_{Bob} = (\history, \db, \deltaHist_1)$ in our framework.
 Evaluating $\history[\deltaHist_1]$ results in the modified database instance shown in \Cref{fig:whatif-example-instance}. For convenience, we have highlighted modified tuple values. The answer of the \abbrHW $\hwhatif_{Bob}$ is
 \[
   \iDiff{\history(\db)}{\history[\deltaHist_1](\db)} = \{ -o_6, +o_6'\}
 \]
-% The result of evaluating the query $\query_{total}$ and of computing the delta as the answer for the what-if query is shown in \Cref{fig:whatif-result}.
-%
+
+
 That is, the shipping fee for Alex's order is increased by \$5 because it is no longer eligible for free shipping under the new policy (${\up_1}'$).
-%, because  the bonus cut (${u_1}'$) is applied (-\$50) which drops his bonus below \$100 and, thus, he becomes eligible to receive the additional bonus implemented by $u_3$. Therefore, the total earning for 'UK' would be \$5 dollar higher if the minimum price would have been increased to
-%Bob can now decide whether to change the shipping fee policy based on the answer to his what-if query.
-% A historical what-if query $\hwhatif$ is ${\hwhatif} = (H,T_1,$ \lstinline!UPDATE Employee SET!\\ \lstinline! Bonus=Bonus-500 WHERE Bonus=2000,!  \lstinline!UPDATE Employee SET Bonus=Bonus-500!\\ \lstinline!WHERE Bonus=1000!$)$. The \emph{full answer} to a historical what-if query is $H_{after}(Employee)$ is presented in \Cref{fig:whatif-example-instance}. A \emph{differential answer} to the what-if query $\hwhatif$ is the symmetric difference between existence of tuples $e_1$ and $e_2$ in $H_{before}(Employee)$ and $H_{after}(Employee)$ that are highlighted in red in \Cref{fig:whatif-example-instance}.
+
+
+
 \end{exam}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Note that the problem of computing $\qResultDiff{\query}{\history(\db)}{\ahmod(\db)}$ can be solved by (i) computing $\query(\history(\db)$ which mean evaluating $\query$ over the current state of the database, (ii) computing  $\iDiff{\history(\db)}{\ahmod(\db)}$, and incrementally maintain $\query(\history(\db)$ using the computed in step (ii). In the remainder of the paper we focus on step (ii) since (i) is classical query evaluation and (iii) can be solved using existing view maintenance techniques~\cite{ZG95,KA14,chirkova-12-mv}.
+
+
 
 %%% Local Variables:
 %%% mode: latex

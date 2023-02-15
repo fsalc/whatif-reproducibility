@@ -52,10 +52,9 @@ In the last step (\Cref{alg-line:naive-mod-history}), the delta of $\naivedbcur$
 \section{Overview of Our Approach}
 \label{sec:overview}
 
-% Answering historical what-if queries requires us to have access to a log of SQL commands executed in the past (audit log) and query access to the past states of tables (time travel). For databases that support these features (e.g., Oracle, DB2, and MSSQL), we can use an audit log that stores a history of SQL commands executed in the past and for each command when it was executed and as part of which transaction. Otherwise, we can use triggers to capture SQL commands or exploit other logging mechanisms if available.
 
-We now give a high-level overview of our \Cref{alg:whatif-algo} for answering a \abbrHW $\hwhatif = (\history, \db, \deltaHist)$.  % that we already introduce informally in \Cref{sec:introduction}.
-To answer a historical what-if query, we need to compute $\history(\db)$ and $\ahmod(\db)$, and compute the delta of $\history(\db)$ and $\ahmod(\db)$. As mentioned earlier, we utilize a technique called reenactment for this purpose. In the following we first give an overview of reenactment and then discuss how it is applied by our approach. % and briefly discuss optimization techniques that we have developed for answering historical what-if queries.
+We now give a high-level overview of our \Cref{alg:whatif-algo} for answering a \abbrHW $\hwhatif = (\history, \db, \deltaHist)$. 
+To answer a historical what-if query, we need to compute $\history(\db)$ and $\ahmod(\db)$, and compute the delta of $\history(\db)$ and $\ahmod(\db)$. As mentioned earlier, we utilize a technique called reenactment for this purpose. In the following we first give an overview of reenactment and then discuss how it is applied by our approach. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,10 +87,6 @@ We use $\ract{\up}$ ($\ract{\history}$) to denote the reenactment query for a si
   \end{align*}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  %   \ract{\adelete} & \defas \selection_{\neg\, \cond}(\rel) \\
-  %   \ract{\ainsert} & \defas \rel \union \{ t \}\\
-  %   \ract{\aqinsert} & \defas \rel \union \query
-  % \end{align*}
 %
 Let $\history = (\up_1, \ldots, \up_n)$ be a history. The reenactment query $\ract{\history}$ for $\history$ is constructed from the reenactment queries for $\up_i$ for $i \in \{1,\ldots,n\}$ by substituting the reference to relation $\rel$ in $\ract{\up_i}$ with $\ract{u_{i-1}}$.
 \end{defi}
@@ -102,7 +97,6 @@ For a history $\history$ which accesses multiple relations, a separate query,  $
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{exam}\label{ex:reenact-example}
-%In this example, we examine the transitive dependency of transactions.
   Consider \Cref{ex:running-example} and let $I,U,C,P$, and $F$ denote attributes \emph{ID}, \emph{Customer}, \emph{Country}, \emph{Price}, and \emph{ShippingFee} of relation \emph{Order} (abbreviated as \emph{O}). The reenactment query $\subract{O}{\history}$ for the history $\history$ from \Cref{fig:Transitive-Transactions-Example} is:
 
 \vspace{-1mm}
@@ -112,13 +106,6 @@ For a history $\history$ which accesses multiple relations, a separate query,  $
   \subract{O}{\history} & = \projection_{I,U,C,P,\sqlCase{P \leq 30 \land F \geq 10}{F-2}{F}}(                                                                                                                                                                                              \\
                         &\hspace{4mm}\projection_{I,U,C,P,\sqlCase{U = UK \land P \leq 100}{F+5}{F}}(                                                                                                                                                                                                   \\
                         &\hspace{4mm} \projection_{I,U,C,P,\sqlCase{P \geq 50}{0}{F}}(O)))\\[-3mm]
-                      % \ract^{O}(u_3)                                                                                                                                                                                                                                                         \\
-% \subract{O}{u_3}      & = \projection_{ID,cu,co,p,(sf-2) \to sf}(\selection_{ p<=30 \wedge sf>=10}(\ract^O(\up_2)))                                                                                                                                                                          \\
-%                       & \mathtab \union \selection_{\neg ( p<=30 \wedge sf>=10)}(\ract^O(\up_2))                                                                                                                                                                                             \\
-% \ract^{O}(u_2)        & = \projection_{ID,cu,co,p,(sf+5) \to sf}(\selection_{co=\text{\upshape \textquotesingle}UK\text{\upshape \textquotesingle} \wedge p<=100}(\ract^O(\up_1)))                                                                                                           \\
-%                       & \mathtab \union \selection_{\neg (co=\text{\upshape \textquotesingle}UK\text{\upshape \textquotesingle} \wedge p<=100)}(\ract^O(\up_1))                                                                                                                              \\
-% \ract^{O}(u_1)        & = \projection_{ID,cu,co,p,0 \to sf}(\selection_{p>=40}(\relCV{O}{20}))                                                                                                                                                                                               \\
-%                       & \mathtab \union \selection_{\neg (p>=40)}(\relCV{O}{20})                                                                                                                                                                                                             \\
 \end{align*}
 \end{minipage}
 }
@@ -139,7 +126,6 @@ $\subract{O}{\history[\deltaHist]}$ differs from $\subract{O}{\history}$ in that
 \label{sec:answ-hist-what}
 
 As shown above, we use reenactment to simulate the evaluation of histories. Given the reenactment queries for $\history$ and $\ahmod$, what remains to be done is to compute their delta.
-%(t=\text{\upshape \textquotesingle}Savings\text{\upshape \textquotesingle})
 Continuing with our example from above, the result $\iDiff{\subract{O}{\history}(\db)}{\subract{O}{\ahmod}(\db)}$ of $\hwhatif$ is computed as shown below.
 
 \begin{align*}

@@ -64,17 +64,6 @@ Using the equivalence $\psi_1 \Rightarrow \psi_2 \Leftrightarrow \neg \psi_2 \Ri
 
 Since $\query_{DS}$ only filters out tuples $\tupin$ for which $\tupin \not \models \condOf{\up} \lor \condOf{\up'}$,  \Cref{eq:update-slicing-cond} implies that all tuples filtered by $\query_{DS}$ do not contribute to any tuple in $\dfull$. Thus, we get $\dfull = \dslice$ which concludes the proof for this case.
 
-% We will prove $\delta = \delta_{DS}$ by showing inclusion in both direction.
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \proofpar{$\dfull \subseteq \dslice$}
-% %
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \proofpar{$\dfull \supseteq \dslice$}
-
-
-
 
 %
 %
@@ -138,9 +127,7 @@ We need to show that
   \label{eq:push-down-eq}
 \end{align}
 
-% step 2 conditions over operator outputs can be equivalently  evaluated over inputs when pushed
 
-% step 3 done (theorem follows from 1 + 2)
 Showing this equivalency is possible by a case distinction over the possible relational algebra operators:
 \begin{itemize}
 	\item \textbf{Projection} Consider a projection $\projection_{\vec{A}}$ with $\vec{A} = e_1 \to A_1, \ldots, e_n \to A_n$. Therefore, $\projection_{\vec{A}}(t) = (e_1(c_1), \ldots, e_n(c_n))$. Applying the definition of $\pushCond{\cond}{1}(\tup)$, we get $\pushCond{\cond}{1}(\tup) = (e_1(c_1), \ldots, e_n(c_n)) = \projection_{\vec{A}}(t)$.

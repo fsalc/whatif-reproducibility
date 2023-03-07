@@ -1,28 +1,10 @@
 \section{Slicing with Symbolic Execution}
 \label{sec:sym-exe}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%
-%
-%
-%
 
 We adapt concepts from incomplete databases~\cite{IL84a} to reason about the behavior of updates over a set of possible databases represented by a compressed database. This is akin to \textit{symbolic execution}~\cite{cadar13,K76} which is used in software testing to determine inputs that would lead to a particular execution path in the program.
 %
 We use \textit{Virtual C-tables}~\cite{pip10,lenses15} (\textit{VC-tables}) as a compact representation of the set of possible worlds represented by a compressed database (to be discussed in \Cref{sec:compr-input-datab}) and demonstrate how to evaluate updates with possible worlds semantics over such representations. That is, the result of a history over a VC-table instance encodes all possible results of the history over every possible world represented by the VC-table. Using a constraint solver, we can then prove existential or universal statements over these possible results. Specifically, we will check that a candidate slice and the full histories produce the same result for a \abbrHW $\hwhatif$.
-%
-
-%
-
-
-%
-
-%
-%
-%
-%
-%
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Incomplete Databases and Virtual C-Tables}
 \label{sec:vc-tb}
@@ -65,40 +47,6 @@ Abusing notation, we apply $\varAssign$ to VC-dbs, tuples, and symbolic expressi
                                           \end{cases}
     &\varAssign(\F) &= \F\\
   \end{align*}
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
-
-
- %
- %
- %
- %
- %
- %
- %
- %
- %
- %
 \end{defi}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -131,8 +79,6 @@ A VC-table over this schema is shown on the top left in \Cref{fig:running-vctb}.
 \end{align*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 }
-%
-% \revm{As we will discuss further in \Cref{sec:sym-exe}, there is a trade-off between the precision of slicing and cost, e.g., we could represent the input table as a disjunction of multiple constraints resulting in a more accurate encoding of the input data at the cost of a larger global condition.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Updates on VC-Tables}
@@ -172,11 +118,6 @@ Let  $\pset = (e_1, \ldots, e_n)$. Given a tuple $\vct$, we use  $\vctn$ to deno
   \begin{align*}
     &\gcond(\update{\pset}{\cond}(\vcrel)) = \gcond(\vcrel) \land \bigwedge_{\vct \in \vcrel} \bigwedge_{i=1}^{n} x_{\vct,A_i} = \sqlCase{\cond(\vct)}{e_i(\vct)}{\vct.A_i}
     \end{align*}
-  % \begin{align*}
-  %   % \update{\pset}{\cond}(\vcrel)           & = \{ \pset(\vct) \mid \vct \in \vcrel \} \union \{ \vct \mid \vct \in \vcrel \}                                                    \\
-  %   % \lcond(\update{\pset}{\cond}(\vcrel), \vct) & = (\lcond(\vcrel,\vct) \land \neg \cond(\vct)) \lor \bigvee_{\vct': \pset(\vct') = \vct} \lcond(\vcrel, \vct') \wedge \cond(\vct')
-  %   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  % \end{align*}
   \begin{align*}
     \delete{\cond}(\vcrel)                & = \{ \vct \mid \vct \in \vcrel \}                                                                                                                                 &
     \lcond(\delete{\cond}(\vcrel), \vct) &= \lcond(\vcrel, \vct) \land \neg \cond(\vct)
@@ -186,31 +127,12 @@ Let  $\pset = (e_1, \ldots, e_n)$. Given a tuple $\vct$, we use  $\vctn$ to deno
     \ins{t}(\vcrel)                        & = \vcrel \union \{ t \}                                                                                                                                &
 \lcond(\ins{t}(\vcrel),t)  &= \T
     & \lcond(\ins{t}(\vcrel),\vct) &= \lcond(\vcrel,\vct) \tag{for $\vct \neq t$}
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % u(\rel)                                & = \{ \pset(t) \mid t \in \vcrel \} \cup \{ t \mid t \in \vcrel \}                                                                  \\
-    % \lcond(u(\rel), t)                     & = (\lcond(\vcrel,t) \wedge \neg \cond(u)[t]) \vee \bigvee_{t': \pset(t') = t} \lcond(\vcrel, t') \wedge \cond(u)[t']               \\
-    % d(\rel)                                & = \{ t \mid t \in \vcrel \}                                                                                                       \\
-    % \lcond(d(\rel), t)                     & = \lcond(\vcrel,t) \wedge \neg\cond(d)[t]                                                                                         \\\\
-    % i(\rel)                                & = \{ t \mid t \in \vcrel \} \cup \{ t \mid t \in Ins(\rel) \}                                                                     \\
-	% \lcond(i(\rel), t)                     & = \lcond(\vcrel,t) \vee t \in Ins(\rel)
   \end{align*}\\[-9mm]
   \begin{align*}
         \gcond(\ins{t}(\vcrel)) = \gcond(\adelete(\vcrel)) = \gcond(\vcrel)
   \end{align*}
 \end{defi}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%
-
-%
 %
 Using these semantics, the result of a sequence of $n$ statements over a relation with $m$ attributes has the same number of tuples as the input and the number of conjuncts in the global condition is bound by $n \cdot m$. Furthermore,
 each conjunct is of size linear in the size of the expressions of the statements ($\cond$ or $\pset$).
@@ -230,27 +152,9 @@ each conjunct is of size linear in the size of the expressions of the statements
       \caption{Initial VC-database $\vcdbini$.}\label{fig:initial-vc-table}
     \end{subfigure}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %  \begin{minipage}{0.45\linewidth}
-  %  \footnotesize
-  %   \centering { \bf VC-Table after first update}\\
-  %   \begin{tabular}{|c|c|c|l}
-  %      \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
-  %          $x_{Country}$ & $x_{Price}$ & $0$ & $x_{Price} \geq 40 $ \\ \cline{1-3}
-  %    $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee}$ & $\neg(x_{Price} \geq 40) $ \\ \cline{1-3}
-  %   \end{tabular}\\[4mm]
-  % \end{minipage}
     \begin{subfigure}[b]{0.7\linewidth}
      \centering
     \footnotesize
-    % \centering { \bf VC-Table after second update}\\
-    % \begin{tabular}{|c|c|c|l}
-    %    \thead{Country} & \thead{Price} & \thead{ShippingFee} & \\ \cline{1-3}
-    %        $x_{Country}$ & $x_{Price}$ & $5$ & $x_{Price} \geq 40 \wedge (x_{Country}=UK \wedge x_{Price} \leq 100)$ \\ \cline{1-3}
-    %  $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee}+5$ & $\neg(x_{Price} \geq 40) \wedge (x_{Country}=UK \wedge x_{Price} \leq 100)$ \\ \cline{1-3}
-    %  $x_{Country}$ & $x_{Price}$ & $0$ & $x_{Price} \geq 40 \wedge \neg(x_{Country}=UK \wedge x_{Price} \leq 100)$\\ \cline{1-3}
-    %  $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee}$ & $\neg(x_{Price} \geq 40) \wedge \neg(x_{Country}=UK \wedge x_{Price} \leq 100)$ \\ \cline{1-3}
-    % \end{tabular}
-    % \centering { \bf Compact VC-Table with global condition after second update}\\
         \begin{tabular}{|c|c|c|l}
         \thead{Country} & \thead{Price} & \thead{ShippingFee} &  \\ \cline{1-3}
             $x_{Country}$ & $x_{Price}$ & $x_{ShippingFee,2}$ & $\T$ \\ \cline{1-3}
@@ -370,31 +274,6 @@ WLOG consider attribute $A_i$. In this case $\up(\vct).A_i = \varAssign(\sqlCase
 
 Since we have shown that for every tuple $\tup_{up}$ we have $\tup_{up} \in \up(\varAssign(\vcrel))$ iff $\tup_{up} \in \varAssign'(\up(\vcrel))$ and $\vcrel_{\varAssign'}$ is the unique world from $\worldsOf{\up(\vcrel)}$ corresponding to $\vcrel_{\varAssign}$, we have shown that $\worldsOf{\up(\vcrel)} = \up(\worldsOf{\vcrel})$.
 
-%
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%
-
-%
-
-%
-
-%
-
-
-
-%
-
-%
-
-%
-
-%
-
-%
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 }
@@ -554,34 +433,6 @@ $\history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \histor
   &\hspace{0.7cm}\lor \history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) = \hslice{\history}{\idxs}(\db_{t})))
   \end{split}
 \end{align}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% \iftechreport{
-%   This equation can be further simplified by observing that
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   \begin{align*}
-%     &(\history(\db_{t}) = \hslice{\history}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) =  \hslice{\history[\deltaHist]}{\idxs}(\db_{t}))\\
-%     \lor &(\history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) = \hslice{\history}{\idxs}(\db_{t})
-%   \end{align*}
-%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   and
-%   \[
-%     \history(\db_{t}) = \history[\deltaHist](\db_{t})
-%   \]
-%   together imply $\hslice{\history}{\idxs}(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}))$. Thus, we can drop the condition $\history(\db_{t}) \neq \history[\deltaHist](\db_{t})$ and get:
-% %
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{align}
-%   \label{eq:slice-test-cases-simple}
-%   &\forall \db_{t} \in \worldsOf{\vcdbini}: \notag\\
-%   &(\history(\db_{t}) = \history[\deltaHist](\db_{t}) \land \hslice{\history}{\idxs}(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}))  \notag \\
-%     \lor &(\history(\db_{t}) = \hslice{\history}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) =  \hslice{\history[\deltaHist]}{\idxs}(\db_{t})) \notag \\
-%   \lor &(\history(\db_{t}) = \hslice{\history[\deltaHist]}{\idxs}(\db_{t}) \land \history[\deltaHist](\db_{t}) = \hslice{\history}{\idxs}(\db_{t}))
-%            )
-% \end{align}
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% }
-%
 
 Based on the semantics of updates over VC-tables, the result of a history over a single tuple instance $\vcdbini$ is an instance with a single tuple whose local condition governs the existence of the tuple in any particular world $\db_{t}$. For a history $\history$ let us denote this tuple as $\singtupH{\history}$. Consider the valuation $\varAssign_{t}$ generating $\db_{t}$. Then for two histories $\history$ and $\history'$, the condition $\history(\db_{t}) = \history'(\db_{t})$ is equivalent to the equation shown below as long as we appropriately rename variables such that the two VC-databases do not share any variables except for the variables from $\vcdbini$. % The top part of this encodes the case where both histories return a tuple (the local conditions of both tuples are true under assignment $\varAssign_t$ and returned tuples are equal. The bottom part of the equation is the case where both histories do not return any result (both local conditions are false).
 
@@ -649,62 +500,6 @@ Given a set of indexes $\idxs$, we now have a sound method for testing whether $
 
 
 In~\cite{techreport}, we present an additional optimized version of the slicing condition $\aslicetest$  that only works for single modifications.
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \subsubsection{\revm{Evaluating the Update History}}\label{sec:eval-update-hist}
-
-
-%
-
-
-
-%
-
-%
-
-%
-
-%
-%
-%
-
-%
-%
-%
-%
-%
-%
-%
-%
-%
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%
-
-
-%
-
-
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%
-%
-%
-%
-%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
 
 
 %%% Local Variables:

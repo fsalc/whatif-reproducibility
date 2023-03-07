@@ -1,76 +1,76 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Data Slicing}
 \label{sec:filter}
 
 In this section, we present \textit{data slicing}, a technique which excludes data from reenactment for a \abbrHW $\hwhatif$ without affecting the result. Our technique is based on the observation that any difference between $\history(\db)$ and $\history[\deltaHist](\db)$ has to be caused  by a difference between $\history$ and $\history[\deltaHist]$. Thus, any tuple that is in the result of $\hwhatif$ has to be derived from a tuple that was affected (e.g., fulfills the condition of an update) by a statement affected by $\deltaHist$ in either the original history, the modified history, or both (but in different ways).
 
 For example, in our running example from \Cref{fig:Transitive-Transactions-Example} the original update $\up_1$ and modified update ${\up_1}'$ only modify tuples for which either $Price \geq 50$ or $Price \geq 60$. For instance, the tuple with ID 11 does not fulfill any of these two conditions. Even though this tuple is modified by both histories, the same modifications are applied and, thus, the final result is the same (see \Cref{fig:updated-example-instance} and \Cref{fig:whatif-example-instance}): the shipping fee of this order was changed to \$8. Our data slicing technique determines selection conditions that filter out such tuples. For instance, for our running example we can apply the condition shown below (checking that either $\up_1$ or ${\up_1}'$ may modify the tuple):
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
   \begin{align*}
     (Price \geq 50) \lor (Price \geq 60)
   \end{align*}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
+  
+
 Initially, we will limit the discussion to data slicing for a single modification $\modi = \up \gets \up'$ where $\up$ and $\up'$ are of the same type (e.g., both are updates). We will show how to construct conditions $\condDSh{\modi}$ and $\condDSm{\modi}$ that we apply to filter irrelevant tuples from the inputs of $\ract{\history}$ and $\ract{\history[\deltaHist]}$. As explained above, for a single modification $\up \gets \up'$  we can assume WLOG that $\up$ is the first update in $\history$, because any update before $\up$ can be ignored for reenactment. Afterwards, we extend the technique for multiple modifications and modifications that insert or delete statements (which also covers modifications that replace a statement with a statement of a different type). In the following, we will use $\qDSh$ to denote $\selection_{\condDSh{\modi}}(\rel)$ and $\qDSm$ to denote $\selection_{\condDSm{\modi}}(\rel)$.
 
 
-% for determining a condition that can be applied to the database that is input to the reenactment query for a historical what-if query to . For now consider a single modification $\deltaHist = \{m\}$ with $m = \up \gets \up'$ where both $\up$ and $\up'$ are of the same type (update, delete, or insert).
 
-%
-% Intuitively, any difference between $\history(\db)$ and $\history[\deltaHist](\db)$ has to be caused directly or indirectly by a difference between $\history$ and $\history[\deltaHist]$. % For simplicity of exposition consider a single modification
-% For a tuple $t$ to be included in $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$, it has to be affected by either $\up$ or $\up'$ or both (but in different ways). % There exist provenance models (e.g., the MV-semiring model~\cite{AG17}) that allow us to determine the relevant tuples, however, this would require reenacting $\history(\db)$ and $\ahmod(\db)$ with provenance ahead of time, defeating the purpose of our static optimizations.
-% Instead
 
-% We demonstrate how to construct a condition that can be applied to the input database such that any tuple filtered out by this condition is guaranteed to not contribute to $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$.
-% First, consider a modification $\modi = \up \gets \up'$. We will show how to construct conditions $\condDSh{\modi}$ and $\condDSm{\modi}$ that we apply to filter the inputs of $\ract{\history}$ and $\ract{\history[\deltaHist]}$ to filter out tuples that cannot contribute to the result of the historical what-if query. In the following, we will use $\qDSh$ to denote $\selection_{\condDSh{\modi}}(\rel)$ and $\qDSm$ to denote $\selection_{\condDSm{\modi}}(\rel)$.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
 \partitle{Updates}
 First, consider a modification $\modi = \up \gets \up'$ where both $\up$ and $\up'$ are updates.
 Since only tuples that match the condition of an update operation (the operation's \lstinline!WHERE! clause) can be affected by the operation, a conservative overestimation of $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ is the set of tuples that are derived from tuples affected by $\up$ in the original history or $\up'$ in the modified history.
 Thus, the tuples in $\db$ from which such a tuple is derived have to either match the condition of $u$ ($\condOf{u}$) or the condition of $u'$ ($\condOf{u'}$). This means we can filter the input to the reenactment queries using:
-%
+
 \begin{align}
 \condDSh{\modi} = \condDSm{\modi} = \condOf{u} \vee \condOf{u'} \label{eq:update-ds-cond}
 \end{align}
-%
-% \BG{Applying a selection to a database is abusing notation, we need to at least explain what we mean by that or alternatively go into more depth of how we filter (we apply the selection condition to the table affected by the updates (assuming that they affect the same table) and then  . Also probably better to using $\db'$ or similar since the result is again a database.}
-% We can filter input data for generated reenactment queries by considering the input data for the original updates and modified updates. As $\qResultDiff{\query}{\history(\db)}{\history[\deltaHist](\db)}$ includes tuples that are modified by the original updates or modified updates, we can limit the input data to reenactment queries to only these tuples.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
 \partitle{Deletes}
 Let us now consider a single modification $\up \gets \up'$ which replaces a delete $\up = \delete{\cond}$ with a delete $\up' = \delete{\cond'}$. For a tuple $\tup \in \rel$ to contribute to $\iDiff{\ract{\history}(\rel)}{\ract{\history[\deltaHist]}(\rel)}$, it has to be deleted by either $\up$ or $\up'$, but not by both (such tuples do not contribute to any result of $\ract{\history}(\rel)$ or $\ract{\history[\deltaHist]}(\rel)$). Thus, we can filter from $\rel$ all tuples that do not fulfill the condition
-%
+
 \begin{align}
 \condDSh{\modi} = \condDSm{\modi} = (\cond \land \neg\,\cond') \vee (\neg\,\cond \land \cond')\label{eq:ds-del-cond}
 \end{align}
-%
+
 \iftechreport{Note that for any tuple $\tup_{out}$ to be in the result of $\ract{\history}(\rel)$ ($\ract{\history[\deltaHist]}(\rel)$), it has to be the case that the input tuple $\tup$ in $\rel$ it is derived from has to not fulfill the condition of $\up$ ($\up'$), otherwise $\tup$ would have been deleted. That is, for $\history$, any tuple fulfilling $(\cond \land \neg\,\cond')$ will be filtered out by the delete. Similarly, for $\ahmod$, any tuple fulfilling $(\neg\,\cond \land \cond')$ will be deleted. Thus, we can simplify the data slicing conditions from \Cref{eq:ds-del-cond} by removing this redundant test and get:
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
   \begin{align*}
     \condDSh{\modi} &= \neg\,\condOf{\up} \land \condOf{\up'}\\
     \condDSm{\modi} &= \condOf{\up} \land \neg\,\condOf{\up'}
   \end{align*}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
+  
+
   Furthermore, for any tuple $t$ ``surviving'' the delete of $\history$ ($\ahmod$) we have that $t$ fulfills the condition $\neg\,\condOf{\up}$ ($\neg\, \condOf{\up'}$). This means the conditions can be further simplified:
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
   \begin{align*}
     \condDSh{\modi} &= \condOf{\up'}\\
     \condDSm{\modi} &= \condOf{\up}
   \end{align*}
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  % Thus, we can simplify \Cref{eq:ds-del-cond} to $\cond'$ for $\ract{\history}$ and to $\cond$ for $\ract{\history[\deltaHist]}$.
+  
+  
 }
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \partitle{Inserts with Queries}
 Recall that an insert $\aqinsert$ is reenacted using the query $\rel \union \query$. Only tuples that are returned by the query $\query$ need to be considered. Thus, if $\aqinsert$ is the only statement that is modified, then it is sufficient to replace $R \union \query$ in the reenactment query with $\query$. However, for multiple modifications, tuples from the LHS of the union of the reenactment query for a statement $\aqinsert$ may be affected by downstream updates modified by $\deltaHist$. Thus, we cannot simply replace $R \union \query$ with $\query$ if $\aqinsert$ is not the first and only statement in the history that got modified by $\deltaHist$. To deal with this case, we need a condition that selects tuples which may contribute to the result of $\query$. We can achieve this by pushing the selection conditions of $\query$ down to the relations accessed by $\query$. For that we apply standard selection move-around techniques from query optimization. The final result is a selection condition for each input relation of the query. For instance, for $\ins{\selection_{A=5}(R \join_{A=C} S)}(R)$ over relations $R(A,B)$ and $S(C,D)$, the selection can be pushed to both inputs of the join resulting in a condition $A=5$ for $R$ and $C=5$ for $S$.
 We formally define the rules for pushing conditions through queries in \cite{techreport}.
-% Data slicing for delete statements are different from update statements as they remove some tuples from the database and we do not need to consider tuples that are deleted by both the original and modified statements. If a tuple is removed by both original and modified statements, it would not be in the result of $\ract{\history}$ nor $\ract{\history[\deltaHist]}(\db)$ reenactment queries, so we can filter them in computing the delta without any changes to the result of historical what-if query. To compute the difference between the result of $\ract{\history}(\db)$ and $\ract{\history[\deltaHist]}(\db)$, we need tuples that are deleted by the original delete statement but not by modified one or vice versa.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \partitle{Multiple modifications}
 Data slicing can also be applied to \abbrHWs with more than one modification. For a tuple to be in the result of the what-if query, it has to be affected by at least one statement $\up$ such that there exists one modification $\modi \in \deltaHist$ with either $\modi = \up \gets \up'$ or $\modi = \up' \gets \up$ for some statement $\up'$. However, we cannot simply use the disjunction of the data slicing conditions $\condDSh{\modi}$ and $\condDSm{\modi}$ we have developed for single modifications to filter the input. To see why this is the case, consider a modification $\modi = \up \gets \up'$ where $\up$ is the $i^{th}$ update in $\history$. The
 input of $\up$ ($\up')$ over which the condition of the update is evaluated is the result of $\hislice{i-1}$ (or $\hisliceOf{\history[\deltaHist]}{i-1}$). To be able to derive a selection condition that can be applied to $\rel$, we have to ``push'' the condition for $\up$ down to determine a condition that returns the set of tuples from $\rel$ that contribute to tuples in $\hislice{i-1}$ fulfilling condition $\condDSh{\modi}$ (or $\condDSm{\modi}$).
@@ -79,7 +79,7 @@ For that, we iteratively substitute references to attributes in $\condDSh{\modi}
 
 More formally, consider a modification $\modi = \up_i \gets {\up_i}'$ for a history $\history = (\up_1, \ldots, \up_n)$. Let us first consider how to push $\condDSh{\modi}$ (the case for $\condDSm{\modi}$ is symmetric).
 We construct $\pushCond{\condDSh{\modi}}{j}$, the version of $\condDSh{\modi}$ pushed down through $j < i$ updates as shown below. We use $\pushCond{\condDSh{\modi}}{\ast}$ to denote $\pushCond{\condDSh{\modi}}{i-1}$, i.e., pushing the condition through all updates of the history before $\up$. Furthermore, we use an operator $\qpushCond{\cond}{\query}$  to push a condition $\cond$ through a query $\query$. See \cite{techreport} for the formal definition of this operator.
-%
+
 \begin{align*}
   \pushCond{\condDSh{\modi}}{0}                                                 & = \condDSh{\modi}                            \\
   \pushCond{\condDSh{\modi}}{j+1}                                               & =
@@ -90,57 +90,57 @@ We construct $\pushCond{\condDSh{\modi}}{j}$, the version of $\condDSh{\modi}$ p
                                     \end{cases}
 \end{align*}
 In the above equation, $\vec{A}$ denotes $(A_1, \ldots, A_n)$ and $\vec{e}$ denotes
-%
+
 \[
   (\sqlCase{\cond}{\pset(A_1)}{A_1},\ldots, \sqlCase{\cond}{\pset(A_n)}{A_n})
 \]
 Furthermore, $e[\vec{A} \gets \vec{e}]$ denotes the result of substituting each reference to $A_i$ in $e$ with $e_i$ (for all $i \in [1,n]$).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \iftechreport{
 \input{dsqpush.tex}
 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \begin{exam}\label{ex:ds-example}
 Consider our running example history and a modification that replaces $u_3$ (reducing shipping fee by \$2 if the shipping fee is at least \$10 and the order price is at most \$30) with ${\up_3}'$ which applies to orders of $\leq \$40$: ${\up_3}' = \update{F \gets F-2}{P \leq 40 \land F \geq 10}$.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{align*}
-% {\up_2}' = \update{F \gets F-2}{P \leq 40 \land F \geq 10}
-% \end{align*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
 The data slicing condition for $u_3$ and ${\up_3}'$ is $(P \leq 30 \land F \geq 10) \vee (P \leq 40 \land F \geq 10)$ which can be simplified to $(P \leq 40 \land F \geq 10)$. To push this condition through $\up_2$, we have to substitute $F$ (the shipping fee) with the conditional update of the shipping fee corresponding to $\up_2$ and get
 $(P \leq 40 \land F'' \geq 10)$ for $F'' = \sqlCase{C=UK \land P \leq 100}{F+5}{F}$. We then have to push this condition through $\up_1$. For that we substitute $F$ again, this time with $F' = \sqlCase{P \geq 50}{0}{F}$. The final data slicing condition for both $\history$ and $\ahmod$ and our modification $\modi = \up_3 \gets {\up_3}'$ is:
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \begin{align*}
 \pushCond{\condDSh{\modi}}{\ast} &= \pushCond{\condDSm{\modi}}{\ast} = (P \leq 40 \land F'' \geq 10)\\[1mm]
 F'' &= \sqlCase{C=UK \land P \leq 100}{F'+5}{F'}\\
   F' &= \sqlCase{P \geq 50}{0}{F}
 \end{align*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 Evaluating this condition over the database from \Cref{fig:running-example-instance}, only the tuple with ID 11 has a sufficiently low price $P \leq 40$ and fulfills the condition $F'' \geq 10$ ($F = F' = 5$ and $F'' = F'+5 = 10$). Thus, using this slicing condition we can exclude tuples 12, 13, and 14 from reenactment.
-% To compute $\iDiff{\ract{\history}(\db)}{\ract{\history[\deltaHist]}(\db)}$ for the \Cref{ex:reenact-example}, we first construct reenactment queries for updates $u_1, u_2, u_3$ and ${u_1}',u_2,u_3$. Based on the conditions of $u_1$ and ${u_1}'$, the data slicing condition we construct is $p \geq 40 \vee p \geq 50$.
-% % we add a condition \lstinline!Price>=40 OR Price>=50! to the inputs of these queries (adding a \lstinline!WHERE! clause).
-%   In our example, this conditions excludes tuples $o_1$ and $o_4$ from reenactment since any tuple in $\ract{\history}(\db)$ and $\ract{\history[\deltaHist]}(\db)$ derived from these tuples will occur in the result of both histories and, thus, cannot not be part of the what-if query's result. % So, we need to compute $\qResultDiff{\query}{\subract{O}{\history}(\rel)}{\subract{O}{\history[\deltaHist]}(\rel)}$ where $\rel\leftarrow \selection_{p>=40 \vee p>=50}(\db)$. for answering the historical what-if query.
-% % \begin{lstlisting}
-% % SELECT * FROM  $\ract{Employee[\modi]}$ M
-% % WHERE Calls<30 OR Calls<50;
-% % SELECT * FROM  $\ract{Employee}$ E
-% % WHERE Calls<30 OR Calls<50;
-% % \end{lstlisting}
-% $\,$\\[-4mm]
+
+
+
+
+
+
+
+
+
+
 \end{exam}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \partitle{Modifications that insert or delete statements}
 Recall that we also allow modifications that insert a new statement at position $i$ ($\minsert{\up}{i}$) or delete the statement at position $i$ ($\mdel{i})$. Note that it is possible to insert new statements into a history without changing its semantics as long as these statements do not modify any data, e.g., a delete $\delete{\F}$ that does not delete any tuples. We refer to such operations as \emph{no-ops}. Using no-ops, we can pad the original history at position $i$ for every insert $\minsert{\up}{i}$. We then can rewrite  $\minsert{\up}{i}$ in $\deltaHist$ into a modification $\up_i \gets \up$ where $\up_i$ is a no-op. A deletion $\mdel{i}$ is rewritten into a modification $\up_i \gets {\up_i}'$ where ${\up_i}'$ is a no-op. Thus, the data slicing method explained above is already sufficient for dealing with inserts $\minsert{\up}{i}$ and deletes $\mdel{i}$.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{theo}[Data Slicing]\label{theo:data-slicing}
   Consider a history $\history$, a relation $R$, and a sequence of modifications $\deltaHist = (\modi_1, \ldots, \modi_n)$. Let $\qDSh = \selection_{\bigvee_{i=1}^{n} \pushCond{\condDSh{\modi_i}}{\ast}}(\rel)$
 and $\qDSm = \selection_{\bigvee_{i=1}^{n} \pushCond{\condDSm{\modi_i}}{\ast}}(\rel)$.
@@ -151,7 +151,7 @@ and $\qDSm = \selection_{\bigvee_{i=1}^{n} \pushCond{\condDSm{\modi_i}}{\ast}}(\
 \iDiff{\ract{\history}(\qDSh(\rel))}{\ract{\history[\deltaHist]}(\qDSm(\rel))}
 \]
 \end{theo}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \ifnottechreport{
   \begin{proofsketch}
     We prove this theorem by induction over the number of modifications in $\deltaHist$. For the base case we prove the claim by case analysis (update and deletes). We show that any tuple not fulfilling $\cond$ and $\cond'$ does not contribute to the delta and, therefore can be excluded.  For the inductive step,  we prove by induction over the number of steps a conditions has to be "pushed-down", that the pushed-down condition ($\pushCond{\condDSh{\modi_i}}{\ast}$ or $\pushCond{\condDSm{\modi_i}}{\ast}$) excludes only irrelevant tuples. For the full proof see \cite{techreport}.
@@ -160,33 +160,33 @@ and $\qDSm = \selection_{\bigvee_{i=1}^{n} \pushCond{\condDSm{\modi_i}}{\ast}}(\
 \iftechreport{\input{dsproof.tex}}
 
 \iftechreport{
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \partitle{Discussion}
-%
+
 While for data slicing for historical what-if queries with a single modification, the cost of evaluating the data slicing condition is almost always less then the cost saved by reducing the amount of data to be evaluated by the remainder of the reenactment query. However, for multiple modifications, the cost of conditions for a modification that affects an update later in the input history may approach the cost of the reenactment query itself in the worst-case. This cost depends on several factors: the position of the modified update in the history, the number of attributes referenced by the condition of the update, and how many updates before the modified update have modified attributes referenced by the modified update's condition.
 }
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{proof}
-%We prove it by contradiction. A historical what-if query with a single modification $m = \xid.u \gets u'$, suppose there is a tuple $t \in \db$ and it does not satisfy the condition $\theta(u) \vee \theta(u')$ but it is in the result of the historical what-if query $\qResultDiff{\query}{\ract{\history}}{\ract{\history[\deltaHist]}}$. In this case, it can not be modified by either $u$ or $u'$ since it does not meet the condition of any of these updates. So, $t$ would be same in the result of $\ract{\history}$ and $\ract{\history[\deltaHist]}$ and it can not be in the result of $\qResultDiff{\query}{\ract{\history}}{\ract{\history[\deltaHist]}}$ so we can exclude this tuple and filter the input to $\ract{\history}$ and $\ract{\history[\deltaHist]}$ and this concludes the proof.
-%\end{proof}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{theo}
-%For a delete statement in the history that is not belong to the modification $ u\notin\deltaHist$, we can filter data that are removed by it from the reenactment query of that delete statement ($\ract{u}$). Therefore, we can use $\selection_{\neg\theta}(\ract{u})$ as the reenactment query of the delete statement.
-%$\,$\\[-4mm]
-%\end{theo}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% We leave the extension of this optimization for inserts with queries (i.e., \lstinline!INSERT INTO ... SELECT!) to future work.
-% \BG{This may be confusing since we did not allow SELECT in our definition of inserts. As discussed we probably want to get all restrictions out of the way early on instead of }
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Program Slicing}
 \label{sec:dep-ana}
 
-% Similar to how we can exclude tuples from reenactment if they are not affected by an update that is changed by the modification of a historical what-if query,
+
 
 In addition to data slicing,
 we also optimize the process of answering a historical what-if query $\hwhatif = (\history, \db, \deltaHist)$
@@ -196,25 +196,25 @@ A slice for a historical what-if query $\hwhatif$ consists of subsets of $\histo
 \revdel{We distinguish between \textit{dynamic slices} which take the database $\db$ into account and \textit{static slices} which are independent of the database and are sufficient for any database.}
 
 \BG{Should we really define this as $\dbver{\idx_1}$ since we actually evaluate over $\db$ even when using the slice}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{defi}[History Slices]
   Let $\hwhatif = (\history, \db, \deltaHist)$ be a historical what-if query over a history $\history = (\up_1, \ldots, \up_n)$.
   Furthermore, let $\idxs = \{ \idx_1, \ldots, \idx_m \}$ be a set of indexes from $[1,n]$ such that $\idx_j < \idx_k$ for $j < k$.
   We call  $(\hslice{\history}{\idxs}, \hslice{\history[\deltaHist]}{\idxs})$  a  \emph{slice} for $\hwhatif$ if
-  % of \emph{minimal}  $\hslice{\history}$ of  $\history \cup \history[\deltaHist]$ which
-  % it fulfills the condition shown below.
-  % a \emph{slice} for $\hwhatif$.
+  
+  
+  
 \begin{gather*}
   \begin{aligned}
     &\iDiff{\history(\db)}{\history[\deltaHist](\db)} = \iDiff{\hslice{\history}{\idxs}(\dbver{\idx_1})}{\hslice{\history[\deltaHist]}{\idxs}(\dbver{\idx_1})}
   \end{aligned}
 \end{gather*}
-% In constrast, $(\hslice{\history}{\idxs}, \hslice{\history[\deltaHist]}{\idxs})$ is a \emph{static slice} for $\hwhatif$ if:
-% \begin{align*}
-% \forall D:  \iDiff{\history(\db)}{\history[\deltaHist](\db)} = \iDiff{\hslice{\history}{\idxs}(\dbver{\idx_1})}{\hslice{\history[\deltaHist]}{\idxs}(\dbver{\idx_1})}
-% \end{align*}
+
+
+
+
 \end{defi}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 History slices allow us to optimize the evaluation of a historical what-if query by excluding statements from reenactment. Thus, ideally, we would like slices  to be \emph{minimal}, i.e., the result of removing any statement from $\hslice{\history}{\idxs}$ or $\hslice{\history[\deltaHist]}{\idxs}$ is not a slice.
 \iftechreport{There may exist more than one minimal slice for a query $\hwhatif$, because the exclusion of one statement may prevent us from excluding another statement.}
@@ -222,15 +222,12 @@ History slices allow us to optimize the evaluation of a historical what-if query
 A naïve method for testing whether $\idxs$ is a slice, is to compute $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ and compare it against $\iDiff{\hslice{\history}{\idxs}(\dbver{\idx_1})}{\hslice{\history[\deltaHist]}{\idxs}(\dbver{\idx_1})}$. However, this is more expensive then just directly evaluating $\iDiff{\history(\db)}{\history[\deltaHist](\db)}$ which we wanted to optimize. Instead we give up minimality and restrict program slicing to tuple independent statements (\Cref{def:tuple-independence}) which enables us to check that the slice and full histories produce the same result one tuple at a time. Furthermore, we
   design a method that (lossily) compresses the database $\db_C$ and checks this condition (same result for each input tuple) over the compressed database. Since the compression is lossy, a compressed database $\db_C$ represents all databases $\db$ such that compressing $\db$ yields $\db_C$. To ensure that our method produces a slice that is valid for each such $\db$, we adapt techniques from incomplete databases~\cite{IL84a, lenses15}.
 \revdel{Based on this discussion, the reader may assume that dynamic slices are preferable. However, as we have argued above, we have to access the database to compute a minimal dynamic slice while, as we will demonstrate in the following, static slices can be computed based on $\history$ and $\ahmod$ alone. That is, the cost of computing static slices only depends on the length of the history, number of attributes in the schema of the relation updated by $\history$, and the size of expressions in the statements of the history, but is independent of the size of the input database.
-% However, evaluating the histories over $\db$ to determine a minimal slice (if this is even computationally feasible) defies the purpose of program slicing, because it require evaluating the operation we wanted to optimize.
+
 Thus, we focus on developing a method that computes static slices independent of $\db$ which based on the above observation implies that the slices determined by our method can not be minimal in general.}
-% to reduce the amount of work required to evaluate a historical what-if query.
 
-% defies the purpose of program slicing
 
-% is likely to be more costly than just evaluating the unsliced histories.
 
-% \FC{Where are these fragments supposed to go?}
+
 
 
 %%% Local Variables:

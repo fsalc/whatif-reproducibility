@@ -77,7 +77,6 @@ Note that in the definition of $\mpushCond{\condDSh{\modi}}{j}{\rel}$ we make us
     \mqpushCond{\cond}{\selection_{\cond'}(\query)}{\rel} &= \mqpushCond{\cond \land \cond'}{\query}{\rel}\\
     \mqpushCond{\cond}{\projection_{\vec{e}}(\query)}{\rel} &= \mqpushCond{\cond[\vec{A} \gets \vec{e}]}{\query}{\rel}\\
     \mqpushCond{\cond}{\query_1 \union \query_2}{\rel} &= \mqpushCond{\cond}{\query_1}{\rel} \lor \mqpushCond{\cond[\schema{\query_1} \gets \schema{\query_2}]}{\query_2}{\rel}\\
-    % \mqpushCond{\cond}{\aggregation_{f(A),G}(\query)}{\rel} &= \mqpushCond{\cond[\vec{A} \gets \vec{e}]}{\query}{\rel}\\
   \end{align*}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

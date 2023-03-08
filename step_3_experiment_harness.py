@@ -30,51 +30,51 @@ def grab_timer(timer, timers):
     return list(filter(lambda t: t[0] == timer, timers))[0][1]
 
 def execute_gprom(file, database, method):
-    # try:
-    #     return check_output(f'{GPROM_LOCATION} -backend postgres -host localhost -port {PORT} -user whatif -passwd mahif -db {database} {GPROM_FLAGS} {methods[method]} -queryFile {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
-    # except CalledProcessError as e:
-    #     print("There was an issue executing GProM:", e)
-    #     exit(1)
+    try:
+        return check_output(f'{GPROM_LOCATION} -backend postgres -host localhost -port {PORT} -user whatif -passwd mahif -db {database} {GPROM_FLAGS} {methods[method]} -queryFile {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
+    except CalledProcessError as e:
+        print("There was an issue executing GProM:", e)
+        exit(1)
     # mocked output
-    return '''timer: ASSERT                                                               - total:     0.000403 sec calls:        16 avg:     0.000025 min:     0.000023 max:     0.000030
-timer: OptimizeModel                                                        - total:     0.010183 sec calls:         1 avg:     0.010183 min:     0.010183 max:     0.010183
-timer: OptimizeModel - RemoveProperties                                     - total:     0.000133 sec calls:         1 avg:     0.000133 min:     0.000133 max:     0.000133
-timer: OptimizeModel - check safety of projection merge                     - total:     0.000186 sec calls:        22 avg:     0.000008 min:     0.000007 max:     0.000013
-timer: OptimizeModel - factor attributes in conditions                      - total:     0.000301 sec calls:         2 avg:     0.000150 min:     0.000096 max:     0.000205
-timer: OptimizeModel - materialize projections that are unsafe to be merged - total:     0.000044 sec calls:         1 avg:     0.000044 min:     0.000044 max:     0.000044
-timer: OptimizeModel - merge adjacent projections and selections            - total:     0.000859 sec calls:         3 avg:     0.000286 min:     0.000066 max:     0.000726
-timer: OptimizeModel - pull up duplicate remove operators                   - total:     0.002350 sec calls:         1 avg:     0.002350 min:     0.002350 max:     0.002350
-timer: OptimizeModel - pull up provenance projections                       - total:     0.000063 sec calls:         1 avg:     0.000063 min:     0.000063 max:     0.000063
-timer: OptimizeModel - push down aggregation through join                   - total:     0.000034 sec calls:         1 avg:     0.000034 min:     0.000034 max:     0.000034
-timer: OptimizeModel - remove redundant duplicate removal operators by key  - total:     0.000053 sec calls:         1 avg:     0.000053 min:     0.000053 max:     0.000053
-timer: OptimizeModel - remove redundant duplicate removal operators by set  - total:     0.000069 sec calls:         1 avg:     0.000069 min:     0.000069 max:     0.000069
-timer: OptimizeModel - remove redundant projection operators                - total:     0.000055 sec calls:         1 avg:     0.000055 min:     0.000055 max:     0.000055
-timer: OptimizeModel - remove unnecessary columns                           - total:     0.000759 sec calls:         1 avg:     0.000759 min:     0.000759 max:     0.000759
-timer: OptimizeModel - remove unnecessary window operators                  - total:     0.000137 sec calls:         1 avg:     0.000137 min:     0.000137 max:     0.000137
-timer: OptimizeModel - replace attrs with expr                              - total:     0.000105 sec calls:        20 avg:     0.000005 min:     0.000005 max:     0.000008
-timer: OptimizeModel - selection move around                                - total:     0.004798 sec calls:         1 avg:     0.004798 min:     0.004798 max:     0.004798
-timer: PropertyInference - EC                                               - total:     0.004458 sec calls:         1 avg:     0.004458 min:     0.004458 max:     0.004458
-timer: PropertyInference - EC - bottom-up                                   - total:     0.001743 sec calls:         1 avg:     0.001743 min:     0.001743 max:     0.001743
-timer: PropertyInference - EC - print                                       - total:     0.000242 sec calls:         2 avg:     0.000121 min:     0.000106 max:     0.000136
-timer: PropertyInference - EC - top-down                                    - total:     0.002451 sec calls:         1 avg:     0.002451 min:     0.002451 max:     0.002451
-timer: PropertyInference - Keys                                             - total:     0.000008 sec calls:         1 avg:     0.000008 min:     0.000008 max:     0.000008
-timer: PropertyInference - Set                                              - total:     0.000125 sec calls:         1 avg:     0.000125 min:     0.000125 max:     0.000125
-timer: PropertyInference - iCols                                            - total:     0.000561 sec calls:         1 avg:     0.000561 min:     0.000561 max:     0.000561
-timer: SQLcodeGen                                                           - total:     0.000853 sec calls:         1 avg:     0.000853 min:     0.000853 max:     0.000853
-timer: modeul - metadata lookup - running queries                           - total:     0.746798 sec calls:        49 avg:     0.015240 min:     0.000070 max:     0.729829
-timer: module - metadata lookup                                             - total:     0.012928 sec calls:         2 avg:     0.006464 min:     0.000010 max:     0.012918
-timer: module - parser                                                      - total:     0.000853 sec calls:         1 avg:     0.000853 min:     0.000853 max:     0.000853
-timer: rewrite                                                              - total:     0.000022 sec calls:         1 avg:     0.000022 min:     0.000022 max:     0.000022
-timer: rewrite - merge update reenactments                                  - total:     0.000108 sec calls:         2 avg:     0.000054 min:     0.000054 max:     0.000054
-timer: translation                                                          - total:     3.546336 sec calls:         1 avg:     3.546336 min:     3.546336 max:     3.546336
-timer: translator - CPLEX time                                              - total:     0.531233 sec calls:       100 avg:     0.005312 min:     0.003376 max:     0.021304
-timer: translator - LP construction                                         - total:     2.904827 sec calls:       200 avg:     0.014524 min:     0.000214 max:     0.038631
-timer: translator - case exprs w/ fresh vars from history                   - total:     0.134264 sec calls:       200 avg:     0.000671 min:     0.000034 max:     0.001337
-timer: translator - expression to constraints                               - total:     1.555402 sec calls:       200 avg:     0.007777 min:     0.000114 max:     0.020335
-timer: translator - newLPProblem                                            - total:     1.208519 sec calls:       200 avg:     0.006042 min:     0.000049 max:     0.016945
-timer: translator - program slicing optimization                            - total:     3.520685 sec calls:         1 avg:     3.520685 min:     3.520685 max:     3.520685
-timer: ====================================================================
-timer: TOTAL                                                                - total:    66.418699 sec calls:         1 avg:    66.418699 min:    66.418699 max:    66.418699'''
+#     return '''timer: ASSERT                                                               - total:     0.000403 sec calls:        16 avg:     0.000025 min:     0.000023 max:     0.000030
+# timer: OptimizeModel                                                        - total:     0.010183 sec calls:         1 avg:     0.010183 min:     0.010183 max:     0.010183
+# timer: OptimizeModel - RemoveProperties                                     - total:     0.000133 sec calls:         1 avg:     0.000133 min:     0.000133 max:     0.000133
+# timer: OptimizeModel - check safety of projection merge                     - total:     0.000186 sec calls:        22 avg:     0.000008 min:     0.000007 max:     0.000013
+# timer: OptimizeModel - factor attributes in conditions                      - total:     0.000301 sec calls:         2 avg:     0.000150 min:     0.000096 max:     0.000205
+# timer: OptimizeModel - materialize projections that are unsafe to be merged - total:     0.000044 sec calls:         1 avg:     0.000044 min:     0.000044 max:     0.000044
+# timer: OptimizeModel - merge adjacent projections and selections            - total:     0.000859 sec calls:         3 avg:     0.000286 min:     0.000066 max:     0.000726
+# timer: OptimizeModel - pull up duplicate remove operators                   - total:     0.002350 sec calls:         1 avg:     0.002350 min:     0.002350 max:     0.002350
+# timer: OptimizeModel - pull up provenance projections                       - total:     0.000063 sec calls:         1 avg:     0.000063 min:     0.000063 max:     0.000063
+# timer: OptimizeModel - push down aggregation through join                   - total:     0.000034 sec calls:         1 avg:     0.000034 min:     0.000034 max:     0.000034
+# timer: OptimizeModel - remove redundant duplicate removal operators by key  - total:     0.000053 sec calls:         1 avg:     0.000053 min:     0.000053 max:     0.000053
+# timer: OptimizeModel - remove redundant duplicate removal operators by set  - total:     0.000069 sec calls:         1 avg:     0.000069 min:     0.000069 max:     0.000069
+# timer: OptimizeModel - remove redundant projection operators                - total:     0.000055 sec calls:         1 avg:     0.000055 min:     0.000055 max:     0.000055
+# timer: OptimizeModel - remove unnecessary columns                           - total:     0.000759 sec calls:         1 avg:     0.000759 min:     0.000759 max:     0.000759
+# timer: OptimizeModel - remove unnecessary window operators                  - total:     0.000137 sec calls:         1 avg:     0.000137 min:     0.000137 max:     0.000137
+# timer: OptimizeModel - replace attrs with expr                              - total:     0.000105 sec calls:        20 avg:     0.000005 min:     0.000005 max:     0.000008
+# timer: OptimizeModel - selection move around                                - total:     0.004798 sec calls:         1 avg:     0.004798 min:     0.004798 max:     0.004798
+# timer: PropertyInference - EC                                               - total:     0.004458 sec calls:         1 avg:     0.004458 min:     0.004458 max:     0.004458
+# timer: PropertyInference - EC - bottom-up                                   - total:     0.001743 sec calls:         1 avg:     0.001743 min:     0.001743 max:     0.001743
+# timer: PropertyInference - EC - print                                       - total:     0.000242 sec calls:         2 avg:     0.000121 min:     0.000106 max:     0.000136
+# timer: PropertyInference - EC - top-down                                    - total:     0.002451 sec calls:         1 avg:     0.002451 min:     0.002451 max:     0.002451
+# timer: PropertyInference - Keys                                             - total:     0.000008 sec calls:         1 avg:     0.000008 min:     0.000008 max:     0.000008
+# timer: PropertyInference - Set                                              - total:     0.000125 sec calls:         1 avg:     0.000125 min:     0.000125 max:     0.000125
+# timer: PropertyInference - iCols                                            - total:     0.000561 sec calls:         1 avg:     0.000561 min:     0.000561 max:     0.000561
+# timer: SQLcodeGen                                                           - total:     0.000853 sec calls:         1 avg:     0.000853 min:     0.000853 max:     0.000853
+# timer: modeul - metadata lookup - running queries                           - total:     0.746798 sec calls:        49 avg:     0.015240 min:     0.000070 max:     0.729829
+# timer: module - metadata lookup                                             - total:     0.012928 sec calls:         2 avg:     0.006464 min:     0.000010 max:     0.012918
+# timer: module - parser                                                      - total:     0.000853 sec calls:         1 avg:     0.000853 min:     0.000853 max:     0.000853
+# timer: rewrite                                                              - total:     0.000022 sec calls:         1 avg:     0.000022 min:     0.000022 max:     0.000022
+# timer: rewrite - merge update reenactments                                  - total:     0.000108 sec calls:         2 avg:     0.000054 min:     0.000054 max:     0.000054
+# timer: translation                                                          - total:     3.546336 sec calls:         1 avg:     3.546336 min:     3.546336 max:     3.546336
+# timer: translator - CPLEX time                                              - total:     0.531233 sec calls:       100 avg:     0.005312 min:     0.003376 max:     0.021304
+# timer: translator - LP construction                                         - total:     2.904827 sec calls:       200 avg:     0.014524 min:     0.000214 max:     0.038631
+# timer: translator - case exprs w/ fresh vars from history                   - total:     0.134264 sec calls:       200 avg:     0.000671 min:     0.000034 max:     0.001337
+# timer: translator - expression to constraints                               - total:     1.555402 sec calls:       200 avg:     0.007777 min:     0.000114 max:     0.020335
+# timer: translator - newLPProblem                                            - total:     1.208519 sec calls:       200 avg:     0.006042 min:     0.000049 max:     0.016945
+# timer: translator - program slicing optimization                            - total:     3.520685 sec calls:         1 avg:     3.520685 min:     3.520685 max:     3.520685
+# timer: ====================================================================
+# timer: TOTAL                                                                - total:    66.418699 sec calls:         1 avg:    66.418699 min:    66.418699 max:    66.418699'''
 
 PARSE_POSTGRES_REGEX = 'Time: ([0-9]+\.?[0-9]*|\.[0-9]+)'
 def parse_postgres_timer(s):
@@ -88,22 +88,22 @@ def postgres_time_slices(times):
     return [("Creation", sum(times[:2])), ("Exe", sum(times[2:-1])), ("Delta", times[-1])]
 
 def execute_postgres(file, database):
-    # try:
-    #     return check_output(f'psql -h localhost -p {PORT} -U whatif -d {database} < {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
-    # except CalledProcessError as e:
-    #     print("There was an issue executing Postgres:", e)
-    #     exit(1)
+    try:
+        return check_output(f'psql -h localhost -p {PORT} -U whatif -d {database} < {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
+    except CalledProcessError as e:
+        print("There was an issue executing Postgres:", e)
+        exit(1)
 
     # mocked output
-    return '''Timing is on.
-Time: 1.534 ms
-Time: 0.889 ms
-Time: 0.265 ms
-Time: 0.146 ms
-Time: 0.136 ms
-Time: 0.170 ms
-Time: 0.144 ms
-Time: 0.362 ms'''
+#     return '''Timing is on.
+# Time: 1.534 ms
+# Time: 0.889 ms
+# Time: 0.265 ms
+# Time: 0.146 ms
+# Time: 0.136 ms
+# Time: 0.170 ms
+# Time: 0.144 ms
+# Time: 0.362 ms'''
 
 def count_past_iterations(file, query):
     df = pd.read_csv(file)

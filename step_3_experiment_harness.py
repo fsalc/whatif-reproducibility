@@ -333,6 +333,7 @@ if __name__ == '__main__':
     df.groupby(['Updates', 'Method']).mean().sort_values(by=['Method', 'Updates']).to_csv('results/optimizations.csv')
     
     df = pd.read_csv('raw_results/naive.csv') # optimizations (compare naive and r+ps+ds)
+    df = df[-df['Method'].isin(['R 5M', 'R 50M', 'R TPCC', 'R YCSB'])]
     df['Method'] = pd.Categorical(df['Method'], ['Naive 5M', 'R+PS+DS 5M', 'Naive 50M', 'R+PS+DS 50M', 'Naive TPCC', 'R+PS+DS TPCC', 'Naive YCSB', 'R+PS+DS YCSB'])
     df.groupby(['Updates', 'Method']).mean().sort_values(by=['Method', 'Updates']).to_csv('results/naive.csv')
 

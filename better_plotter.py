@@ -95,24 +95,26 @@ def plot():
     plt.savefig('paper/imgs/felix_naive.pdf', dpi=200)
 
     plt.clf()
-    t25_relation_size = pd.read_csv('results/t25_relation_size.csv')
 
-    sns.set_style("whitegrid")
+    # this experiment is equivalent to t25_optimizations, and was not used in the paper
+    # t25_relation_size = pd.read_csv('results/t25_relation_size.csv')
 
-    g = sns.catplot(
-        kind="bar",
-        data=t25_relation_size,
-        x="Relation Size", 
-        y="Runtime", 
-        hue="Method",
-        height=2.25, aspect=1.4,
-        palette=colors
-    )
-    g._legend.remove()
-    plt.legend(loc='upper left', fontsize=8)
+    # sns.set_style("whitegrid")
 
-    plt.subplots_adjust(bottom=0.3)
-    plt.savefig('paper/imgs/felix_t25_relation_size.pdf', dpi=200)
+    # g = sns.catplot(
+    #     kind="bar",
+    #     data=t25_relation_size,
+    #     x="Relation Size", 
+    #     y="Runtime", 
+    #     hue="Method",
+    #     height=2.25, aspect=1.4,
+    #     palette=colors
+    # )
+    # g._legend.remove()
+    # plt.legend(loc='upper left', fontsize=8)
+
+    # plt.subplots_adjust(bottom=0.3)
+    # plt.savefig('paper/imgs/felix_t25_relation_size.pdf', dpi=200)
 
     plt.clf()
     dependent_updates = pd.read_csv('results/dependent_updates.csv')
@@ -241,30 +243,32 @@ def plot():
     plt.savefig('paper/imgs/felix_optimizations.pdf', dpi=200)
 
     plt.clf()
-    mahif_breakdown = pd.read_csv('results/mahif_breakdown.csv')
-    grouped = mahif_breakdown.groupby(['Updates', 'Method', 'Size'])
-    five = mahif_breakdown[mahif_breakdown['Size'] == '5M'].pivot(index='Updates', columns='Time Slice', values='Runtime')
-    fifty = mahif_breakdown[mahif_breakdown['Size'] == '50M'].pivot(index='Updates', columns='Time Slice', values='Runtime')
 
-    sns.set_style("whitegrid")
-    g = sns.catplot(x="Updates", y="Runtime",
-                    hue="Time Slice", col="Size",
-                    data=mahif_breakdown, kind="bar",
-                    height=2, aspect=1, ci=None, legend_out=False)
-    g.fig.get_axes()[0].set_yscale('log')
-    g.fig.subplots_adjust(wspace=0.1, hspace=0)
-    g.axes[0][0].legend(loc='upper left', fontsize=7)
+    # this was replaced by a table in the paper
+    # mahif_breakdown = pd.read_csv('results/mahif_breakdown.csv')
+    # grouped = mahif_breakdown.groupby(['Updates', 'Method', 'Size'])
+    # five = mahif_breakdown[mahif_breakdown['Size'] == '5M'].pivot(index='Updates', columns='Time Slice', values='Runtime')
+    # fifty = mahif_breakdown[mahif_breakdown['Size'] == '50M'].pivot(index='Updates', columns='Time Slice', values='Runtime')
 
-    g.set_xlabels("# Updates")
-    g.axes[0][0].set_title('5M')
-    g.axes[0][1].set_title('50M')
+    # sns.set_style("whitegrid")
+    # g = sns.catplot(x="Updates", y="Runtime",
+    #                 hue="Time Slice", col="Size",
+    #                 data=mahif_breakdown, kind="bar",
+    #                 height=2, aspect=1, ci=None, legend_out=False)
+    # g.fig.get_axes()[0].set_yscale('log')
+    # g.fig.subplots_adjust(wspace=0.1, hspace=0)
+    # g.axes[0][0].legend(loc='upper left', fontsize=7)
 
-    for axes in g.axes.flat:
-        axes.get_yaxis().set_major_formatter(mticker.ScalarFormatter())
+    # g.set_xlabels("# Updates")
+    # g.axes[0][0].set_title('5M')
+    # g.axes[0][1].set_title('50M')
+
+    # for axes in g.axes.flat:
+    #     axes.get_yaxis().set_major_formatter(mticker.ScalarFormatter())
 
 
-    plt.subplots_adjust(bottom=0.2)
-    plt.savefig('paper/imgs/felix_mahif_breakdown.pdf', dpi=200)
+    # plt.subplots_adjust(bottom=0.2)
+    # plt.savefig('paper/imgs/felix_mahif_breakdown.pdf', dpi=200)
 
     plt.clf()
     naive_breakdown = pd.read_csv('results/naive_breakdown.csv')

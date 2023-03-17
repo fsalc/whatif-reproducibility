@@ -315,13 +315,31 @@ if __name__ == '__main__':
     ####    Postprocessing   ####
     #############################
 
-    df = pd.read_csv('raw_results/t0_optimizations.csv').groupby(['Updates', 'Method']).mean().to_csv('results/t0_optimizations.csv') # t0_optimizations
-    df = pd.read_csv('raw_results/t10_optimizations.csv').groupby(['Updates', 'Method']).mean().to_csv('results/t10_optimizations.csv') # t10_optimizations
-    df = pd.read_csv('raw_results/t25_optimizations.csv').groupby(['Updates', 'Method']).mean().to_csv('results/t25_optimizations.csv') # t25_optimizations
-    df = pd.read_csv('raw_results/optimizations.csv').groupby(['Updates', 'Method']).mean().to_csv('results/optimizations.csv') # optimizations (compare r and r+ps+ds)
-    df = pd.read_csv('raw_results/naive.csv').groupby(['Updates', 'Method']).mean().to_csv('results/naive.csv') # optimizations (compare naive and r+ps+ds)
+    df = pd.read_csv('raw_results/t0_optimizations.csv') # t0_optimizations
+    df['Method'] = pd.Categorical(df['Method'], ['R+PS 5M', 'R+DS 5M', 'R+PS+DS 5M', 'R+PS 50M', 'R+DS 50M', 'R+PS+DS 50M', 'R+PS TPCC', 'R+DS TPCC', 'R+PS+DS TPCC', 'R+PS YCSB', 'R+DS YCSB', 'R+PS+DS YCSB'])
+    df.groupby(['Updates', 'Method']).mean().sort_values(by=['Method', 'Updates']).to_csv('results/t0_optimizations.csv')
 
-    df = pd.read_csv('raw_results/naive_breakdown.csv').groupby(['Updates', 'Time Slice', 'Size']).mean().to_csv('results/naive_breakdown.csv') # optimizations (compare naive and r+ps+ds)
+    df = pd.read_csv('raw_results/t10_optimizations.csv') # t10_optimizations
+    df = df[-df['Method'].isin(['R 5M', 'R 50M', 'R TPCC', 'R YCSB'])]
+    df['Method'] = pd.Categorical(df['Method'], ['R+PS 5M', 'R+DS 5M', 'R+PS+DS 5M', 'R+PS 50M', 'R+DS 50M', 'R+PS+DS 50M', 'R+PS TPCC', 'R+DS TPCC', 'R+PS+DS TPCC', 'R+PS YCSB', 'R+DS YCSB', 'R+PS+DS YCSB'])
+    df.groupby(['Updates', 'Method']).mean().to_csv('results/t10_optimizations.csv')
+
+    df = pd.read_csv('raw_results/t25_optimizations.csv') # t25_optimizations
+    df['Method'] = pd.Categorical(df['Method'], ['R+PS 5M', 'R+DS 5M', 'R+PS+DS 5M', 'R+PS 50M', 'R+DS 50M', 'R+PS+DS 50M', 'R+PS TPCC', 'R+DS TPCC', 'R+PS+DS TPCC', 'R+PS YCSB', 'R+DS YCSB', 'R+PS+DS YCSB'])
+    df.groupby(['Updates', 'Method']).mean().to_csv('results/t25_optimizations.csv')
+
+    df = pd.read_csv('raw_results/optimizations.csv') # optimizations (compare r and r+ps+ds)
+    df['Method'] = pd.Categorical(df['Method'], ['R 5M', 'R+PS+DS 5M', 'R 50M', 'R+PS+DS 50M', 'R TPCC', 'R+PS+DS TPCC', 'R YCSB', 'R+PS+DS YCSB'])
+    df.groupby(['Updates', 'Method']).mean().sort_values(by=['Method', 'Updates']).to_csv('results/optimizations.csv')
+    
+    df = pd.read_csv('raw_results/naive.csv') # optimizations (compare naive and r+ps+ds)
+    df['Method'] = pd.Categorical(df['Method'], ['Naive 5M', 'R+PS+DS 5M', 'Naive 50M', 'R+PS+DS 50M', 'Naive TPCC', 'R+PS+DS TPCC', 'Naive YCSB', 'R+PS+DS YCSB'])
+    df.groupby(['Updates', 'Method']).mean().sort_values(by=['Method', 'Updates']).to_csv('results/naive.csv')
+
+    df = pd.read_csv('raw_results/naive_breakdown.csv') # optimizations (compare naive and r+ps+ds)
+    df['Time Slice'] = pd.Categorical(df['Time Slice'], ['Creation', 'Exe', 'Delta'])
+    df['Size'] = pd.Categorical(df['Size'], ['5M', '50M'])
+    df.groupby(['Updates', 'Time Slice', 'Size']).mean().sort_values(by=['Updates', 'Size', 'Time Slice']).to_csv('results/naive_breakdown.csv')
     # mahif_breakdown
 
     df = pd.read_csv('raw_results/dependent_updates.csv').groupby(['Percentage of Dependent Updates', 'Method']).mean().to_csv('results/dependent_updates.csv') # dependent updates
@@ -332,10 +350,19 @@ if __name__ == '__main__':
     df.rename(columns={'Community Max': 'T'}, inplace=True)
     df.groupby(['T', 'Method']).mean().to_csv('results/affected_data.csv')
 
-    df = pd.read_csv('raw_results/inserts.csv').groupby(['Updates', 'Method', 'Size']).mean().to_csv('results/inserts.csv') # inserts
-    df = pd.read_csv('raw_results/mixed.csv').groupby(['Updates', 'Method', 'Size']).mean().to_csv('results/mixed.csv') # mixed
+    df = pd.read_csv('raw_results/inserts.csv') # inserts
+    df['Method'] = pd.Categorical(df['Method'], ['R+PS', 'R+DS', 'R+PS+DS'])
+    df['Size'] = pd.Categorical(df['Size'], ['5M', '50M'])
+    df.groupby(['Updates', 'Method', 'Size']).mean().sort_values(by=['Updates', 'Size', 'Method']).to_csv('results/inserts.csv')
 
-    df = pd.read_csv('raw_results/multimod.csv').groupby(['Modifications', 'Method']).mean().to_csv('results/multimod.csv') # multimod
+    df = pd.read_csv('raw_results/mixed.csv') # mixed
+    df['Method'] = pd.Categorical(df['Method'], ['R+PS', 'R+DS', 'R+PS+DS'])
+    df['Size'] = pd.Categorical(df['Size'], ['5M', '50M'])
+    df.groupby(['Updates', 'Method', 'Size']).mean().sort_values(by=['Updates', 'Size', 'Method']).to_csv('results/mixed.csv')
+
+    df = pd.read_csv('raw_results/multimod.csv') # multimod
+    df['Method'] = pd.Categorical(df['Method'], ['R', 'R+PS', 'R+DS', 'R+PS+DS'])
+    df.groupby(['Modifications', 'Method']).mean().sort_values(by=['Modifications', 'Method']).to_csv('results/multimod.csv')
 
 
     #############################

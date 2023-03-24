@@ -349,6 +349,7 @@ if __name__ == '__main__':
     df = pd.read_csv('raw_results/affected_data.csv') # dependent updates
     df['Community Max'] = df['Community Max'].apply(lambda e: community_area_to_selectivity[e])
     df.rename(columns={'Community Max': 'T'}, inplace=True)
+    df['Method'] = pd.Categorical(df['Method'], ['R', 'R+PS', 'R+DS', 'R+PS+DS'])
     df.groupby(['T', 'Method']).mean().to_csv('results/affected_data.csv')
 
     df = pd.read_csv('raw_results/inserts.csv') # inserts

@@ -9,6 +9,7 @@ from subprocess import STDOUT, TimeoutExpired, CalledProcessError, check_output,
 PORT = 5432
 
 REPEATS = 3
+TIMEOUT = 60*60
 
 GPROM_LOCATION = './gprom/bin/gprom'
 GPROM_FLAGS = '-timing true -Cschema_consistency false -Cattr_reference_consistency false -Cparent_child_links false -Cdata_structure_consistency false -Ofactor_attrs true -heuristic_opt true -log false -show_result false'
@@ -31,7 +32,7 @@ def grab_timer(timer, timers):
 
 def execute_gprom(file, database, method):
     try:
-        return check_output(f'{GPROM_LOCATION} -backend postgres -host localhost -port {PORT} -user whatif -passwd mahif -db {database} {GPROM_FLAGS} {methods[method]} -queryFile {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
+        return check_output(f'{GPROM_LOCATION} -backend postgres -host localhost -port {PORT} -user whatif -passwd mahif -db {database} {GPROM_FLAGS} {methods[method]} -queryFile {file}', stderr=STDOUT, timeout=TIMEOUT, shell=True).decode("utf-8")
     except CalledProcessError as e:
         print("There was an issue executing GProM:", e)
         exit(1)
@@ -89,7 +90,7 @@ def postgres_time_slices(times):
 
 def execute_postgres(file, database):
     try:
-        return check_output(f'psql -h localhost -p {PORT} -U whatif -d {database} < {file}', stderr=STDOUT, timeout=60*30, shell=True).decode("utf-8")
+        return check_output(f'psql -h localhost -p {PORT} -U whatif -d {database} < {file}', stderr=STDOUT, timeout=TIMEOUT, shell=True).decode("utf-8")
     except CalledProcessError as e:
         print("There was an issue executing Postgres:", e)
         exit(1)
@@ -129,16 +130,28 @@ def updates(dataset, method, u, t):
     if method != 'R' or (method == 'R' and t == 10): 
         for n in range(c+1, REPEATS+1):
             print(f'Executing updates/datasize/selectivity experiment with {dataset.upper()}, {u} updates, {t}% selectivity ({method})... {n}/{REPEATS}')
-            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips' if (dataset == '5m' or dataset == '50m') else dataset, method))
+            try:
+                result = parse_gprom_timer(execute_gprom(file, 'taxi_trips' if (dataset == '5m' or dataset == '50m') else dataset, method))
 
-            with open(f'raw_results/t{t}_optimizations.csv', 'a') as optimizations:
-                optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
+                with open(f'raw_results/t{t}_optimizations.csv', 'a') as optimizations:
+                    optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
 
-            if t == 10 and (method == 'R' or method == 'R+PS+DS'):
-                with open(f'raw_results/optimizations.csv', 'a') as optimizations:
-                    optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
-                with open(f'raw_results/naive.csv', 'a') as optimizations:
-                    optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
+                if t == 10 and (method == 'R' or method == 'R+PS+DS'):
+                    with open(f'raw_results/optimizations.csv', 'a') as optimizations:
+                        optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
+                    with open(f'raw_results/naive.csv', 'a') as optimizations:
+                        optimizations.write(f'{u},{grab_timer("TOTAL", result)},{method} {dataset.upper()}\n')
+            except TimeoutExpired as e:
+                print('WARN: Experiment timed out... continuing')   
+
+                with open(f'raw_results/t{t}_optimizations.csv', 'a') as optimizations:
+                    optimizations.write(f'{u},0,{method} {dataset.upper()}\n')
+
+                if t == 10 and (method == 'R' or method == 'R+PS+DS'):
+                    with open(f'raw_results/optimizations.csv', 'a') as optimizations:
+                        optimizations.write(f'{u},0,{method} {dataset.upper()}\n')
+                    with open(f'raw_results/naive.csv', 'a') as optimizations:
+                        optimizations.write(f'{u},0,{method} {dataset.upper()}\n')
 
 def updates_naive(dataset, u):
     file = False
@@ -189,10 +202,16 @@ def dependents(method, d):
     c = count_past_iterations('raw_results/dependent_updates.csv', lambda df: (df['Percentage of Dependent Updates'] == d) & (df['Method'] == method)).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing dependent updates experiment with {d}% dependent updates in history... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
+        try:
+            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
-        with open('raw_results/dependent_updates.csv', 'a') as dependent_updates:
-            dependent_updates.write(f'{d},{grab_timer("TOTAL", result)},{method}\n')
+            with open('raw_results/dependent_updates.csv', 'a') as dependent_updates:
+                dependent_updates.write(f'{d},{grab_timer("TOTAL", result)},{method}\n')
+        except TimeoutExpired as e:
+            print('WARN: Experiment timed out... continuing')   
+
+            with open('raw_results/dependent_updates.csv', 'a') as dependent_updates:
+                dependent_updates.write(f'{d},0,{method}\n')
 
 def selectivities(method, communitymax):
 
@@ -204,10 +223,16 @@ def selectivities(method, communitymax):
     c = count_past_iterations('raw_results/affected_data.csv', lambda df: (df['Community Max'] == communitymax) & (df['Method'] == method)).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing selectivity experiment with maximum community area {communitymax} ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
+        try:
+            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
-        with open('raw_results/affected_data.csv', 'a') as affected_data:
-            affected_data.write(f'{communitymax},{grab_timer("TOTAL", result)},{method}\n')
+            with open('raw_results/affected_data.csv', 'a') as affected_data:
+                affected_data.write(f'{communitymax},{grab_timer("TOTAL", result)},{method}\n')
+        except TimeoutExpired as e:
+            print('WARN: Experiment timed out... continuing')   
+
+            with open('raw_results/affected_data.csv', 'a') as affected_data:
+                affected_data.write(f'{communitymax},0,{method}\n')
 
 def inserts(dataset, method, u):
 
@@ -219,10 +244,16 @@ def inserts(dataset, method, u):
     c = count_past_iterations('raw_results/inserts.csv', lambda df: (df['Updates'] == u) & (df['Method'] == method) & (df['Size'] == dataset.upper())).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing inserts experiment with {u} updates in history on {dataset.upper()} dataset ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
+        try:
+            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
-        with open('raw_results/inserts.csv', 'a') as mixed:
-            mixed.write(f'{u},{grab_timer("TOTAL", result)},{method},{dataset.upper()}\n')
+            with open('raw_results/inserts.csv', 'a') as mixed:
+                mixed.write(f'{u},{grab_timer("TOTAL", result)},{method},{dataset.upper()}\n')
+        except TimeoutExpired as e:
+            print('WARN: Experiment timed out... continuing')   
+
+            with open('raw_results/inserts.csv', 'a') as mixed:
+                mixed.write(f'{u},0,{method},{dataset.upper()}\n')
 
 def mixed(dataset, method, u):
 
@@ -234,10 +265,15 @@ def mixed(dataset, method, u):
     c = count_past_iterations('raw_results/mixed.csv', lambda df: (df['Updates'] == u) & (df['Method'] == method) & (df['Size'] == dataset.upper())).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing mixed inserts & deletes experiment with {u} updates in history on {dataset.upper()} dataset ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
+        try:
+            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
-        with open('raw_results/mixed.csv', 'a') as mixed:
-            mixed.write(f'{u},{grab_timer("TOTAL", result)},{method},{dataset.upper()}\n')
+            with open('raw_results/mixed.csv', 'a') as mixed:
+                mixed.write(f'{u},{grab_timer("TOTAL", result)},{method},{dataset.upper()}\n')
+        except TimeoutExpired as e:
+            print('WARN: Experiment timed out... continuing')   
+            with open('raw_results/mixed.csv', 'a') as mixed:
+                mixed.write(f'{u},0,{method},{dataset.upper()}\n')
 
 def multimods(method, m):
 
@@ -250,10 +286,17 @@ def multimods(method, m):
     c = count_past_iterations('raw_results/multimod.csv', lambda df: (df['Modifications'] == m) & (df['Method'] == method)).iloc[0]
     for n in range(c+1, REPEATS+1):
         print(f'Executing multimod experiments with {m} modifications ({method})... {n}/{REPEATS}')
-        result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
+        try:
+            result = parse_gprom_timer(execute_gprom(file, 'taxi_trips', method))
 
-        with open('raw_results/multimod.csv', 'a') as mixed:
-            mixed.write(f'{m},{grab_timer("TOTAL", result)},{method}\n')
+            with open('raw_results/multimod.csv', 'a') as mixed:
+                mixed.write(f'{m},{grab_timer("TOTAL", result)},{method}\n')
+        except TimeoutExpired as e:
+            print('WARN: Experiment timed out... continuing')   
+
+            with open('raw_results/multimod.csv', 'a') as mixed:
+                mixed.write(f'{m},0,{method}\n')
+
 
 # Executor
 

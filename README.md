@@ -30,7 +30,7 @@ The scripts were designed for usage in a container or virtual machine running **
 A script has been supplied to download & initialize the databases and tables required to run the experiments.
 A user `whatif` has password `mahif` to access the databases `whatif`, `tpcc` and `ycsb` on port `5453`.
 
-⓪ First, you will need to download the data (consider this step 0!) from https://drive.google.com/drive/folders/1QbHYupkAqraZhZSlWwz8FU1As9WNmpxe?usp=sharing and place them in the `data` folder inside the repository.
+⓪ First, you will need to download the data (consider this step 0!) from [https://drive.google.com/drive/folders/1QbHYupkAqraZhZSlWwz8FU1As9WNmpxe?usp=sharing](https://drive.google.com/file/d/1eVfc5skZjNHchtr6DCeMZQBHGzNKAeWJ/view?usp=sharing) and place them in the `data` folder inside the repository.
 
 ① Then, do `./step_1_install_dependencies.sh` once you have added the data. **Note: The script should be run from the repository folder.**
 
